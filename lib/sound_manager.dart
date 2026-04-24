@@ -1,5 +1,5 @@
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:vibration/vibration.dart'; // Import thư viện mới
+import 'package:vibration/vibration.dart';
 
 class SoundManager {
   static final SoundManager instance = SoundManager._init();
@@ -10,7 +10,6 @@ class SoundManager {
   }
 
   void _initTTS() async {
-    // Ép dùng Google Engine
     await _flutterTts.setEngine("com.google.android.tts");
     await _flutterTts.awaitSpeakCompletion(true);
     await _flutterTts.setLanguage("ja-JP");
@@ -18,18 +17,20 @@ class SoundManager {
     await _flutterTts.setVolume(1.0);
     await _flutterTts.setPitch(1.0);
   }
-
-  Future<void> speakJapanese(String text) async {
+  Future<void> speakJapanese(String text, {bool isSlow = false}) async {
     if (text.isEmpty) return;
     try {
       await _flutterTts.stop();
+
+      double speechRate = isSlow ? 0.1 : 0.5;
+      await _flutterTts.setSpeechRate(speechRate);
+
       await _flutterTts.speak(text);
     } catch (e) {
       print("Lỗi TTS: $e");
     }
   }
 
-  // --- HÀM MỚI BỔ SUNG: Dừng đọc ngay lập tức ---
   Future<void> stop() async {
     try {
       await _flutterTts.stop();
@@ -38,7 +39,6 @@ class SoundManager {
     }
   }
 
-  // --- HÀM RUNG (DÙNG MOTOR TRỰC TIẾP) ---
   Future<void> vibrate(String type) async {
     // Kiểm tra xem máy có bộ rung không
     if (await Vibration.hasVibrator() == true) {
@@ -57,7 +57,6 @@ class SoundManager {
           break;
       }
     } else {
-      // Fallback cho một số thiết bị không hỗ trợ amplitude
       switch (type) {
         case 'light': Vibration.vibrate(duration: 50); break;
         case 'heavy': Vibration.vibrate(duration: 500); break;

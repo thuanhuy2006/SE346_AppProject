@@ -2,25 +2,22 @@ import 'package:flutter/material.dart';
 import 'sound_manager.dart';
 import 'user_progress.dart';
 
-// Đã cập nhật thêm 3 dạng bài mới
 enum LessonType { learn, quiz, matching, imageQuiz, sentenceBuilder, kanjiDraw, listening, flashCard, vocabQuiz, vocabSummary}
 
-class LessonScreen extends StatefulWidget {
+class LessonScreen extends StatefulWidget{
   final String lessonId;
   final String lessonTitle;
-
   const LessonScreen({super.key, required this.lessonId, required this.lessonTitle});
 
   @override
   State<LessonScreen> createState() => _LessonScreenState();
 }
 
-class _LessonScreenState extends State<LessonScreen> {
+class _LessonScreenState extends State<LessonScreen>{
   int _currentIndex = 0;
   double _progress = 0;
   List<Map<String, dynamic>> _activities = [];
 
-  // Biến đếm số câu đúng để hiện kết quả cuối cùng
   int _correctAnswers = 0;
   int _totalQuizCount = 0;
 
@@ -28,7 +25,6 @@ class _LessonScreenState extends State<LessonScreen> {
   void initState() {
     super.initState();
     _loadLessonData();
-    // Cập nhật tổng số câu đố để tính điểm
     _totalQuizCount = _activities.where((e) =>
         e['type'] == LessonType.quiz ||
         e['type'] == LessonType.matching ||
@@ -42,17 +38,31 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 
   void _playCurrentAudio() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    if (!mounted) return;
-    if (_activities.isEmpty) return;
+    await Future.delayed(const Duration(milliseconds: 400)); // Chờ UI render xong
+    if (!mounted || _activities.isEmpty) return;
 
     final activity = _activities[_currentIndex];
-    if (activity['type'] == LessonType.learn) {
-      SoundManager.instance.speakJapanese(activity['char']);
-    } else if (activity['type'] == LessonType.sentenceBuilder) {
-      SoundManager.instance.speakJapanese(activity['jp']);
-    } else if (activity['type'] == LessonType.listening) {
-      SoundManager.instance.speakJapanese(activity['answer']);
+    final type = activity['type'] as LessonType;
+
+    String textToRead = "";
+
+    if (type == LessonType.learn) {
+      textToRead = activity['char'];
+    } else if (type == LessonType.sentenceBuilder) {
+      textToRead = activity['jp'];
+    } else if (type == LessonType.listening) {
+      textToRead = activity['answer'];
+    } else if (type == LessonType.flashCard) {
+      textToRead = activity['hiragana'] ?? activity['kanji'];
+    } else if (type == LessonType.vocabQuiz) {
+      textToRead = activity['hiragana'] ?? activity['kanji'];
+    } else if (type == LessonType.quiz) {
+      // Ví dụ: "Chữ nào là 'a'?" -> Đọc 'a'
+      textToRead = activity['answer'];
+    }
+
+    if (textToRead.isNotEmpty) {
+      SoundManager.instance.speakJapanese(textToRead);
     }
   }
 
@@ -77,6 +87,69 @@ class _LessonScreenState extends State<LessonScreen> {
       case 'cb1_luyennoi': _activities = _getCb1LuyenNoiData(); break;
       case 'cb1_luyenviet': _activities = _getCb1LuyenVietData(); break;
       case 'cb1_ontap': _activities = _getCb1OnTapData(); break;
+      case 'cb2_lythuyet': _activities = _getCb2LyThuyetData(); break;
+      case 'cb2_luyentap1': _activities = _getCb2LuyenTap1Data(); break;
+      case 'cb2_luyentap2': _activities = _getCb2LuyenTap2Data(); break;
+      case 'cb2_luyentap3': _activities = _getCb2LuyenTap3Data(); break;
+      case 'cb2_luyennoi': _activities = _getCb2LuyenNoiData(); break;
+      case 'cb2_luyenviet': _activities = _getCb2LuyenVietData(); break;
+      case 'cb2_ontap': _activities = _getCb2OnTapData(); break;
+      case 'cb3_lythuyet': _activities = _getCb3LyThuyetData(); break;
+      case 'cb3_luyentap1': _activities = _getCb3LuyenTap1Data(); break;
+      case 'cb3_luyentap2': _activities = _getCb3LuyenTap2Data(); break;
+      case 'cb3_luyentap3': _activities = _getCb3LuyenTap3Data(); break;
+      case 'cb3_luyennoi': _activities = _getCb3LuyenNoiData(); break;
+      case 'cb3_luyenviet': _activities = _getCb3LuyenVietData(); break;
+      case 'cb3_ontap': _activities = _getCb3OnTapData(); break;
+      case 'cb4_lythuyet': _activities = _getCb4LyThuyetData(); break;
+      case 'cb4_luyentap1': _activities = _getCb4LuyenTap1Data(); break;
+      case 'cb4_luyentap2': _activities = _getCb4LuyenTap2Data(); break;
+      case 'cb4_luyentap3': _activities = _getCb4LuyenTap3Data(); break;
+      case 'cb4_luyennoi': _activities = _getCb4LuyenNoiData(); break;
+      case 'cb4_luyenviet': _activities = _getCb4LuyenVietData(); break;
+      case 'cb4_ontap': _activities = _getCb4OnTapData(); break;
+      case 'cb5_lythuyet': _activities = _getCb5LyThuyetData(); break;
+      case 'cb5_luyentap1': _activities = _getCb5LuyenTap1Data(); break;
+      case 'cb5_luyentap2': _activities = _getCb5LuyenTap2Data(); break;
+      case 'cb5_luyentap3': _activities = _getCb5LuyenTap3Data(); break;
+      case 'cb5_luyennoi': _activities = _getCb5LuyenNoiData(); break;
+      case 'cb5_luyenviet': _activities = _getCb5LuyenVietData(); break;
+      case 'cb5_ontap': _activities = _getCb5OnTapData(); break;
+      case 'cb6_lythuyet': _activities = _getCb6LyThuyetData(); break;
+      case 'cb6_luyentap1': _activities = _getCb6LuyenTap1Data(); break;
+      case 'cb6_luyentap2': _activities = _getCb6LuyenTap2Data(); break;
+      case 'cb6_luyentap3': _activities = _getCb6LuyenTap3Data(); break;
+      case 'cb6_luyennoi': _activities = _getCb6LuyenNoiData(); break;
+      case 'cb6_luyenviet': _activities = _getCb6LuyenVietData(); break;
+      case 'cb6_ontap': _activities = _getCb6OnTapData(); break;
+      case 'cb7_lythuyet': _activities = _getCb7LyThuyetData(); break;
+      case 'cb7_luyentap1': _activities = _getCb7LuyenTap1Data(); break;
+      case 'cb7_luyentap2': _activities = _getCb7LuyenTap2Data(); break;
+      case 'cb7_luyentap3': _activities = _getCb7LuyenTap3Data(); break;
+      case 'cb7_luyennoi': _activities = _getCb7LuyenNoiData(); break;
+      case 'cb7_luyenviet': _activities = _getCb7LuyenVietData(); break;
+      case 'cb7_ontap': _activities = _getCb7OnTapData(); break;
+      case 'cb8_lythuyet': _activities = _getCb8LyThuyetData(); break;
+      case 'cb8_luyentap1': _activities = _getCb8LuyenTap1Data(); break;
+      case 'cb8_luyentap2': _activities = _getCb8LuyenTap2Data(); break;
+      case 'cb8_luyentap3': _activities = _getCb8LuyenTap3Data(); break;
+      case 'cb8_luyennoi': _activities = _getCb8LuyenNoiData(); break;
+      case 'cb8_luyenviet': _activities = _getCb8LuyenVietData(); break;
+      case 'cb8_ontap': _activities = _getCb8OnTapData(); break;
+      case 'cb9_lythuyet': _activities = _getCb9LyThuyetData(); break;
+      case 'cb9_luyentap1': _activities = _getCb9LuyenTap1Data(); break;
+      case 'cb9_luyentap2': _activities = _getCb9LuyenTap2Data(); break;
+      case 'cb9_luyentap3': _activities = _getCb9LuyenTap3Data(); break;
+      case 'cb9_luyennoi': _activities = _getCb9LuyenNoiData(); break;
+      case 'cb9_luyenviet': _activities = _getCb9LuyenVietData(); break;
+      case 'cb9_ontap': _activities = _getCb9OnTapData(); break;
+      case 'cb10_lythuyet': _activities = _getCb10LyThuyetData(); break;
+      case 'cb10_luyentap1': _activities = _getCb10LuyenTap1Data(); break;
+      case 'cb10_luyentap2': _activities = _getCb10LuyenTap2Data(); break;
+      case 'cb10_luyentap3': _activities = _getCb10LuyenTap3Data(); break;
+      case 'cb10_luyennoi': _activities = _getCb10LuyenNoiData(); break;
+      case 'cb10_luyenviet': _activities = _getCb10LuyenVietData(); break;
+      case 'cb10_ontap': _activities = _getCb10OnTapData(); break;
       default: _activities = [];
     }
   }
@@ -404,6 +477,1686 @@ class _LessonScreenState extends State<LessonScreen> {
       }
     ];
   }
+  // ==========================================
+  // DỮ LIỆU PHẦN CƠ BẢN 2 (BÀI 2: ĐỒ VẬT VÀ SỞ HỮU)
+  // ==========================================
+
+  // 1. Lý thuyết (Đại từ chỉ thị & Sách vở) - 12 bài
+  List<Map<String, dynamic>> _getCb2LyThuyetData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': 'これ', 'hiragana': 'これ', 'romaji': 'kore', 'meaning': 'Cái này (gần người nói)',
+        'example_img': 'assets/images/example_kore.png',
+        'example_jp': 'これは本です。', 'example_rmj': 'Kore wa hon desu.', 'example_vn': 'Cái này là quyển sách.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'それ', 'hiragana': 'それ', 'romaji': 'sore', 'meaning': 'Cái đó (gần người nghe)',
+        'example_img': 'assets/images/example_sore.png',
+        'example_jp': 'それは辞書ですか。', 'example_rmj': 'Sore wa jisho desu ka.', 'example_vn': 'Cái đó có phải là từ điển không?'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'あれ', 'hiragana': 'あれ', 'romaji': 'are', 'meaning': 'Cái kia (xa cả hai)',
+        'example_img': 'assets/images/example_are.png',
+        'example_jp': 'あれは私の車です。', 'example_rmj': 'Are wa watashi no kuruma desu.', 'example_vn': 'Cái kia là xe hơi của tôi.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': 'これ', 'hiragana': 'これ', 'romaji': 'kore', 'options': ['cái kia', 'cái đó', 'cái này', 'ở đâu'], 'answer': 'cái này'},
+      {
+        'type': LessonType.flashCard, 'kanji': '本', 'hiragana': 'ほん', 'romaji': 'hon', 'meaning': 'Quyển sách',
+        'example_img': 'assets/images/example_hon.png',
+        'example_jp': 'これは日本語の本です。', 'example_rmj': 'Kore wa nihongo no hon desu.', 'example_vn': 'Đây là sách tiếng Nhật.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '辞書', 'hiragana': 'じしょ', 'romaji': 'jisho', 'meaning': 'Từ điển',
+        'example_img': 'assets/images/example_jisho.png',
+        'example_jp': 'これは英語の辞書です。', 'example_rmj': 'Kore wa eigo no jisho desu.', 'example_vn': 'Đây là từ điển tiếng Anh.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '雑誌', 'hiragana': 'ざっし', 'romaji': 'zasshi', 'meaning': 'Tạp chí',
+        'example_img': 'assets/images/example_zasshi.png',
+        'example_jp': 'それはカメラの雑誌です。', 'example_rmj': 'Sore wa kamera no zasshi desu.', 'example_vn': 'Đó là tạp chí máy ảnh.'
+      },
+      {'type': LessonType.listening, 'options': ['これ', 'それ', 'あれ', 'どれ'], 'answer': 'それ'},
+      {'type': LessonType.vocabQuiz, 'kanji': '辞書', 'hiragana': 'じしょ', 'romaji': 'jisho', 'options': ['tạp chí', 'từ điển', 'sách', 'báo'], 'answer': 'từ điển'},
+      {'type': LessonType.vocabQuiz, 'kanji': '雑誌', 'hiragana': 'ざっし', 'romaji': 'zasshi', 'options': ['tạp chí', 'sổ tay', 'từ điển', 'chìa khóa'], 'answer': 'tạp chí'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Cái này', 'right': 'これ'}, {'left': 'Cái đó', 'right': 'それ'}, {'left': 'Cái kia', 'right': 'あれ'}, {'left': 'Sách', 'right': '本'}]},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': 'これ', 'romaji': 'kore', 'meaning': 'Cái này'},
+          {'kanji': 'それ', 'romaji': 'sore', 'meaning': 'Cái đó'},
+          {'kanji': 'あれ', 'romaji': 'are', 'meaning': 'Cái kia'},
+          {'kanji': '本', 'romaji': 'hon', 'meaning': 'Quyển sách'},
+          {'kanji': '辞書', 'romaji': 'jisho', 'meaning': 'Từ điển'},
+          {'kanji': '雑誌', 'romaji': 'zasshi', 'meaning': 'Tạp chí'},
+        ]
+      }
+    ];
+  }
+
+  // 2. Luyện tập 1 (Từ vựng: Đồ vật cá nhân) - 10 bài
+  List<Map<String, dynamic>> _getCb2LuyenTap1Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '鞄', 'hiragana': 'かばん', 'romaji': 'kaban', 'meaning': 'Cặp xách, túi xách',
+        'example_img': 'assets/images/example_kaban.png',
+        'example_jp': 'これは私の鞄です。', 'example_rmj': 'Kore wa watashi no kaban desu.', 'example_vn': 'Đây là cái cặp của tôi.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '傘', 'hiragana': 'かさ', 'romaji': 'kasa', 'meaning': 'Cây dù, ô',
+        'example_img': 'assets/images/example_kasa.png',
+        'example_jp': 'あれは誰の傘ですか。', 'example_rmj': 'Are wa dare no kasa desu ka.', 'example_vn': 'Kia là cây dù của ai vậy?'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '鍵', 'hiragana': 'かぎ', 'romaji': 'kagi', 'meaning': 'Chìa khóa',
+        'example_img': 'assets/images/example_kagi.png',
+        'example_jp': 'それは車の鍵です。', 'example_rmj': 'Sore wa kuruma no kagi desu.', 'example_vn': 'Đó là chìa khóa xe hơi.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '時計', 'hiragana': 'とけい', 'romaji': 'tokei', 'meaning': 'Đồng hồ',
+        'example_img': 'assets/images/example_tokei.png',
+        'example_jp': 'これは時計です。', 'example_rmj': 'Kore wa tokei desu.', 'example_vn': 'Đây là cái đồng hồ.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '鞄', 'hiragana': 'かばん', 'romaji': 'kaban', 'options': ['đồng hồ', 'chìa khóa', 'cặp xách', 'cây dù'], 'answer': 'cặp xách'},
+      {'type': LessonType.vocabQuiz, 'kanji': '時計', 'hiragana': 'とけい', 'romaji': 'tokei', 'options': ['đồng hồ', 'chìa khóa', 'máy ảnh', 'sổ tay'], 'answer': 'đồng hồ'},
+      {'type': LessonType.listening, 'options': ['かぎ', 'かばん', 'かさ', 'とけい'], 'answer': 'かぎ'},
+      {'type': LessonType.quiz, 'question': 'Từ nào được viết bằng Katakana?', 'options': ['かばん (kaban)', 'カメラ (kamera)', 'とけい (tokei)', 'かさ (kasa)'], 'answer': 'カメラ (kamera)'},
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Máy ảnh', 'right': 'カメラ'},
+        {'left': 'Ti vi', 'right': 'テレビ'},
+        {'left': 'Máy tính', 'right': 'コンピューター'},
+        {'left': 'Sổ tay', 'right': 'ノート'}
+      ]},
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Cặp xách', 'right': '鞄'},
+        {'left': 'Đồng hồ', 'right': '時計'},
+        {'left': 'Chìa khóa', 'right': '鍵'},
+        {'left': 'Cây dù', 'right': '傘'}
+      ]},
+    ];
+  }
+
+  // 3. Luyện tập 2 (Ngữ pháp: Kore wa ~ desu / Sore wa ~ desu ka) - 10 bài
+  List<Map<String, dynamic>> _getCb2LuyenTap2Data() {
+    return [
+      {
+        'type': LessonType.flashCard,
+        'kanji': 'これ／それ／あれ',
+        'hiragana': 'これ/それ/あれ',
+        'romaji': 'kore/sore/are',
+        'meaning': 'Cái này / Cái đó / Cái kia',
+        'example_img': 'assets/images/example_kore.png',
+        'example_jp': 'これは辞書ですか。',
+        'example_rmj': 'Kore wa jisho desu ka.',
+        'example_vn': 'Cái này có phải là từ điển không?',
+      },
+      {
+        'type': LessonType.flashCard,
+        'kanji': 'Nは Nじゃありません',
+        'hiragana': 'Nは Nじゃありません',
+        'romaji': 'N wa N ja arimasen',
+        'meaning': '[N1] không phải là [N2]',
+        'example_img': 'assets/images/example_kore.png',
+        'example_jp': 'これはカメラじゃありません。',
+        'example_rmj': 'Kore wa kamera ja arimasen.',
+        'example_vn': 'Cái này không phải là máy ảnh.',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'これは辞書です',
+        'rmj': 'kore wa jisho desu',
+        'words': ['cái này', 'là', 'từ điển', 'quyển sách', 'không phải'],
+        'answer': 'cái này là từ điển',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'それは傘ですか',
+        'rmj': 'sore wa kasa desu ka',
+        'words': ['cái đó', 'có phải', 'là', 'cây dù', 'không'],
+        'answer': 'cái đó có phải là cây dù không',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'あれは私の鞄です',
+        'rmj': 'are wa watashi no kaban desu',
+        'words': ['cái kia', 'là', 'cặp xách', 'của tôi', 'của bạn'],
+        'answer': 'cái kia là cặp xách của tôi',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'これはカメラじゃありません',
+        'rmj': 'kore wa kamera ja arimasen',
+        'words': ['cái này', 'không phải', 'là', 'máy ảnh', 'ti vi'],
+        'answer': 'cái này không phải là máy ảnh',
+      },
+      {'type': LessonType.quiz, 'question': 'Câu hỏi "Cái này là cái gì?" nói thế nào?', 'options': ['これはだれですか', 'これはなんですか', 'それはなんですか', 'あれはなんですか'], 'answer': 'これはなんですか'},
+      {'type': LessonType.quiz, 'question': 'Điền từ: ( ... ) は時計です。 (Vật ở xa cả 2 người)', 'options': ['これ', 'それ', 'あれ', 'どれ'], 'answer': 'あれ'},
+      {'type': LessonType.listening, 'options': ['これはかばんです', 'それはかばんです', 'あれはかばんです', 'これはかばんですか'], 'answer': 'それはかばんです'},
+      {'type': LessonType.listening, 'options': ['これはなんですか', 'それはなんですか', 'あれはなんですか', 'だれですか'], 'answer': 'これはなんですか'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'それは何ですか',
+        'rmj': 'sore wa nan desu ka',
+        'words': ['cái đó', 'là', 'cái gì', 'vậy', 'của ai'],
+        'answer': 'cái đó là cái gì vậy',
+      },
+      {'type': LessonType.matching, 'pairs': [{'left': 'Cái này là...', 'right': 'これは...'}, {'left': 'Cái đó là...', 'right': 'それは...'}, {'left': 'Cái kia là...', 'right': 'あれは...'}, {'left': 'Cái gì?', 'right': 'なんですか'}]},
+    ];
+  }
+
+  // 4. Luyện tập 3 (Ngữ pháp: Kono N wa / Sở hữu "Của ai") - 10 bài
+  List<Map<String, dynamic>> _getCb2LuyenTap3Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': 'この', 'hiragana': 'この', 'romaji': 'kono', 'meaning': '... này (Kèm theo Danh từ)',
+        'example_img': 'assets/images/example_kono.png',
+        'example_jp': 'この本は私のです。', 'example_rmj': 'Kono hon wa watashi no desu.', 'example_vn': 'Quyển sách này là của tôi.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '誰の', 'hiragana': 'だれの', 'romaji': 'dare no', 'meaning': 'Của ai',
+        'example_img': 'assets/images/example_dareno.png',
+        'example_jp': 'それは誰の鞄ですか。', 'example_rmj': 'Sore wa dare no kaban desu ka.', 'example_vn': 'Đó là cặp xách của ai vậy?'
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'この本は私のです',
+        'rmj': 'kono hon wa watashi no desu',
+        'words': ['quyển sách', 'này', 'là', 'của tôi', 'của bạn'],
+        'answer': 'quyển sách này là của tôi',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'その鍵は誰のですか',
+        'rmj': 'sono kagi wa dare no desu ka',
+        'words': ['chìa khóa', 'đó', 'là', 'của ai', 'vậy'],
+        'answer': 'chìa khóa đó là của ai vậy',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'あの車は先生のじゃありません',
+        'rmj': 'ano kuruma wa sensei no ja arimasen',
+        'words': ['xe hơi', 'kia', 'không phải', 'của giáo viên', 'của tôi'],
+        'answer': 'xe hơi kia không phải của giáo viên',
+      },
+      {'type': LessonType.quiz, 'question': 'Cách dùng nào ĐÚNG?', 'options': ['これ本は... (Kore hon wa...)', 'この本は... (Kono hon wa...)', 'このは本です (Kono wa hon desu)', 'それ本は... (Sore hon wa...)'], 'answer': 'この本は... (Kono hon wa...)'},
+      {'type': LessonType.listening, 'options': ['だれ', 'どなた', 'だれの', 'なん'], 'answer': 'だれの'},
+      {'type': LessonType.quiz, 'question': 'Dịch sang tiếng Nhật: "Quyển tạp chí đó là của anh Yamada."', 'options': ['その雑誌は山田さんのです', 'それは雑誌の山田さんです', 'あの雑誌は山田さんのです', '山田さんの雑誌はそれです'], 'answer': 'その雑誌は山田さんのです'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Sách này', 'right': 'このほん'}, {'left': 'Sách đó', 'right': 'そのほん'}, {'left': 'Sách kia', 'right': 'あのほん'}, {'left': 'Của tôi', 'right': 'わたしの'}, {'left': 'Của ai', 'right': 'だれの'}]},
+      {'type': LessonType.vocabQuiz, 'kanji': '誰の', 'hiragana': 'だれの', 'romaji': 'dare no', 'options': ['cái gì', 'của ai', 'ai', 'ở đâu'], 'answer': 'của ai'},
+    ];
+  }
+
+  // 5. Luyện nói (Giao tiếp: Phủ định, Xác nhận, Tặng quà) - 10 bài
+  List<Map<String, dynamic>> _getCb2LuyenNoiData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '違います', 'hiragana': 'ちがいます', 'romaji': 'chigaimasu', 'meaning': 'Không phải / Sai rồi',
+        'example_img': 'assets/images/example_chigaimasu.png',
+        'example_jp': 'いいえ、違います。', 'example_rmj': 'Iie, chigaimasu.', 'example_vn': 'Không, nhầm rồi (không phải vậy).'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'そうですか', 'hiragana': 'そうですか', 'romaji': 'sou desu ka', 'meaning': 'Thế à / Vậy à (Hiểu ra vấn đề)',
+        'example_img': 'assets/images/example_soudesuka.png',
+        'example_jp': 'あ、そうですか。', 'example_rmj': 'A, sou desu ka.', 'example_vn': 'À, ra là vậy.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'どうぞ', 'hiragana': 'どうぞ', 'romaji': 'douzo', 'meaning': 'Xin mời',
+        'example_img': 'assets/images/example_douzo.png',
+        'example_jp': 'これ、どうぞ。', 'example_rmj': 'Kore, douzo.', 'example_vn': 'Cái này, xin mời bạn.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '違います', 'hiragana': 'ちがいます', 'romaji': 'chigaimasu', 'options': ['đúng rồi', 'xin mời', 'sai rồi / không phải', 'vậy à'], 'answer': 'sai rồi / không phải'},
+      {'type': LessonType.listening, 'options': ['そうですか', 'ちがいます', 'どうぞ', 'ありがとう'], 'answer': 'そうですか'},
+      {'type': LessonType.listening, 'options': ['いいえ、ちがいます', 'はい、そうです', 'これ、どうぞ', 'どうも'], 'answer': 'いいえ、ちがいます'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'いいえ、違います',
+        'rmj': 'iie, chigaimasu',
+        'words': ['không', 'sai rồi', 'vâng', 'đúng vậy', 'xin mời'],
+        'answer': 'không sai rồi',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'どうもありがとうございます',
+        'rmj': 'doumo arigatou gozaimasu',
+        'words': ['xin', 'chân thành', 'cảm ơn', 'bạn', 'rất nhiều'],
+        'answer': 'xin chân thành cảm ơn',
+      },
+      {'type': LessonType.quiz, 'question': 'Khi đưa quà cho ai đó, bạn sẽ nói gì?', 'options': ['ありがとう', 'どうぞ', 'ちがいます', 'そうですか'], 'answer': 'どうぞ'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Vâng, đúng vậy', 'right': 'はい、そうです'}, {'left': 'Không, sai rồi', 'right': 'いいえ、ちがいます'}, {'left': 'Thế à', 'right': 'そうですか'}, {'left': 'Xin mời', 'right': 'どうぞ'}]},
+    ];
+  }
+
+  // 6. Luyện viết (Kanji cơ bản bài 2) - 8 bài
+  List<Map<String, dynamic>> _getCb2LuyenVietData() {
+    return [
+      {'type': LessonType.kanjiDraw, 'kanji_word': '何', 'kanji_target': '何', 'meaning': 'Hà (Cái gì)', 'rmj': 'nani / nan'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '車', 'kanji_target': '車', 'meaning': 'Xa (Xe hơi)', 'rmj': 'kuruma'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '語', 'kanji_target': '語', 'meaning': 'Ngữ (Ngôn ngữ)', 'rmj': 'go'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '書', 'kanji_target': '書', 'meaning': 'Thư (Viết, sách)', 'rmj': 'sho / ka(ku)'},
+      {'type': LessonType.quiz, 'question': 'Kanji "何" có nghĩa là gì?', 'options': ['Ai', 'Cái gì', 'Ở đâu', 'Khi nào'], 'answer': 'Cái gì'},
+      {'type': LessonType.quiz, 'question': 'Kanji "車" đọc là gì?', 'options': ['hon', 'hito', 'kuruma', 'nani'], 'answer': 'kuruma'},
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Hà (Cái gì)', 'right': '何'},
+        {'left': 'Xa (Xe hơi)', 'right': '車'},
+        {'left': 'Ngữ (Tiếng)', 'right': '語'},
+        {'left': 'Thư (Sách)', 'right': '書'},
+      ]},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'これは日本語の本です',
+        'rmj': 'kore wa nihongo no hon desu',
+        'words': ['đây', 'là', 'sách', 'tiếng Nhật', 'từ điển'],
+        'answer': 'đây là sách tiếng Nhật',
+      },
+    ];
+  }
+
+  // 7. Ôn tập (Boss Level Bài 2) - 15 bài
+  List<Map<String, dynamic>> _getCb2OnTapData() {
+    return [
+      {'type': LessonType.listening, 'options': ['これ', 'それ', 'あれ', 'どれ'], 'answer': 'あれ'},
+      {'type': LessonType.listening, 'options': ['かばん', 'かぎ', 'とけい', 'かさ'], 'answer': 'かさ'},
+      {'type': LessonType.quiz, 'question': 'Dịch: "Cái này là máy ảnh."', 'options': ['それはカメラです', 'これはカメラです', 'あれはカメラです', 'このカメラはわたしのです'], 'answer': 'これはカメラです'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'その鍵は誰のですか',
+        'rmj': 'sono kagi wa dare no desu ka',
+        'words': ['chìa khóa', 'đó', 'là', 'của ai', 'vậy'],
+        'answer': 'chìa khóa đó là của ai vậy',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '辞書', 'hiragana': 'じしょ', 'romaji': 'jisho', 'options': ['tạp chí', 'sách', 'từ điển', 'chìa khóa'], 'answer': 'từ điển'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '何', 'kanji_target': '何', 'meaning': 'Hà (Cái gì)', 'rmj': 'nan'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'あれは私の鞄じゃありません',
+        'rmj': 'are wa watashi no kaban ja arimasen',
+        'words': ['cái kia', 'không phải', 'cặp xách', 'của tôi', 'của bạn'],
+        'answer': 'cái kia không phải cặp xách của tôi',
+      },
+      {'type': LessonType.listening, 'options': ['ちがいます', 'そうですか', 'どうぞ', 'ありがとう'], 'answer': 'ちがいます'},
+      {'type': LessonType.quiz, 'question': 'Từ nào sai ngữ pháp?', 'options': ['この本', 'その傘', 'あの時計', 'これ鍵'], 'answer': 'これ鍵'}, // Cố tình hỏi câu tư duy
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Từ điển', 'right': '辞書'},
+        {'left': 'Tạp chí', 'right': '雑誌'},
+        {'left': 'Đồng hồ', 'right': '時計'},
+        {'left': 'Chìa khóa', 'right': '鍵'},
+        {'left': 'Cây dù', 'right': '傘'}
+      ]},
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Cái này là', 'right': 'これは'},
+        {'left': 'Sách này là', 'right': 'この本は'},
+        {'left': 'Của tôi', 'right': '私の'},
+        {'left': 'Của ai', 'right': '誰の'},
+        {'left': 'Cái gì', 'right': '何'}
+      ]},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'これ、どうぞ',
+        'rmj': 'kore, douzo',
+        'words': ['cái này', 'xin', 'mời', 'bạn', 'cảm ơn'],
+        'answer': 'cái này xin mời bạn',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '車', 'hiragana': 'くるま', 'romaji': 'kuruma', 'options': ['xe đạp', 'xe hơi', 'máy bay', 'tàu hỏa'], 'answer': 'xe hơi'},
+      // Thẻ tổng kết toàn bộ từ vựng Bài 2
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': 'これ/それ/あれ', 'romaji': 'kore/sore/are', 'meaning': 'cái này/cái đó/cái kia'},
+          {'kanji': 'この/その/あの', 'romaji': 'kono/sono/ano', 'meaning': '...này/đó/kia'},
+          {'kanji': '本', 'romaji': 'hon', 'meaning': 'sách'},
+          {'kanji': '辞書', 'romaji': 'jisho', 'meaning': 'từ điển'},
+          {'kanji': '雑誌', 'romaji': 'zasshi', 'meaning': 'tạp chí'},
+          {'kanji': '鞄', 'romaji': 'kaban', 'meaning': 'cặp xách'},
+          {'kanji': '傘', 'romaji': 'kasa', 'meaning': 'cây dù'},
+          {'kanji': '鍵', 'romaji': 'kagi', 'meaning': 'chìa khóa'},
+          {'kanji': '時計', 'romaji': 'tokei', 'meaning': 'đồng hồ'},
+          {'kanji': '車', 'romaji': 'kuruma', 'meaning': 'xe hơi'},
+          {'kanji': '何', 'romaji': 'nani/nan', 'meaning': 'cái gì'},
+          {'kanji': '誰の', 'romaji': 'dare no', 'meaning': 'của ai'},
+          {'kanji': '違います', 'romaji': 'chigaimasu', 'meaning': 'sai rồi, không phải'},
+          {'kanji': 'どうぞ', 'romaji': 'douzo', 'meaning': 'xin mời'},
+        ]
+      }
+    ];
+  }
+
+  // ==========================================
+  // DỮ LIỆU PHẦN CƠ BẢN 3 (ĐỊA ĐIỂM & GIÁ TIỀN)
+  // ==========================================
+
+  List<Map<String, dynamic>> _getCb3LyThuyetData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': 'ここ', 'hiragana': 'ここ', 'romaji': 'koko', 'meaning': 'Chỗ này, đây',
+        'example_img': 'assets/images/example_koko.png',
+        'example_jp': 'ここは教室です。', 'example_rmj': 'Koko wa kyoushitsu desu.', 'example_vn': 'Chỗ này là phòng học.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'そこ', 'hiragana': 'そこ', 'romaji': 'soko', 'meaning': 'Chỗ đó, đó',
+        'example_img': 'assets/images/example_soko.png',
+        'example_jp': 'そこはトイレですか。', 'example_rmj': 'Soko wa toire desu ka.', 'example_vn': 'Chỗ đó có phải là nhà vệ sinh không?'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'あそこ', 'hiragana': 'あそこ', 'romaji': 'asoko', 'meaning': 'Chỗ kia, kia',
+        'example_img': 'assets/images/example_asoko.png',
+        'example_jp': '事務所はあそこです。', 'example_rmj': 'Jimusho wa asoko desu.', 'example_vn': 'Văn phòng ở đằng kia.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': 'どこ', 'hiragana': 'どこ', 'romaji': 'doko', 'options': ['ở đâu', 'chỗ này', 'chỗ kia', 'cái gì'], 'answer': 'ở đâu'},
+      {
+        'type': LessonType.flashCard, 'kanji': '教室', 'hiragana': 'きょうしつ', 'romaji': 'kyoushitsu', 'meaning': 'Phòng học',
+        'example_img': 'assets/images/example_kyoushitsu.png',
+        'example_jp': '教室はどこですか。', 'example_rmj': 'Kyoushitsu wa doko desu ka.', 'example_vn': 'Phòng học ở đâu vậy?'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '食堂', 'hiragana': 'しょくどう', 'romaji': 'shokudou', 'meaning': 'Nhà ăn, căng tin',
+        'example_img': 'assets/images/example_shokudou.png',
+        'example_jp': 'ここは食堂です。', 'example_rmj': 'Koko wa shokudou desu.', 'example_vn': 'Đây là nhà ăn.'
+      },
+      {'type': LessonType.listening, 'options': ['ここ', 'そこ', 'あそこ', 'どこ'], 'answer': 'どこ'},
+      {'type': LessonType.vocabQuiz, 'kanji': '事務所', 'hiragana': 'じむしょ', 'romaji': 'jimusho', 'options': ['phòng học', 'nhà ăn', 'văn phòng', 'bệnh viện'], 'answer': 'văn phòng'},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': 'ここ', 'romaji': 'koko', 'meaning': 'Chỗ này'},
+          {'kanji': 'そこ', 'romaji': 'soko', 'meaning': 'Chỗ đó'},
+          {'kanji': 'あそこ', 'romaji': 'asoko', 'meaning': 'Chỗ kia'},
+          {'kanji': 'どこ', 'romaji': 'doko', 'meaning': 'Ở đâu'},
+          {'kanji': '教室', 'romaji': 'kyoushitsu', 'meaning': 'Phòng học'},
+          {'kanji': '食堂', 'romaji': 'shokudou', 'meaning': 'Nhà ăn'},
+          {'kanji': '事務所', 'romaji': 'jimusho', 'meaning': 'Văn phòng'},
+        ]
+      }
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb3LuyenTap1Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '部屋', 'hiragana': 'へや', 'romaji': 'heya', 'meaning': 'Căn phòng',
+        'example_img': 'assets/images/example_heya.png',
+        'example_jp': '山田さんの部屋はあそこです。', 'example_rmj': 'Yamada-san no heya wa asoko desu.', 'example_vn': 'Phòng của anh Yamada ở đằng kia.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '受付', 'hiragana': 'うけつけ', 'romaji': 'uketsuke', 'meaning': 'Quầy lễ tân',
+        'example_img': 'assets/images/example_uketsuke.png',
+        'example_jp': '受付はここです。', 'example_rmj': 'Uketsuke wa koko desu.', 'example_vn': 'Quầy lễ tân ở đây.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': 'トイレ', 'hiragana': 'といれ', 'romaji': 'toire', 'options': ['căn phòng', 'thang máy', 'nhà vệ sinh', 'hành lang'], 'answer': 'nhà vệ sinh'},
+      {'type': LessonType.vocabQuiz, 'kanji': 'エレベーター', 'hiragana': 'えれべーたー', 'romaji': 'erebe-ta-', 'options': ['thang cuốn', 'thang máy', 'cầu thang', 'hành lang'], 'answer': 'thang máy'},
+      {'type': LessonType.quiz, 'question': 'Từ nào nghĩa là "Thang cuốn"?', 'options': ['エレベーター', 'エスカレーター', 'コンピューター', 'カメラ'], 'answer': 'エスカレーター'},
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Phòng', 'right': '部屋'},
+        {'left': 'Lễ tân', 'right': '受付'},
+        {'left': 'Nhà vệ sinh', 'right': 'トイレ'},
+        {'left': 'Thang máy', 'right': 'エレベーター'}
+      ]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb3LuyenTap2Data() {
+    return [
+      {
+        'type': LessonType.flashCard,
+        'kanji': 'ここ／そこ／あそこ', 'hiragana': 'ここ/そこ/あそこ', 'romaji': 'koko/soko/asoko',
+        'meaning': 'Chỗ này / Chỗ đó / Chỗ kia',
+        'example_img': 'assets/images/example_koko.png',
+        'example_jp': 'トイレはあそこです。', 'example_rmj': 'Toire wa asoko desu.',
+        'example_vn': 'Nhà vệ sinh ở đằng kia.',
+      },
+      {
+        'type': LessonType.flashCard,
+        'kanji': '〜はどこですか', 'hiragana': 'どこですか', 'romaji': '~ wa doko desu ka',
+        'meaning': '[...] ở đâu vậy?',
+        'example_img': 'assets/images/example_soko.png',
+        'example_jp': '食堂はどこですか。', 'example_rmj': 'Shokudou wa doko desu ka.',
+        'example_vn': 'Nhà ăn ở đâu vậy?',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'ここは食堂です',
+        'rmj': 'koko wa shokudou desu',
+        'words': ['chỗ này', 'là', 'nhà ăn', 'phòng học', 'văn phòng'],
+        'answer': 'chỗ này là nhà ăn',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'トイレはどこですか',
+        'rmj': 'toire wa doko desu ka',
+        'words': ['nhà vệ sinh', 'ở đâu', 'vậy', 'có phải', 'chỗ kia'],
+        'answer': 'nhà vệ sinh ở đâu vậy',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'エレベーターはあそこです',
+        'rmj': 'erebe-ta- wa asoko desu',
+        'words': ['thang máy', 'thì', 'ở chỗ kia', 'chỗ này', 'nhà vệ sinh'],
+        'answer': 'thang máy thì ở chỗ kia',
+      },
+      {'type': LessonType.quiz, 'question': 'Dịch: "Điện thoại ở đằng kia."', 'options': ['電話はあそこです', '電話はここです', 'あそこは電話です', '電話はどこですか'], 'answer': '電話はあそこです'},
+      {'type': LessonType.listening, 'options': ['ここはきょうしつです', 'そこはきょうしつです', 'あそこはきょうしつです', 'きょうしつはどこですか'], 'answer': 'きょうしつはどこですか'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb3LuyenTap3Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '靴', 'hiragana': 'くつ', 'romaji': 'kutsu', 'meaning': 'Giầy',
+        'example_img': 'assets/images/example_kutsu.png',
+        'example_jp': 'それは日本の靴です。', 'example_rmj': 'Sore wa nihon no kutsu desu.', 'example_vn': 'Đó là giầy của Nhật.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'いくら', 'hiragana': 'いくら', 'romaji': 'ikura', 'meaning': 'Bao nhiêu tiền',
+        'example_img': 'assets/images/example_ikura.png',
+        'example_jp': 'この靴はいくらですか。', 'example_rmj': 'Kono kutsu wa ikura desu ka.', 'example_vn': 'Đôi giầy này bao nhiêu tiền?'
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'この時計はいくらですか',
+        'rmj': 'kono tokei wa ikura desu ka',
+        'words': ['đồng hồ', 'này', 'bao nhiêu tiền', 'vậy', 'của ai'],
+        'answer': 'đồng hồ này bao nhiêu tiền vậy',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '百', 'hiragana': 'ひゃく', 'romaji': 'hyaku', 'options': ['mười', 'trăm', 'ngàn', 'vạn'], 'answer': 'trăm'},
+      {'type': LessonType.vocabQuiz, 'kanji': '千', 'hiragana': 'せん', 'romaji': 'sen', 'options': ['mười', 'trăm', 'ngàn', 'vạn'], 'answer': 'ngàn'},
+      {'type': LessonType.vocabQuiz, 'kanji': '万', 'hiragana': 'まん', 'romaji': 'man', 'options': ['mười', 'trăm', 'ngàn', 'mười ngàn (vạn)'], 'answer': 'mười ngàn (vạn)'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Giầy', 'right': '靴'}, {'left': 'Bao nhiêu tiền', 'right': 'いくら'}, {'left': 'Nước (quốc gia)', 'right': '国'}, {'left': 'Công ty', 'right': '会社'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb3LuyenNoiData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': 'すみません', 'hiragana': 'すみません', 'romaji': 'sumimasen', 'meaning': 'Xin lỗi (Dùng khi gọi nhân viên)',
+        'example_img': 'assets/images/example_sumimasen.png',
+        'example_jp': 'すみません、時計を見せてください。', 'example_rmj': 'Sumimasen, tokei o misete kudasai.', 'example_vn': 'Xin lỗi, cho tôi xem cái đồng hồ.'
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'じゃ、これをください',
+        'rmj': 'ja, kore o kudasai',
+        'words': ['vậy thì', 'cho tôi', 'lấy cái này', 'bao nhiêu tiền', 'cám ơn'],
+        'answer': 'vậy thì cho tôi lấy cái này',
+      },
+      {'type': LessonType.listening, 'options': ['いくらですか', 'どこですか', 'だれですか', 'なんですか'], 'answer': 'いくらですか'},
+      {'type': LessonType.quiz, 'question': 'Câu nói khi quyết định mua hàng là?', 'options': ['これをください', 'これを見せてください', 'いくらですか', 'そうですか'], 'answer': 'これをください'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb3LuyenVietData() {
+    return [
+      {'type': LessonType.kanjiDraw, 'kanji_word': '円', 'kanji_target': '円', 'meaning': 'Viên (Đồng Yên Nhật)', 'rmj': 'en'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '百', 'kanji_target': '百', 'meaning': 'Bách (Một trăm)', 'rmj': 'hyaku'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '千', 'kanji_target': '千', 'meaning': 'Thiên (Một ngàn)', 'rmj': 'sen'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '万', 'kanji_target': '万', 'meaning': 'Vạn (Mười ngàn)', 'rmj': 'man'},
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Đồng Yên', 'right': '円'},
+        {'left': 'Trăm', 'right': '百'},
+        {'left': 'Ngàn', 'right': '千'},
+        {'left': 'Mười Ngàn', 'right': '万'},
+      ]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb3OnTapData() {
+    return [
+      {'type': LessonType.quiz, 'question': 'Phòng học ở đâu? (Dịch)', 'options': ['教室はどこですか', '教室はここですか', '教室はいくらですか', 'ここは教室ですか'], 'answer': '教室はどこですか'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'この鞄はいくらですか',
+        'rmj': 'kono kaban wa ikura desu ka',
+        'words': ['cái cặp', 'này', 'bao nhiêu tiền', 'vậy', 'của ai'],
+        'answer': 'cái cặp này bao nhiêu tiền vậy',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '靴', 'hiragana': 'くつ', 'romaji': 'kutsu', 'options': ['quần áo', 'giầy', 'cà vạt', 'đồng hồ'], 'answer': 'giầy'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '万', 'kanji_target': '万', 'meaning': 'Vạn (Mười ngàn)', 'rmj': 'man'},
+      {'type': LessonType.listening, 'options': ['これをください', 'これを見せてください', 'いくらですか', 'そうですか'], 'answer': 'これを見せてください'},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': 'ここ/そこ/あそこ', 'romaji': 'koko/soko/asoko', 'meaning': 'Chỗ này/đó/kia'},
+          {'kanji': 'どこ', 'romaji': 'doko', 'meaning': 'Ở đâu'},
+          {'kanji': '教室', 'romaji': 'kyoushitsu', 'meaning': 'Phòng học'},
+          {'kanji': '食堂', 'romaji': 'shokudou', 'meaning': 'Nhà ăn'},
+          {'kanji': '事務所', 'romaji': 'jimusho', 'meaning': 'Văn phòng'},
+          {'kanji': '部屋', 'romaji': 'heya', 'meaning': 'Căn phòng'},
+          {'kanji': '受付', 'romaji': 'uketsuke', 'meaning': 'Lễ tân'},
+          {'kanji': 'トイレ', 'romaji': 'toire', 'meaning': 'Nhà vệ sinh'},
+          {'kanji': '靴', 'romaji': 'kutsu', 'meaning': 'Giầy'},
+          {'kanji': 'いくら', 'romaji': 'ikura', 'meaning': 'Bao nhiêu tiền'},
+          {'kanji': '百/千/万', 'romaji': 'hyaku/sen/man', 'meaning': 'Trăm/Ngàn/Vạn'},
+        ]
+      }
+    ];
+  }
+
+  // ==========================================
+  // DỮ LIỆU PHẦN CƠ BẢN 4 (THỜI GIAN & ĐỘNG TỪ)
+  // ==========================================
+
+  List<Map<String, dynamic>> _getCb4LyThuyetData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '今', 'hiragana': 'いま', 'romaji': 'ima', 'meaning': 'Bây giờ',
+        'example_img': 'assets/images/example_ima.png',
+        'example_jp': '今は何時ですか。', 'example_rmj': 'Ima wa nanji desu ka.', 'example_vn': 'Bây giờ là mấy giờ?'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '時', 'hiragana': 'じ', 'romaji': 'ji', 'meaning': 'Giờ (dùng kèm số)',
+        'example_img': 'assets/images/example_ji.png',
+        'example_jp': '今は９時です。', 'example_rmj': 'Ima wa kuji desu.', 'example_vn': 'Bây giờ là 9 giờ.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '分', 'hiragana': 'ふん／ぷん', 'romaji': 'fun / pun', 'options': ['giây', 'phút', 'giờ', 'ngày'], 'answer': 'phút'},
+      {'type': LessonType.vocabQuiz, 'kanji': '半', 'hiragana': 'はん', 'romaji': 'han', 'options': ['nửa / rưỡi', 'toàn bộ', 'một phần', 'chưa tới'], 'answer': 'nửa / rưỡi'},
+      {'type': LessonType.listening, 'options': ['いま', 'なんじ', 'なんぷん', 'はん'], 'answer': 'なんじ'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '今は４時半です',
+        'rmj': 'ima wa yoji han desu',
+        'words': ['bây giờ', 'là', '4 giờ', 'rưỡi', 'mấy giờ'],
+        'answer': 'bây giờ là 4 giờ rưỡi',
+      },
+      {'type': LessonType.matching, 'pairs': [{'left': 'Bây giờ', 'right': '今'}, {'left': 'Giờ', 'right': '時'}, {'left': 'Phút', 'right': '分'}, {'left': 'Rưỡi', 'right': '半'}]},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': '今', 'romaji': 'ima', 'meaning': 'Bây giờ'},
+          {'kanji': '～時', 'romaji': '~ji', 'meaning': '... giờ'},
+          {'kanji': '～分', 'romaji': '~fun/pun', 'meaning': '... phút'},
+          {'kanji': '半', 'romaji': 'han', 'meaning': 'rưỡi / một nửa'},
+          {'kanji': '何時', 'romaji': 'nanji', 'meaning': 'Mấy giờ'},
+          {'kanji': '何分', 'romaji': 'nanpun', 'meaning': 'Mấy phút'},
+        ]
+      }
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb4LuyenTap1Data() {
+    return [
+      {'type': LessonType.vocabQuiz, 'kanji': '月曜日', 'hiragana': 'げつようび', 'romaji': 'getsuyoubi', 'options': ['Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm'], 'answer': 'Thứ hai'},
+      {'type': LessonType.vocabQuiz, 'kanji': '火曜日', 'hiragana': 'かようび', 'romaji': 'kayoubi', 'options': ['Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm'], 'answer': 'Thứ ba'},
+      {'type': LessonType.vocabQuiz, 'kanji': '日曜日', 'hiragana': 'にちようび', 'romaji': 'nichiyoubi', 'options': ['Thứ sáu', 'Thứ bảy', 'Chủ nhật', 'Hôm qua'], 'answer': 'Chủ nhật'},
+      {'type': LessonType.listening, 'options': ['げつようび', 'すいようび', 'きんようび', 'にちようび'], 'answer': 'きんようび'},
+      {'type': LessonType.quiz, 'question': 'Hôm nay là thứ mấy? (Tiếng Nhật)', 'options': ['きょうはなんようびですか', 'きょうはなんじですか', 'きょうはなんにちですか', 'あしたはなんようびですか'], 'answer': 'きょうはなんようびですか'},
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Thứ hai', 'right': '月曜日'},
+        {'left': 'Thứ ba', 'right': '火曜日'},
+        {'left': 'Thứ tư', 'right': '水曜日'},
+        {'left': 'Thứ năm', 'right': '木曜日'}
+      ]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb4LuyenTap2Data() {
+    return [
+      {
+        'type': LessonType.flashCard,
+        'kanji': '起きます', 'hiragana': 'おきます', 'romaji': 'okimasu', 'meaning': 'Thức dậy',
+        'example_img': 'assets/images/example_okimasu.png',
+        'example_jp': '毎朝６時に起きます。', 'example_rmj': 'Maiasa rokuji ni okimasu.',
+        'example_vn': 'Tôi thức dậy lúc 6 giờ mỗi sáng.',
+      },
+      {
+        'type': LessonType.flashCard,
+        'kanji': '寝ます', 'hiragana': 'ねます', 'romaji': 'nemasu', 'meaning': 'Ngủ',
+        'example_img': 'assets/images/example_nemasu.png',
+        'example_jp': '11時に寝ます。', 'example_rmj': 'Juu-ichi ji ni nemasu.',
+        'example_vn': 'Tôi ngủ lúc 11 giờ.',
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '起きます', 'hiragana': 'おきます', 'romaji': 'okimasu', 'meaning': 'Thức dậy',
+        'example_img': 'assets/images/example_okimasu.png',
+        'example_jp': '私は毎朝６時に起きます。', 'example_rmj': 'Watashi wa maiasa rokuji ni okimasu.', 'example_vn': 'Tôi thức dậy lúc 6 giờ mỗi sáng.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '寝ます', 'hiragana': 'ねます', 'romaji': 'nemasu', 'meaning': 'Ngủ',
+        'example_img': 'assets/images/example_nemasu.png',
+        'example_jp': '昨日の夜、１１時に寝ました。', 'example_rmj': 'Kinou no yoru, juu-ichi ji ni nemashita.', 'example_vn': 'Đêm qua tôi đã ngủ lúc 11 giờ.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '働きます', 'hiragana': 'はたらきます', 'romaji': 'hatarakimasu', 'options': ['nghỉ ngơi', 'làm việc', 'học tập', 'kết thúc'], 'answer': 'làm việc'},
+      {'type': LessonType.vocabQuiz, 'kanji': '休みます', 'hiragana': 'やすみます', 'romaji': 'yasumimasu', 'options': ['thức dậy', 'làm việc', 'học tập', 'nghỉ ngơi'], 'answer': 'nghỉ ngơi'},
+      {'type': LessonType.vocabQuiz, 'kanji': '勉強します', 'hiragana': 'べんきょうします', 'romaji': 'benkyoushimasu', 'options': ['làm việc', 'nghỉ ngơi', 'học tập', 'thức dậy'], 'answer': 'học tập'},
+      {'type': LessonType.sentenceBuilder,
+        'jp': '私は６時に起きます',
+        'rmj': 'watashi wa rokuji ni okimasu',
+        'words': ['tôi', 'thức dậy', 'lúc', '6 giờ', 'sáng'],
+        'answer': 'tôi thức dậy lúc 6 giờ',
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb4LuyenTap3Data() {
+    return [
+      {'type': LessonType.quiz, 'question': 'Trợ từ đi với thời gian cụ thể (lúc mấy giờ) là gì?', 'options': ['に (ni)', 'で (de)', 'を (o)', 'へ (he)'], 'answer': 'に (ni)'},
+      {'type': LessonType.quiz, 'question': 'Thì Quá khứ của です (desu) là gì?', 'options': ['でした (deshita)', 'じゃありません (ja arimasen)', 'ます (masu)', 'ません (masen)'], 'answer': 'でした (deshita)'},
+      {'type': LessonType.quiz, 'question': 'Động từ phủ định ở thì hiện tại kết thúc bằng gì?', 'options': ['～ます (~masu)', '～ました (~mashita)', '～ません (~masen)', '～ませんでした (~masen deshita)'], 'answer': '～ません (~masen)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '昨日勉強しませんでした',
+        'rmj': 'kinou benkyoushimasen deshita',
+        'words': ['hôm qua', 'đã', 'không', 'học bài', 'ngủ'],
+        'answer': 'hôm qua đã không học bài',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '９時から５時まで働きます',
+        'rmj': 'kuji kara goji made hatarakimasu',
+        'words': ['từ', '9 giờ', 'đến', '5 giờ', 'làm việc'],
+        'answer': 'làm việc từ 9 giờ đến 5 giờ',
+      },
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Học', 'right': '勉強します'},
+        {'left': 'Đã học', 'right': '勉強しました'},
+        {'left': 'Không học', 'right': '勉強しません'},
+        {'left': 'Đã không học', 'right': '勉強しませんでした'}
+      ]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb4LuyenNoiData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '大変ですね', 'hiragana': 'たいへんですね', 'romaji': 'Taihen desu ne', 'meaning': 'Vất vả cho bạn quá / Bạn mệt nhỉ',
+        'example_img': 'assets/images/example_taihen.png',
+        'example_jp': '毎日１０時まで働きます。大変ですね。', 'example_rmj': 'Mainichi juuji made hatarakimasu. Taihen desu ne.', 'example_vn': 'Ngày nào tôi cũng làm đến 10 giờ. Vất vả quá nhỉ.'
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'そちらは何時までですか',
+        'rmj': 'sochira wa nanji made desu ka',
+        'words': ['chỗ bạn', 'làm việc', 'đến', 'mấy giờ', 'vậy'],
+        'answer': 'chỗ bạn làm việc đến mấy giờ vậy',
+      },
+      {'type': LessonType.listening, 'options': ['たいへんですね', 'ありがとうございます', 'すみません', 'どうぞ'], 'answer': 'たいへんですね'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb4LuyenVietData() {
+    return [
+      {'type': LessonType.kanjiDraw, 'kanji_word': '時', 'kanji_target': '時', 'meaning': 'Thời (Thời gian, giờ)', 'rmj': 'toki / ji'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '分', 'kanji_target': '分', 'meaning': 'Phân (Phút, chia ra)', 'rmj': 'fun / pun / wa(keru)'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '半', 'kanji_target': '半', 'meaning': 'Bán (Một nửa, rưỡi)', 'rmj': 'han'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '行', 'kanji_target': '行', 'meaning': 'Hành (Đi)', 'rmj': 'i(ku) / kou'},
+      {'type': LessonType.matching, 'pairs': [
+        {'left': 'Giờ', 'right': '時'},
+        {'left': 'Phút', 'right': '分'},
+        {'left': 'Rưỡi', 'right': '半'},
+        {'left': 'Đi', 'right': '行'},
+      ]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb4OnTapData() {
+    return [
+      {'type': LessonType.quiz, 'question': 'Bây giờ là mấy giờ? (Dịch)', 'options': ['今は何時ですか', '今は何分ですか', '今日は何曜日ですか', '明日は何日ですか'], 'answer': '今は何時ですか'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '月曜日から金曜日まで働きます',
+        'rmj': 'getsuyoubi kara kinyoubi made hatarakimasu',
+        'words': ['tôi làm việc', 'từ', 'thứ hai', 'đến', 'thứ sáu'],
+        'answer': 'tôi làm việc từ thứ hai đến thứ sáu',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '起きます', 'hiragana': 'おきます', 'romaji': 'okimasu', 'options': ['ngủ', 'thức dậy', 'làm việc', 'nghỉ ngơi'], 'answer': 'thức dậy'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '時', 'kanji_target': '時', 'meaning': 'Thời (Thời gian, giờ)', 'rmj': 'ji'},
+      {'type': LessonType.listening, 'options': ['おきます', 'ねます', 'やすみます', 'はたらきます'], 'answer': 'はたらきます'},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': '今', 'romaji': 'ima', 'meaning': 'Bây giờ'},
+          {'kanji': '～時 / ～分', 'romaji': '~ji / ~fun', 'meaning': 'Giờ / Phút'},
+          {'kanji': '半', 'romaji': 'han', 'meaning': 'Rưỡi'},
+          {'kanji': '月曜日', 'romaji': 'getsuyoubi', 'meaning': 'Thứ hai'},
+          {'kanji': '起きます', 'romaji': 'okimasu', 'meaning': 'Thức dậy'},
+          {'kanji': '寝ます', 'romaji': 'nemasu', 'meaning': 'Ngủ'},
+          {'kanji': '働きます', 'romaji': 'hatarakimasu', 'meaning': 'Làm việc'},
+          {'kanji': '休みます', 'romaji': 'yasumimasu', 'meaning': 'Nghỉ ngơi'},
+          {'kanji': '勉強します', 'romaji': 'benkyoushimasu', 'meaning': 'Học tập'},
+          {'kanji': '～から / ～まで', 'romaji': '~kara / ~made', 'meaning': 'Từ ~ / Đến ~'},
+        ]
+      }
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb5LyThuyetData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '行きます', 'hiragana': 'いきます', 'romaji': 'ikimasu', 'meaning': 'Đi',
+        'example_img': 'assets/images/example_ikimasu.png',
+        'example_jp': '私は京都へ行きます。', 'example_rmj': 'Watashi wa Kyouto e ikimasu.', 'example_vn': 'Tôi đi Kyoto.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '来ます', 'hiragana': 'きます', 'romaji': 'kimasu', 'meaning': 'Đến',
+        'example_img': 'assets/images/example_kimasu.png',
+        'example_jp': '昨日、日本へ来ました。', 'example_rmj': 'Kinou, Nihon e kimashita.', 'example_vn': 'Tôi đã đến Nhật Bản hôm qua.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '帰ります', 'hiragana': 'かえります', 'romaji': 'kaerimasu', 'meaning': 'Về',
+        'example_img': 'assets/images/example_kaerimasu.png',
+        'example_jp': 'うちへ帰ります。', 'example_rmj': 'Uchi e kaerimasu.', 'example_vn': 'Tôi đi về nhà.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '行きます', 'hiragana': 'いきます', 'romaji': 'ikimasu', 'options': ['đến', 'đi', 'về', 'ngủ'], 'answer': 'đi'},
+      {'type': LessonType.vocabQuiz, 'kanji': '来ます', 'hiragana': 'きます', 'romaji': 'kimasu', 'options': ['đến', 'thức dậy', 'làm việc', 'về'], 'answer': 'đến'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Đi', 'right': '行きます'}, {'left': 'Đến', 'right': '来ます'}, {'left': 'Về', 'right': '帰ります'}, {'left': 'Nhà', 'right': 'うち'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb5LuyenTap1Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '電車', 'hiragana': 'でんしゃ', 'romaji': 'densha', 'meaning': 'Tàu điện',
+        'example_img': 'assets/images/example_densha.png',
+        'example_jp': '電車で会社へ行きます。', 'example_rmj': 'Densha de kaisha e ikimasu.', 'example_vn': 'Tôi đi đến công ty bằng tàu điện.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '自転車', 'hiragana': 'じてんしゃ', 'romaji': 'jitensha', 'meaning': 'Xe đạp',
+        'example_img': 'assets/images/example_jitensha.png',
+        'example_jp': '自転車でうちへ帰ります。', 'example_rmj': 'Jitensha de uchi e kaerimasu.', 'example_vn': 'Tôi về nhà bằng xe đạp.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '飛行機', 'hiragana': 'ひこうき', 'romaji': 'hikouki', 'options': ['xe buýt', 'xe đạp', 'máy bay', 'tàu thủy'], 'answer': 'máy bay'},
+      {'type': LessonType.vocabQuiz, 'kanji': '歩いて', 'hiragana': 'あるいて', 'romaji': 'aruite', 'options': ['đi bộ', 'chạy', 'đi xe', 'bơi'], 'answer': 'đi bộ'},
+      {'type': LessonType.listening, 'options': ['でんしゃ', 'ちかてつ', 'じてんしゃ', 'ひこうき'], 'answer': 'ちかてつ'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Xe đạp', 'right': '自転車'}, {'left': 'Tàu điện', 'right': '電車'}, {'left': 'Tàu điện ngầm', 'right': '地下鉄'}, {'left': 'Đi bộ', 'right': '歩いて'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb5LuyenTap2Data() {
+    return [
+      {
+        'type': LessonType.flashCard,
+        'kanji': '行きます', 'hiragana': 'いきます', 'romaji': 'ikimasu', 'meaning': 'Đi',
+        'example_img': 'assets/images/example_ikimasu.png',
+        'example_jp': '学校へ行きます。', 'example_rmj': 'Gakkou e ikimasu.',
+        'example_vn': 'Tôi đi đến trường.',
+      },
+      {
+        'type': LessonType.flashCard,
+        'kanji': 'どこへも行きません', 'hiragana': 'どこへもいきません', 'romaji': 'doko e mo ikimasen',
+        'meaning': 'Không đi đâu cả',
+        'example_img': 'assets/images/example_kaerimasu.png',
+        'example_jp': '今日はどこへも行きません。', 'example_rmj': 'Kyou wa doko e mo ikimasen.',
+        'example_vn': 'Hôm nay tôi không đi đâu cả.',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'どこへ行きますか',
+        'rmj': 'doko e ikimasu ka',
+        'words': ['bạn', 'đi', 'đâu', 'vậy', 'ở đâu'],
+        'answer': 'bạn đi đâu vậy',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'スーパーへ行きます',
+        'rmj': 'su-pa- e ikimasu',
+        'words': ['tôi', 'đi', 'đến', 'siêu thị', 'trường học'],
+        'answer': 'tôi đi đến siêu thị',
+      },
+      {'type': LessonType.quiz, 'question': 'Trợ từ chỉ hướng di chuyển (Đi đến...) viết là gì?', 'options': ['へ (he)', 'に (ni)', 'で (de)', 'を (o)'], 'answer': 'へ (he)'},
+      {'type': LessonType.quiz, 'question': 'Phủ định hoàn toàn: "Tôi không đi đâu cả" nói thế nào?', 'options': ['どこへも行きません', 'どこへ行きます', 'どこも行きません', 'だれも行きません'], 'answer': 'どこへも行きません'},
+      {'type': LessonType.listening, 'options': ['うちへかえります', 'がっこうへいきます', 'スーパーへいきます', 'どこへもいきません'], 'answer': 'どこへもいきません'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb5LuyenTap3Data() {
+    return [
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '何で京都へ行きますか',
+        'rmj': 'nan de kyouto e ikimasu ka',
+        'words': ['bạn', 'đi', 'đến Kyoto', 'bằng gì', 'với ai'],
+        'answer': 'bạn đi đến Kyoto bằng gì',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '新幹線で行きます',
+        'rmj': 'shinkansen de ikimasu',
+        'words': ['tôi', 'đi', 'bằng', 'tàu siêu tốc', 'máy bay'],
+        'answer': 'tôi đi bằng tàu siêu tốc',
+      },
+      {'type': LessonType.quiz, 'question': 'Hỏi "Đi với ai?" dùng từ gì?', 'options': ['だれと (dare to)', 'なんで (nan de)', 'だれで (dare de)', 'どこへ (doko e)'], 'answer': 'だれと (dare to)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '友達と来ました',
+        'rmj': 'tomodachi to kimashita',
+        'words': ['tôi', 'đã đến', 'cùng với', 'bạn bè', 'gia đình'],
+        'answer': 'tôi đã đến cùng với bạn bè',
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb5LuyenNoiData() {
+    return [
+      {'type': LessonType.vocabQuiz, 'kanji': 'いつ', 'hiragana': 'いつ', 'romaji': 'itsu', 'options': ['khi nào', 'ở đâu', 'ai', 'cái gì'], 'answer': 'khi nào'},
+      {'type': LessonType.vocabQuiz, 'kanji': '誕生日', 'hiragana': 'たんじょうび', 'romaji': 'tanjoubi', 'options': ['ngày mai', 'sinh nhật', 'hôm nay', 'năm sau'], 'answer': 'sinh nhật'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '誕生日はいつですか',
+        'rmj': 'tanjoubi wa itsu desu ka',
+        'words': ['sinh nhật', 'của bạn', 'là', 'khi nào', 'tháng mấy'],
+        'answer': 'sinh nhật của bạn là khi nào',
+      },
+      {'type': LessonType.listening, 'options': ['いつですか', 'どこですか', 'だれですか', 'なんですか'], 'answer': 'いつですか'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb5LuyenVietData() {
+    return [
+      {'type': LessonType.kanjiDraw, 'kanji_word': '行きます', 'kanji_target': '行', 'meaning': 'Hành (Đi)', 'rmj': 'i(ku) / kou'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '来ます', 'kanji_target': '来', 'meaning': 'Lai (Đến)', 'rmj': 'ki(masu) / rai'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '休み', 'kanji_target': '休', 'meaning': 'Hưu (Nghỉ ngơi)', 'rmj': 'yasu(mi)'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Đi', 'right': '行きます'}, {'left': 'Đến', 'right': '来ます'}, {'left': 'Nghỉ', 'right': '休み'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb5OnTapData() {
+    return [
+      {'type': LessonType.quiz, 'question': 'Trợ từ chỉ phương tiện di chuyển (Bằng...) là?', 'options': ['で (de)', 'に (ni)', 'と (to)', 'を (o)'], 'answer': 'で (de)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '自転車で学校へ行きます',
+        'rmj': 'jitensha de gakkou e ikimasu',
+        'words': ['tôi', 'đi', 'đến trường', 'bằng', 'xe đạp'],
+        'answer': 'tôi đi đến trường bằng xe đạp',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '飛行機', 'hiragana': 'ひこうき', 'romaji': 'hikouki', 'options': ['máy bay', 'tàu thủy', 'tàu điện', 'xe đạp'], 'answer': 'máy bay'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '帰ります', 'kanji_target': '帰', 'meaning': 'Quy (Về)', 'rmj': 'kae(ru)'},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': '行きます', 'romaji': 'ikimasu', 'meaning': 'Đi'},
+          {'kanji': '来ます', 'romaji': 'kimasu', 'meaning': 'Đến'},
+          {'kanji': '帰ります', 'romaji': 'kaerimasu', 'meaning': 'Về'},
+          {'kanji': '電車', 'romaji': 'densha', 'meaning': 'Tàu điện'},
+          {'kanji': '自転車', 'romaji': 'jitensha', 'meaning': 'Xe đạp'},
+          {'kanji': '飛行機', 'romaji': 'hikouki', 'meaning': 'Máy bay'},
+          {'kanji': '歩いて', 'romaji': 'aruite', 'meaning': 'Đi bộ'},
+          {'kanji': '友達', 'romaji': 'tomodachi', 'meaning': 'Bạn bè'},
+          {'kanji': 'いつ', 'romaji': 'itsu', 'meaning': 'Khi nào'},
+        ]
+      }
+    ];
+  }
+
+  // ==========================================
+  // DỮ LIỆU CƠ BẢN 6 (ĂN UỐNG, MUA SẮM & RỦ RÊ)
+  // ==========================================
+
+  List<Map<String, dynamic>> _getCb6LyThuyetData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '食べます', 'hiragana': 'たべます', 'romaji': 'tabemasu', 'meaning': 'Ăn',
+        'example_img': 'assets/images/example_tabemasu.png',
+        'example_jp': 'パンを食べます。', 'example_rmj': 'Pan o tabemasu.', 'example_vn': 'Tôi ăn bánh mì.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '飲みます', 'hiragana': 'のみます', 'romaji': 'nomimasu', 'meaning': 'Uống',
+        'example_img': 'assets/images/example_nomimasu.png',
+        'example_jp': '水を飲みます。', 'example_rmj': 'Mizu o nomimasu.', 'example_vn': 'Tôi uống nước.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '見ます', 'hiragana': 'みます', 'romaji': 'mimasu', 'meaning': 'Xem, nhìn',
+        'example_img': 'assets/images/example_mimasu.png',
+        'example_jp': 'テレビを見ます。', 'example_rmj': 'Terebi o mimasu.', 'example_vn': 'Tôi xem ti vi.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '買います', 'hiragana': 'かいます', 'romaji': 'kaimasu', 'options': ['mua', 'bán', 'đọc', 'nghe'], 'answer': 'mua'},
+      {'type': LessonType.vocabQuiz, 'kanji': '聞きます', 'hiragana': 'ききます', 'romaji': 'kikimasu', 'options': ['nghe', 'nói', 'đọc', 'viết'], 'answer': 'nghe'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Ăn', 'right': '食べます'}, {'left': 'Uống', 'right': '飲みます'}, {'left': 'Xem', 'right': '見ます'}, {'left': 'Mua', 'right': '買います'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb6LuyenTap1Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '水', 'hiragana': 'みず', 'romaji': 'mizu', 'meaning': 'Nước',
+        'example_img': 'assets/images/example_mizu.png',
+        'example_jp': '水を飲みます。', 'example_rmj': 'Mizu o nomimasu.', 'example_vn': 'Tôi uống nước.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '肉', 'hiragana': 'にく', 'romaji': 'niku', 'options': ['thịt', 'cá', 'rau', 'trứng'], 'answer': 'thịt'},
+      {'type': LessonType.vocabQuiz, 'kanji': '魚', 'hiragana': 'さかな', 'romaji': 'sakana', 'options': ['thịt', 'cá', 'rau', 'trái cây'], 'answer': 'cá'},
+      {'type': LessonType.vocabQuiz, 'kanji': '卵', 'hiragana': 'たまご', 'romaji': 'tamago', 'options': ['trái cây', 'sữa', 'trứng', 'bánh mì'], 'answer': 'trứng'},
+      {'type': LessonType.listening, 'options': ['ごはん', 'パン', 'にく', 'さかな'], 'answer': 'ごはん'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Thịt', 'right': '肉'}, {'left': 'Cá', 'right': '魚'}, {'left': 'Trứng', 'right': '卵'}, {'left': 'Nước', 'right': '水'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb6LuyenTap2Data() {
+    return [
+      {
+        'type': LessonType.flashCard,
+        'kanji': '食べます／飲みます', 'hiragana': 'たべます/のみます', 'romaji': 'tabemasu / nomimasu',
+        'meaning': 'Ăn / Uống',
+        'example_img': 'assets/images/example_tabemasu.png',
+        'example_jp': 'ご飯を食べます。', 'example_rmj': 'Gohan o tabemasu.',
+        'example_vn': 'Tôi ăn cơm.',
+      },
+      {
+        'type': LessonType.flashCard,
+        'kanji': 'を (tân ngữ)', 'hiragana': 'を', 'romaji': 'o',
+        'meaning': 'Trợ từ: [Ăn CÁI GÌ], [Uống CÁI GÌ]',
+        'example_img': 'assets/images/example_nomimasu.png',
+        'example_jp': '何を飲みますか。', 'example_rmj': 'Nani o nomimasu ka.',
+        'example_vn': 'Bạn uống gì vậy?',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'パンを食べます',
+        'rmj': 'pan o tabemasu',
+        'words': ['tôi', 'ăn', 'bánh mì', 'uống', 'nước'],
+        'answer': 'tôi ăn bánh mì',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '何を飲みますか',
+        'rmj': 'nani o nomimasu ka',
+        'words': ['bạn', 'uống', 'cái gì', 'vậy', 'ăn'],
+        'answer': 'bạn uống cái gì vậy',
+      },
+      {'type': LessonType.quiz, 'question': 'Trợ từ nối TÂN NGỮ và ĐỘNG TỪ (Ăn bánh, Uống nước) là gì?', 'options': ['を (o)', 'で (de)', 'に (ni)', 'が (ga)'], 'answer': 'を (o)'},
+      {'type': LessonType.quiz, 'question': 'Dịch: "Tôi không ăn gì cả."', 'options': ['何も食べません', '何も食べます', 'どこも行きません', '何をたべません'], 'answer': '何も食べません'},
+      {'type': LessonType.listening, 'options': ['なにをしますか', 'なにをたべますか', 'なにをのみますか', 'なにもしません'], 'answer': 'なにをしますか'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb6LuyenTap3Data() {
+    return [
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'デパートで靴を買います',
+        'rmj': 'depa-to de kutsu o kaimasu',
+        'words': ['tôi', 'mua', 'giầy', 'ở', 'trung tâm thương mại'],
+        'answer': 'tôi mua giầy ở trung tâm thương mại',
+      },
+      {'type': LessonType.quiz, 'question': 'Trợ từ chỉ NƠI XẢY RA HÀNH ĐỘNG (Làm gì TẠI đâu) là?', 'options': ['で (de)', 'に (ni)', 'へ (he)', 'を (o)'], 'answer': 'で (de)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '一緒に京都へ行きませんか',
+        'rmj': 'issho ni kyouto e ikimasen ka',
+        'words': ['cùng nhau', 'đi', 'đến Kyoto', 'không', 'nhỉ'],
+        'answer': 'cùng nhau đi đến Kyoto không nhỉ',
+      },
+      {'type': LessonType.quiz, 'question': 'Cấu trúc dùng để RỦ RÊ, MỜI MỌC ai đó?', 'options': ['～ませんか (~masen ka)', '～ますか (~masu ka)', '～ましたか (~mashita ka)', '～ません (~masen)'], 'answer': '～ませんか (~masen ka)'},
+      {'type': LessonType.listening, 'options': ['いっしょにいきませんか', 'いきましょう', 'ちょっと...', 'いいですね'], 'answer': 'いっしょにいきませんか'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb6LuyenNoiData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': 'いいですね', 'hiragana': 'いいですね', 'romaji': 'Ii desu ne', 'meaning': 'Hay quá nhỉ / Được đấy',
+        'example_img': 'assets/images/example_iidesune.png',
+        'example_jp': '一緒にビールを飲みませんか。いいですね。', 'example_rmj': 'Issho ni bi-ru o nomimasen ka. Ii desu ne.', 'example_vn': 'Cùng uống bia nhé. Được đấy nhỉ.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'ちょっと...', 'hiragana': 'ちょっと', 'romaji': 'chotto...', 'meaning': 'Có chút... (Cách từ chối khéo)',
+        'example_img': 'assets/images/example_chotto.png',
+        'example_jp': '今日はちょっと...', 'example_rmj': 'Kyou wa chotto...', 'example_vn': 'Hôm nay thì có chút (không tiện)...'
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'ちょっと休みましょう',
+        'rmj': 'chotto yasumimashou',
+        'words': ['chúng ta', 'cùng', 'nghỉ ngơi', 'một chút', 'nào'],
+        'answer': 'chúng ta cùng nghỉ ngơi một chút nào',
+      },
+      {'type': LessonType.quiz, 'question': 'Đồng ý lời rủ rê một cách hào hứng, ta dùng?', 'options': ['～ましょう (~mashou)', '～ません (~masen)', 'ちょっと...', 'ちがいます'], 'answer': '～ましょう (~mashou)'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb6LuyenVietData() {
+    return [
+      {'type': LessonType.kanjiDraw, 'kanji_word': '食べます', 'kanji_target': '食', 'meaning': 'Thực (Ăn)', 'rmj': 'ta(beru)'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '飲みます', 'kanji_target': '飲', 'meaning': 'Ẩm (Uống)', 'rmj': 'no(mu)'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '見ます', 'kanji_target': '見', 'meaning': 'Kiến (Xem, nhìn)', 'rmj': 'mi(ru)'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '買います', 'kanji_target': '買', 'meaning': 'Mãi (Mua)', 'rmj': 'ka(u)'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Ăn', 'right': '食'}, {'left': 'Uống', 'right': '飲'}, {'left': 'Xem', 'right': '見'}, {'left': 'Mua', 'right': '買'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb6OnTapData() {
+    return [
+      {'type': LessonType.quiz, 'question': 'Trợ từ đứng sau Nơi chốn để chỉ địa điểm xảy ra hành động?', 'options': ['で (de)', 'に (ni)', 'へ (he)', 'を (o)'], 'answer': 'で (de)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '一緒に映画を見ませんか',
+        'rmj': 'issho ni eiga o mimasen ka',
+        'words': ['cùng nhau', 'xem', 'phim', 'không', 'nhỉ'],
+        'answer': 'cùng nhau xem phim không nhỉ',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '卵', 'hiragana': 'たまご', 'romaji': 'tamago', 'options': ['trứng', 'thịt', 'cá', 'rau'], 'answer': 'trứng'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '飲みます', 'kanji_target': '飲', 'meaning': 'Ẩm (Uống)', 'rmj': 'no(mu)'},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': '食べます', 'romaji': 'tabemasu', 'meaning': 'Ăn'},
+          {'kanji': '飲みます', 'romaji': 'nomimasu', 'meaning': 'Uống'},
+          {'kanji': '見ます', 'romaji': 'mimasu', 'meaning': 'Xem'},
+          {'kanji': '買います', 'romaji': 'kaimasu', 'meaning': 'Mua'},
+          {'kanji': '肉', 'romaji': 'niku', 'meaning': 'Thịt'},
+          {'kanji': '魚', 'romaji': 'sakana', 'meaning': 'Cá'},
+          {'kanji': '水', 'romaji': 'mizu', 'meaning': 'Nước'},
+          {'kanji': '映画', 'romaji': 'eiga', 'meaning': 'Phim ảnh'},
+          {'kanji': '一緒に', 'romaji': 'issho ni', 'meaning': 'Cùng nhau'},
+        ]
+      }
+    ];
+  }
+
+  // ==========================================
+  // DỮ LIỆU CƠ BẢN 7 (CÔNG CỤ, CHO & NHẬN)
+  // ==========================================
+
+  List<Map<String, dynamic>> _getCb7LyThuyetData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '切ります', 'hiragana': 'きります', 'romaji': 'kirimasu', 'meaning': 'Cắt',
+        'example_img': 'assets/images/example_kirimasu.png',
+        'example_jp': 'はさみで紙を切ります。', 'example_rmj': 'Hasami de kami o kirimasu.', 'example_vn': 'Tôi cắt giấy bằng kéo.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'あげます', 'hiragana': 'あげます', 'romaji': 'agemasu', 'meaning': 'Cho, tặng',
+        'example_img': 'assets/images/example_agemasu.png',
+        'example_jp': '木村さんに花をあげます。', 'example_rmj': 'Kimura-san ni hana o agemasu.', 'example_vn': 'Tôi tặng hoa cho chị Kimura.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'もらいます', 'hiragana': 'もらいます', 'romaji': 'moraimasu', 'meaning': 'Nhận',
+        'example_img': 'assets/images/example_moraimasu.png',
+        'example_jp': '父に時計をもらいました。', 'example_rmj': 'Chichi ni tokei o moraimashita.', 'example_vn': 'Tôi đã nhận đồng hồ từ bố.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '送ります', 'hiragana': 'おくります', 'romaji': 'okurimasu', 'options': ['cắt', 'gửi', 'nhận', 'cho'], 'answer': 'gửi'},
+      {'type': LessonType.vocabQuiz, 'kanji': '教えます', 'hiragana': 'おしえます', 'romaji': 'oshiemasu', 'options': ['học', 'dạy', 'hỏi', 'trả lời'], 'answer': 'dạy'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Cắt', 'right': '切ります'}, {'left': 'Cho', 'right': 'あげます'}, {'left': 'Nhận', 'right': 'もらいます'}, {'left': 'Dạy', 'right': '教えます'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb7LuyenTap1Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '手', 'hiragana': 'て', 'romaji': 'te', 'meaning': 'Tay',
+        'example_img': 'assets/images/example_te.png',
+        'example_jp': '手で食べます。', 'example_rmj': 'Te de tabemasu.', 'example_vn': 'Tôi ăn bằng tay.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '箸', 'hiragana': 'はし', 'romaji': 'hashi', 'options': ['muỗng', 'đũa', 'nĩa', 'dao'], 'answer': 'đũa'},
+      {'type': LessonType.vocabQuiz, 'kanji': 'はさみ', 'hiragana': 'はさみ', 'romaji': 'hasami', 'options': ['kéo', 'dao', 'bút', 'giấy'], 'answer': 'kéo'},
+      {'type': LessonType.vocabQuiz, 'kanji': 'パソコン', 'hiragana': 'ぱそこん', 'romaji': 'pasokon', 'options': ['ti vi', 'điện thoại', 'máy tính cá nhân', 'máy ảnh'], 'answer': 'máy tính cá nhân'},
+      {'type': LessonType.listening, 'options': ['て', 'はし', 'スプーン', 'ナイフ'], 'answer': 'はし'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Tay', 'right': '手'}, {'left': 'Đũa', 'right': '箸'}, {'left': 'Kéo', 'right': 'はさみ'}, {'left': 'Máy tính', 'right': 'パソコン'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb7LuyenTap2Data() {
+    return [
+      {
+        'type': LessonType.flashCard,
+        'kanji': 'で (công cụ)', 'hiragana': 'で', 'romaji': 'de',
+        'meaning': 'Trợ từ chỉ CÔNG CỤ (Bằng...)',
+        'example_img': 'assets/images/example_te.png',
+        'example_jp': 'はさみで紙を切ります。', 'example_rmj': 'Hasami de kami o kirimasu.',
+        'example_vn': 'Tôi cắt giấy bằng kéo.',
+      },
+      {
+        'type': LessonType.flashCard,
+        'kanji': '日本語で', 'hiragana': 'にほんごで', 'romaji': 'nihongo de',
+        'meaning': 'Bằng tiếng Nhật',
+        'example_img': 'assets/images/example_te.png',
+        'example_jp': '日本語で話します。', 'example_rmj': 'Nihongo de hanashimasu.',
+        'example_vn': 'Tôi nói bằng tiếng Nhật.',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '箸で食べます',
+        'rmj': 'hashi de tabemasu',
+        'words': ['tôi', 'ăn', 'bằng', 'đũa', 'muỗng'],
+        'answer': 'tôi ăn bằng đũa',
+      },
+      {'type': LessonType.quiz, 'question': 'Trợ từ chỉ CÔNG CỤ / PHƯƠNG TIỆN (Bằng cái gì) là?', 'options': ['で (de)', 'に (ni)', 'を (o)', 'へ (he)'], 'answer': 'で (de)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '日本語で手紙を書きます',
+        'rmj': 'nihongo de tegami o kakimasu',
+        'words': ['tôi', 'viết', 'bức thư', 'bằng', 'tiếng Nhật'],
+        'answer': 'tôi viết bức thư bằng tiếng Nhật',
+      },
+      {'type': LessonType.listening, 'options': ['にほんごでかきます', 'えいごでかきます', 'はしでたべます', 'てでたべます'], 'answer': 'にほんごでかきます'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb7LuyenTap3Data() {
+    return [
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '木村さんに花をあげます',
+        'rmj': 'kimura-san ni hana o agemasu',
+        'words': ['tôi', 'tặng', 'hoa', 'cho', 'chị Kimura'],
+        'answer': 'tôi tặng hoa cho chị Kimura',
+      },
+      {'type': LessonType.quiz, 'question': 'Trợ từ đi sau đối tượng NHẬN HÀNH ĐỘNG (Cho ai, Mượn từ ai) là?', 'options': ['に (ni)', 'で (de)', 'を (o)', 'は (wa)'], 'answer': 'に (ni)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '父に時計をもらいました',
+        'rmj': 'chichi ni tokei o moraimashita',
+        'words': ['tôi', 'đã nhận', 'đồng hồ', 'từ', 'bố'],
+        'answer': 'tôi đã nhận đồng hồ từ bố',
+      },
+      {'type': LessonType.quiz, 'question': 'Dịch: "Tôi gọi điện thoại cho mẹ."', 'options': ['母に電話をかけます', '母で電話をかけます', '母と電話をかけます', '母は電話をかけます'], 'answer': '母に電話をかけます'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb7LuyenNoiData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': 'もう', 'hiragana': 'もう', 'romaji': 'mou', 'meaning': 'Đã... rồi',
+        'example_img': 'assets/images/example_mou.png',
+        'example_jp': 'もう昼ごはんを食べましたか。', 'example_rmj': 'Mou hirugohan o tabemashita ka.', 'example_vn': 'Bạn đã ăn trưa rồi à?'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'まだです', 'hiragana': 'まだです', 'romaji': 'mada desu', 'meaning': 'Vẫn chưa',
+        'example_img': 'assets/images/example_mada.png',
+        'example_jp': 'いいえ、まだです。', 'example_rmj': 'Iie, mada desu.', 'example_vn': 'Không, tôi vẫn chưa (ăn).'
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'もうレポートを送りました',
+        'rmj': 'mou repo-to o okurimashita',
+        'words': ['tôi', 'đã', 'gửi', 'báo cáo', 'rồi'],
+        'answer': 'tôi đã gửi báo cáo rồi',
+      },
+      {'type': LessonType.quiz, 'question': 'Phủ định của "Đã làm rồi" trong hội thoại là gì?', 'options': ['まだです', 'ちがいます', 'いいえ、しません', 'いいえ、しませんでした'], 'answer': 'まだです'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb7LuyenVietData() {
+    return [
+      {'type': LessonType.kanjiDraw, 'kanji_word': '手', 'kanji_target': '手', 'meaning': 'Thủ (Tay)', 'rmj': 'te'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '紙', 'kanji_target': '紙', 'meaning': 'Chỉ (Giấy)', 'rmj': 'kami / shi'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '花', 'kanji_target': '花', 'meaning': 'Hoa (Bông hoa)', 'rmj': 'hana'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '教えます', 'kanji_target': '教', 'meaning': 'Giáo (Dạy)', 'rmj': 'oshi(eru) / kyou'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Tay', 'right': '手'}, {'left': 'Giấy', 'right': '紙'}, {'left': 'Hoa', 'right': '花'}, {'left': 'Dạy', 'right': '教'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb7OnTapData() {
+    return [
+      {'type': LessonType.quiz, 'question': 'Trợ từ đi với CÔNG CỤ (Bằng kéo, bằng tiếng Nhật)?', 'options': ['で (de)', 'に (ni)', 'を (o)', 'と (to)'], 'answer': 'で (de)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '友達にプレゼントをあげます',
+        'rmj': 'tomodachi ni purezento o agemasu',
+        'words': ['tôi', 'tặng', 'quà', 'cho', 'bạn bè'],
+        'answer': 'tôi tặng quà cho bạn bè',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '箸', 'hiragana': 'はし', 'romaji': 'hashi', 'options': ['đũa', 'muỗng', 'kéo', 'tay'], 'answer': 'đũa'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '手紙', 'kanji_target': '紙', 'meaning': 'Chỉ (Giấy - trong Bức thư)', 'rmj': 'kami / gami'},
+      {'type': LessonType.listening, 'options': ['もうたべました', 'まだです', 'もうおわりました', 'これからたべます'], 'answer': 'まだです'},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': '切ります', 'romaji': 'kirimasu', 'meaning': 'Cắt'},
+          {'kanji': 'あげます', 'romaji': 'agemasu', 'meaning': 'Cho, tặng'},
+          {'kanji': 'もらいます', 'romaji': 'moraimasu', 'meaning': 'Nhận'},
+          {'kanji': '教えます', 'romaji': 'oshiemasu', 'meaning': 'Dạy'},
+          {'kanji': '習います', 'romaji': 'naraimasu', 'meaning': 'Học (từ ai)'},
+          {'kanji': '手', 'romaji': 'te', 'meaning': 'Tay'},
+          {'kanji': '箸', 'romaji': 'hashi', 'meaning': 'Đũa'},
+          {'kanji': 'はさみ', 'romaji': 'hasami', 'meaning': 'Cái kéo'},
+          {'kanji': '花', 'romaji': 'hana', 'meaning': 'Bông hoa'},
+          {'kanji': 'もう', 'romaji': 'mou', 'meaning': 'Đã... rồi'},
+          {'kanji': 'まだです', 'romaji': 'mada desu', 'meaning': 'Vẫn chưa'},
+        ]
+      }
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb8LyThuyetData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': 'ハンサム（な）', 'hiragana': 'はんさむ', 'romaji': 'hansamu', 'meaning': 'Đẹp trai',
+        'example_img': 'assets/images/example_hansamu.png',
+        'example_jp': 'ミラーさんはハンサムです。', 'example_rmj': 'Mira-san wa hansamu desu.', 'example_vn': 'Anh Miller đẹp trai.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'きれい（な）', 'hiragana': 'きれい', 'romaji': 'kirei', 'meaning': 'Đẹp, sạch sẽ',
+        'example_img': 'assets/images/example_kirei.png',
+        'example_jp': 'きれいな花ですね。', 'example_rmj': 'Kireina hana desu ne.', 'example_vn': 'Bông hoa đẹp quá nhỉ.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '静か（な）', 'hiragana': 'しずか', 'romaji': 'shizuka', 'meaning': 'Yên tĩnh',
+        'example_img': 'assets/images/example_shizuka.png',
+        'example_jp': 'ここは静かです。', 'example_rmj': 'Koko wa shizuka desu.', 'example_vn': 'Chỗ này yên tĩnh.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '賑やか', 'hiragana': 'にぎやか', 'romaji': 'nigiyaka', 'options': ['yên tĩnh', 'náo nhiệt', 'nổi tiếng', 'đẹp'], 'answer': 'náo nhiệt'},
+      {'type': LessonType.vocabQuiz, 'kanji': '有名', 'hiragana': 'ゆうめい', 'romaji': 'yuumei', 'options': ['đẹp trai', 'náo nhiệt', 'nổi tiếng', 'sạch sẽ'], 'answer': 'nổi tiếng'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Đẹp, sạch', 'right': 'きれい'}, {'left': 'Yên tĩnh', 'right': '静か'}, {'left': 'Nổi tiếng', 'right': '有名'}, {'left': 'Náo nhiệt', 'right': '賑やか'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb8LuyenTap1Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '大きい', 'hiragana': 'おおきい', 'romaji': 'ookii', 'meaning': 'To, lớn',
+        'example_img': 'assets/images/example_ookii.png',
+        'example_jp': '大きい鞄を買いました。', 'example_rmj': 'Ookii kaban o kaimashita.', 'example_vn': 'Tôi đã mua một cái cặp to.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '小さい', 'hiragana': 'ちいさい', 'romaji': 'chiisai', 'meaning': 'Nhỏ, bé',
+        'example_img': 'assets/images/example_chiisai.png',
+        'example_jp': 'その車は小さいです。', 'example_rmj': 'Sono kuruma wa chiisai desu.', 'example_vn': 'Chiếc xe đó thì nhỏ.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '新しい', 'hiragana': 'あたらしい', 'romaji': 'atarashii', 'options': ['cũ', 'mới', 'to', 'nhỏ'], 'answer': 'mới'},
+      {'type': LessonType.vocabQuiz, 'kanji': '古い', 'hiragana': 'ふるい', 'romaji': 'furui', 'options': ['cũ', 'mới', 'tốt', 'xấu'], 'answer': 'cũ'},
+      {'type': LessonType.vocabQuiz, 'kanji': '暑い', 'hiragana': 'あつい', 'romaji': 'atsui', 'options': ['lạnh', 'nóng', 'mát', 'ấm'], 'answer': 'nóng'},
+      {'type': LessonType.listening, 'options': ['おおきい', 'ちいさい', 'あたらしい', 'ふるい'], 'answer': 'あたらしい'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'To', 'right': '大きい'}, {'left': 'Nhỏ', 'right': '小さい'}, {'left': 'Mới', 'right': '新しい'}, {'left': 'Cũ', 'right': '古い'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb8LuyenTap2Data() {
+    return [
+      {
+        'type': LessonType.flashCard,
+        'kanji': 'い形容詞', 'hiragana': 'おおきい・たかい', 'romaji': 'ookii / takai',
+        'meaning': 'Tính từ đuôi I: to lớn / đắt',
+        'example_img': 'assets/images/example_ookii.png',
+        'example_jp': 'この時計は高いです。', 'example_rmj': 'Kono tokei wa takai desu.',
+        'example_vn': 'Cái đồng hồ này đắt.',
+      },
+      {
+        'type': LessonType.flashCard,
+        'kanji': 'な形容詞', 'hiragana': 'しずかな', 'romaji': 'shizuka na',
+        'meaning': 'Tính từ đuôi NA khi bổ nghĩa danh từ',
+        'example_img': 'assets/images/example_shizuka.png',
+        'example_jp': 'ここは静かな町です。', 'example_rmj': 'Koko wa shizuka na machi desu.',
+        'example_vn': 'Đây là thị trấn yên tĩnh.',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '日本のカメラは高いです',
+        'rmj': 'Nihon no kamera wa takai desu',
+        'words': ['máy ảnh', 'của Nhật Bản', 'thì', 'đắt', 'rẻ'],
+        'answer': 'máy ảnh của Nhật Bản thì đắt',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'この町は静かじゃありません',
+        'rmj': 'Kono machi wa shizuka ja arimasen',
+        'words': ['thị trấn', 'này', 'không', 'yên tĩnh', 'đẹp'],
+        'answer': 'thị trấn này không yên tĩnh',
+      },
+      {'type': LessonType.quiz, 'question': 'Cách phủ định tính từ đuôi "i" (ví dụ: takai -> không đắt) là?', 'options': ['takai ja arimasen', 'takakunai desu', 'takakatta desu', 'takai deshita'], 'answer': 'takakunai desu'},
+      {'type': LessonType.quiz, 'question': 'Phủ định của いい (tốt) là gì?', 'options': ['いくないです', 'よくないです', 'いいじゃありません', 'いかありません'], 'answer': 'よくないです'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb8LuyenTap3Data() {
+    return [
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'サントスさんは親切な人です',
+        'rmj': 'Santosu-san wa shinsetsu na hito desu',
+        'words': ['anh Santos', 'là', 'người', 'tốt bụng', 'đẹp trai'],
+        'answer': 'anh Santos là người tốt bụng',
+      },
+      {'type': LessonType.quiz, 'question': 'Từ chỉ mức độ "Rất..." trong tiếng Nhật là?', 'options': ['とても (totemo)', 'あまり (amari)', 'そして (soshite)', 'が (ga)'], 'answer': 'とても (totemo)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'この辞書はあまりよくないです',
+        'rmj': 'Kono jisho wa amari yokunai desu',
+        'words': ['quyển từ điển', 'này', 'không', 'tốt', 'lắm'],
+        'answer': 'quyển từ điển này không tốt lắm',
+      },
+      {'type': LessonType.quiz, 'question': 'Từ nối hai câu mang ý nghĩa trái ngược "Nhưng..." là?', 'options': ['そして (soshite)', 'が (ga)', 'とても (totemo)', 'どんな (donna)'], 'answer': 'が (ga)'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb8LuyenNoiData() {
+    return [
+      {'type': LessonType.vocabQuiz, 'kanji': 'どんな', 'hiragana': 'どんな', 'romaji': 'donna', 'options': ['như thế nào', 'cái gì', 'ở đâu', 'khi nào'], 'answer': 'như thế nào'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '東京はどんな町ですか',
+        'rmj': 'Toukyou wa donna machi desu ka',
+        'words': ['Tokyo', 'là', 'thành phố', 'như thế nào', 'đẹp'],
+        'answer': 'Tokyo là thành phố như thế nào',
+      },
+      {'type': LessonType.listening, 'options': ['どんな', 'どれ', 'だれ', 'どこ'], 'answer': 'どんな'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb8LuyenVietData() {
+    return [
+      {'type': LessonType.kanjiDraw, 'kanji_word': '大きい', 'kanji_target': '大', 'meaning': 'Đại (To lớn)', 'rmj': 'oo(kii) / dai'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '小さい', 'kanji_target': '小', 'meaning': 'Tiểu (Nhỏ bé)', 'rmj': 'chii(sai) / shou'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '高い', 'kanji_target': '高', 'meaning': 'Cao (Cao, Đắt)', 'rmj': 'taka(i) / kou'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '安い', 'kanji_target': '安', 'meaning': 'An (Rẻ, an toàn)', 'rmj': 'yasu(i) / an'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'To', 'right': '大'}, {'left': 'Nhỏ', 'right': '小'}, {'left': 'Cao/Đắt', 'right': '高'}, {'left': 'Rẻ', 'right': '安'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb8OnTapData() {
+    return [
+      {'type': LessonType.quiz, 'question': 'Tính từ đuôi NA khi bổ nghĩa cho Danh từ thì...', 'options': ['Bỏ NA', 'Giữ nguyên NA', 'Đổi thành I', 'Thêm NO'], 'answer': 'Giữ nguyên NA'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '富士山はきれいで、高い山です',
+        'rmj': 'Fujisan wa kirei de, takai yama desu',
+        'words': ['núi Phú Sĩ', 'là', 'ngọn núi', 'đẹp', 'và cao'],
+        'answer': 'núi Phú Sĩ là ngọn núi đẹp và cao',
+      },
+      {'type': LessonType.kanjiDraw, 'kanji_word': '高い', 'kanji_target': '高', 'meaning': 'Cao (Cao, Đắt)', 'rmj': 'taka(i)'},
+      {'type': LessonType.listening, 'options': ['とてもいいです', 'あまりよくないです', 'いいです', 'よくないです'], 'answer': 'あまりよくないです'},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': 'ハンサム', 'romaji': 'hansamu', 'meaning': 'Đẹp trai'},
+          {'kanji': 'きれい', 'romaji': 'kirei', 'meaning': 'Đẹp, sạch'},
+          {'kanji': '静か', 'romaji': 'shizuka', 'meaning': 'Yên tĩnh'},
+          {'kanji': '有名', 'romaji': 'yuumei', 'meaning': 'Nổi tiếng'},
+          {'kanji': '大きい', 'romaji': 'ookii', 'meaning': 'To lớn'},
+          {'kanji': '小さい', 'romaji': 'chiisai', 'meaning': 'Nhỏ bé'},
+          {'kanji': '新しい', 'romaji': 'atarashii', 'meaning': 'Mới'},
+          {'kanji': '古い', 'romaji': 'furui', 'meaning': 'Cũ'},
+          {'kanji': '高い', 'romaji': 'takai', 'meaning': 'Cao, đắt'},
+          {'kanji': '安い', 'romaji': 'yasui', 'meaning': 'Rẻ'},
+          {'kanji': 'どんな', 'romaji': 'donna', 'meaning': 'Như thế nào'},
+          {'kanji': 'とても', 'romaji': 'totemo', 'meaning': 'Rất'},
+          {'kanji': 'あまり', 'romaji': 'amari', 'meaning': 'Không... lắm'},
+        ]
+      }
+    ];
+  }
+
+  // ==========================================
+  // DỮ LIỆU CƠ BẢN 9 (SỞ THÍCH, NĂNG LỰC & LÝ DO)
+  // ==========================================
+
+  List<Map<String, dynamic>> _getCb9LyThuyetData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '好き（な）', 'hiragana': 'すき', 'romaji': 'suki', 'meaning': 'Thích',
+        'example_img': 'assets/images/example_suki.png',
+        'example_jp': '私はスポーツが好きです。', 'example_rmj': 'Watashi wa supo-tsu ga suki desu.', 'example_vn': 'Tôi thích thể thao.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '嫌い（な）', 'hiragana': 'きらい', 'romaji': 'kirai', 'meaning': 'Ghét',
+        'example_img': 'assets/images/example_kirai.png',
+        'example_jp': '魚が嫌いです。', 'example_rmj': 'Sakana ga kirai desu.', 'example_vn': 'Tôi ghét cá.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '上手（な）', 'hiragana': 'じょうず', 'romaji': 'jouzu', 'meaning': 'Giỏi',
+        'example_img': 'assets/images/example_jouzu.png',
+        'example_jp': '彼女は歌が上手です。', 'example_rmj': 'Kanojo wa uta ga jouzu desu.', 'example_vn': 'Cô ấy hát giỏi.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '下手', 'hiragana': 'へた', 'romaji': 'heta', 'options': ['thích', 'ghét', 'giỏi', 'kém'], 'answer': 'kém'},
+      {'type': LessonType.vocabQuiz, 'kanji': '料理', 'hiragana': 'りょうり', 'romaji': 'ryouri', 'options': ['thể thao', 'món ăn / nấu ăn', 'âm nhạc', 'bức tranh'], 'answer': 'món ăn / nấu ăn'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Thích', 'right': '好き'}, {'left': 'Ghét', 'right': '嫌い'}, {'left': 'Giỏi', 'right': '上手'}, {'left': 'Kém', 'right': '下手'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb9LuyenTap1Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '分かります', 'hiragana': 'わかります', 'romaji': 'wakarimasu', 'meaning': 'Hiểu',
+        'example_img': 'assets/images/example_wakarimasu.png',
+        'example_jp': '日本語が分かります。', 'example_rmj': 'Nihongo ga wakarimasu.', 'example_vn': 'Tôi hiểu tiếng Nhật.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'あります', 'hiragana': 'あります', 'romaji': 'arimasu', 'meaning': 'Có (Sở hữu)',
+        'example_img': 'assets/images/example_arimasu_possession.png',
+        'example_jp': '車があります。', 'example_rmj': 'Kuruma ga arimasu.', 'example_vn': 'Tôi có xe hơi.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '時間', 'hiragana': 'じかん', 'romaji': 'jikan', 'options': ['thời gian', 'tiền bạc', 'cuộc hẹn', 'việc bận'], 'answer': 'thời gian'},
+      {'type': LessonType.vocabQuiz, 'kanji': '用事', 'hiragana': 'ようじ', 'romaji': 'youji', 'options': ['cuộc hẹn', 'việc bận', 'thời gian', 'gia đình'], 'answer': 'việc bận'},
+      {'type': LessonType.vocabQuiz, 'kanji': '約束', 'hiragana': 'やくそく', 'romaji': 'yakusoku', 'options': ['thời gian', 'việc bận', 'lời hứa, cuộc hẹn', 'công việc'], 'answer': 'lời hứa, cuộc hẹn'},
+      {'type': LessonType.listening, 'options': ['わかります', 'あります', 'います', 'ききます'], 'answer': 'わかります'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Hiểu', 'right': '分かります'}, {'left': 'Có', 'right': 'あります'}, {'left': 'Thời gian', 'right': '時間'}, {'left': 'Cuộc hẹn', 'right': '約束'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb9LuyenTap2Data() {
+    return [
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '私はイタリア料理が好きです',
+        'rmj': 'Watashi wa Itaria ryouri ga suki desu',
+        'words': ['tôi', 'thì', 'thích', 'món ăn', 'của Ý'],
+        'answer': 'tôi thì thích món ăn của Ý',
+      },
+      {'type': LessonType.quiz, 'question': 'Trợ từ đi trước 好き(Thích), 上手(Giỏi), 分かる(Hiểu), ある(Có) là gì?', 'options': ['を (o)', 'が (ga)', 'に (ni)', 'へ (he)'], 'answer': 'が (ga)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'マリアさんはダンスが上手です',
+        'rmj': 'Maria-san wa dansu ga jouzu desu',
+        'words': ['chị Maria', 'thì', 'nhảy', 'rất giỏi', 'không giỏi'],
+        'answer': 'chị Maria thì nhảy rất giỏi',
+      },
+      {'type': LessonType.quiz, 'question': 'Hỏi "Thích loại N nào" dùng cấu trúc?', 'options': ['どんな N', 'どれ N', 'なんの N', 'どう N'], 'answer': 'どんな N'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb9LuyenTap3Data() {
+    return [
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '英語がよく分かります',
+        'rmj': 'Eigo ga yoku wakarimasu',
+        'words': ['tôi', 'hiểu', 'rất rõ', 'tiếng Anh', 'tiếng Nhật'],
+        'answer': 'tôi hiểu rất rõ tiếng Anh',
+      },
+      {'type': LessonType.quiz, 'question': 'Từ chỉ mức độ "Hơi hơi, một chút" là?', 'options': ['よく (yoku)', 'だいたい (daitai)', 'すこし (sukoshi)', 'ぜんぜん (zenzen)'], 'answer': 'すこし (sukoshi)'},
+      {'type': LessonType.quiz, 'question': 'Từ chỉ mức độ "Hoàn toàn không" (Đi với phủ định) là?', 'options': ['あまり (amari)', 'ぜんぜん (zenzen)', 'よく (yoku)', 'すこし (sukoshi)'], 'answer': 'ぜんぜん (zenzen)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'お金が全然ありません',
+        'rmj': 'Okane ga zenzen arimasen',
+        'words': ['tôi', 'hoàn toàn', 'không có', 'tiền', 'thời gian'],
+        'answer': 'tôi hoàn toàn không có tiền',
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb9LuyenNoiData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': 'から', 'hiragana': 'から', 'romaji': 'kara', 'meaning': 'Vì...',
+        'example_img': 'assets/images/example_kara.png',
+        'example_jp': '時間がないから、新聞を読みません。', 'example_rmj': 'Jikan ga nai kara, shinbun o yomimasen.', 'example_vn': 'Vì không có thời gian, nên tôi không đọc báo.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': 'どうして', 'hiragana': 'どうして', 'romaji': 'doushite', 'options': ['như thế nào', 'tại sao', 'khi nào', 'ở đâu'], 'answer': 'tại sao'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'どうしてきのう早く帰りましたか',
+        'rmj': 'Doushite kinou hayaku kaerimashita ka',
+        'words': ['tại sao', 'hôm qua', 'bạn lại về', 'sớm', 'vậy'],
+        'answer': 'tại sao hôm qua bạn lại về sớm vậy',
+      },
+      {'type': LessonType.listening, 'options': ['どうしてですか', 'いつですか', 'だれですか', 'どこですか'], 'answer': 'どうしてですか'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb9LuyenVietData() {
+    return [
+      {'type': LessonType.kanjiDraw, 'kanji_word': '好き', 'kanji_target': '好', 'meaning': 'Hảo (Thích, tốt)', 'rmj': 'su(ki) / kou'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '歌', 'kanji_target': '歌', 'meaning': 'Ca (Bài hát)', 'rmj': 'uta / ka'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '音', 'kanji_target': '音', 'meaning': 'Âm (Âm thanh)', 'rmj': 'oto / on'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '楽', 'kanji_target': '楽', 'meaning': 'Lạc (Vui vẻ, âm nhạc)', 'rmj': 'tano(shii) / raku'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Thích', 'right': '好'}, {'left': 'Bài hát', 'right': '歌'}, {'left': 'Âm thanh', 'right': '音'}, {'left': 'Vui vẻ', 'right': '楽'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb9OnTapData() {
+    return [
+      {'type': LessonType.quiz, 'question': 'Trợ từ trước "Arimasu" (Có) là?', 'options': ['を (o)', 'が (ga)', 'に (ni)', 'で (de)'], 'answer': 'が (ga)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '約束がありますから、早く帰ります',
+        'rmj': 'Yakusoku ga arimasu kara, hayaku kaerimasu',
+        'words': ['vì', 'có cuộc hẹn', 'nên', 'tôi về', 'sớm'],
+        'answer': 'vì có cuộc hẹn nên tôi về sớm',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '下手', 'hiragana': 'へた', 'romaji': 'heta', 'options': ['giỏi', 'kém', 'thích', 'ghét'], 'answer': 'kém'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '歌', 'kanji_target': '歌', 'meaning': 'Ca (Bài hát)', 'rmj': 'uta'},
+      {'type': LessonType.listening, 'options': ['よくわかります', 'だいたいわかります', 'すこしわかります', 'ぜんぜんわかりません'], 'answer': 'ぜんぜんわかりません'},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': '好き', 'romaji': 'suki', 'meaning': 'Thích'},
+          {'kanji': '嫌い', 'romaji': 'kirai', 'meaning': 'Ghét'},
+          {'kanji': '上手', 'romaji': 'jouzu', 'meaning': 'Giỏi'},
+          {'kanji': '下手', 'romaji': 'heta', 'meaning': 'Kém'},
+          {'kanji': '分かります', 'romaji': 'wakarimasu', 'meaning': 'Hiểu'},
+          {'kanji': 'あります', 'romaji': 'arimasu', 'meaning': 'Có (sở hữu)'},
+          {'kanji': '時間', 'romaji': 'jikan', 'meaning': 'Thời gian'},
+          {'kanji': '約束', 'romaji': 'yakusoku', 'meaning': 'Cuộc hẹn'},
+          {'kanji': 'どうして', 'romaji': 'doushite', 'meaning': 'Tại sao'},
+          {'kanji': '～から', 'romaji': '~kara', 'meaning': 'Vì...'},
+          {'kanji': '全然', 'romaji': 'zenzen', 'meaning': 'Hoàn toàn không...'},
+        ]
+      }
+    ];
+  }
+
+  // ==========================================
+  // DỮ LIỆU CƠ BẢN 10 (SỰ TỒN TẠI & VỊ TRÍ)
+  // ==========================================
+
+  List<Map<String, dynamic>> _getCb10LyThuyetData() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': 'あります', 'hiragana': 'あります', 'romaji': 'arimasu', 'meaning': 'Có (Đồ vật, cây cối)',
+        'example_img': 'assets/images/example_arimasu_exist.png',
+        'example_jp': 'あそこに机があります。', 'example_rmj': 'Asoko ni tsukue ga arimasu.', 'example_vn': 'Ở đằng kia có cái bàn.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': 'います', 'hiragana': 'います', 'romaji': 'imasu', 'meaning': 'Có (Người, động vật)',
+        'example_img': 'assets/images/example_imasu.png',
+        'example_jp': 'あそこに男の人がいます。', 'example_rmj': 'Asoko ni otoko no hito ga imasu.', 'example_vn': 'Ở đằng kia có người đàn ông.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': 'いろいろ（な）', 'hiragana': 'いろいろ', 'romaji': 'iroiro', 'options': ['to lớn', 'màu sắc', 'nhiều loại / đa dạng', 'ít'], 'answer': 'nhiều loại / đa dạng'},
+      {'type': LessonType.quiz, 'question': 'Khi nói "Có quyển sách" ta dùng từ nào?', 'options': ['あります (arimasu)', 'います (imasu)', 'きます (kimasu)', 'いきます (ikimasu)'], 'answer': 'あります (arimasu)'},
+      {'type': LessonType.quiz, 'question': 'Khi nói "Có con chó" ta dùng từ nào?', 'options': ['あります (arimasu)', 'います (imasu)', 'きます (kimasu)', 'いきます (ikimasu)'], 'answer': 'います (imasu)'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Có (Vật)', 'right': 'あります'}, {'left': 'Có (Người/ĐV)', 'right': 'います'}, {'left': 'Nhiều loại', 'right': 'いろいろ'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb10LuyenTap1Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '男の人', 'hiragana': 'おとこのひと', 'romaji': 'otoko no hito', 'meaning': 'Người đàn ông',
+        'example_img': 'assets/images/example_otokonohito.png',
+        'example_jp': '男の人がいます。', 'example_rmj': 'Otoko no hito ga imasu.', 'example_vn': 'Có người đàn ông.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '女の人', 'hiragana': 'おんなのひと', 'romaji': 'onna no hito', 'meaning': 'Người phụ nữ',
+        'example_img': 'assets/images/example_onnanohito.png',
+        'example_jp': '女の人がいます。', 'example_rmj': 'Onna no hito ga imasu.', 'example_vn': 'Có người phụ nữ.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '男の子', 'hiragana': 'おとこのこ', 'romaji': 'otoko no ko', 'options': ['người đàn ông', 'bé trai', 'người phụ nữ', 'bé gái'], 'answer': 'bé trai'},
+      {'type': LessonType.vocabQuiz, 'kanji': '女の子', 'hiragana': 'おんなのこ', 'romaji': 'onna no ko', 'options': ['người phụ nữ', 'bé gái', 'người đàn ông', 'bé trai'], 'answer': 'bé gái'},
+      {'type': LessonType.vocabQuiz, 'kanji': '犬', 'hiragana': 'いぬ', 'romaji': 'inu', 'options': ['con mèo', 'con cá', 'con chó', 'con chim'], 'answer': 'con chó'},
+      {'type': LessonType.vocabQuiz, 'kanji': '猫', 'hiragana': 'ねこ', 'romaji': 'neko', 'options': ['con mèo', 'con chó', 'con chim', 'con chuột'], 'answer': 'con mèo'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Đàn ông', 'right': '男の人'}, {'left': 'Phụ nữ', 'right': '女の人'}, {'left': 'Chó', 'right': '犬'}, {'left': 'Mèo', 'right': '猫'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb10LuyenTap2Data() {
+    return [
+      {
+        'type': LessonType.flashCard, 'kanji': '上', 'hiragana': 'うえ', 'romaji': 'ue', 'meaning': 'Trên',
+        'example_img': 'assets/images/example_ue.png',
+        'example_jp': '机の上に本があります。', 'example_rmj': 'Tsukue no ue ni hon ga arimasu.', 'example_vn': 'Ở trên bàn có sách.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '下', 'hiragana': 'した', 'romaji': 'shita', 'meaning': 'Dưới',
+        'example_img': 'assets/images/example_shita.png',
+        'example_jp': '机の下に猫がいます。', 'example_rmj': 'Tsukue no shita ni neko ga imasu.', 'example_vn': 'Ở dưới bàn có con mèo.'
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '前', 'hiragana': 'まえ', 'romaji': 'mae', 'options': ['trước', 'sau', 'trên', 'dưới'], 'answer': 'trước'},
+      {'type': LessonType.vocabQuiz, 'kanji': '後ろ', 'hiragana': 'うしろ', 'romaji': 'ushiro', 'options': ['trước', 'sau', 'phải', 'trái'], 'answer': 'sau'},
+      {'type': LessonType.vocabQuiz, 'kanji': '中', 'hiragana': 'なか', 'romaji': 'naka', 'options': ['ngoài', 'giữa', 'trong', 'cạnh'], 'answer': 'trong'},
+      {'type': LessonType.vocabQuiz, 'kanji': '外', 'hiragana': 'そと', 'romaji': 'soto', 'options': ['trong', 'ngoài', 'trên', 'dưới'], 'answer': 'ngoài'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Trên', 'right': '上'}, {'left': 'Dưới', 'right': '下'}, {'left': 'Trước', 'right': '前'}, {'left': 'Sau', 'right': '後ろ'}, {'left': 'Trong', 'right': '中'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb10LuyenTap3Data() {
+    return [
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '庭にだれがいますか',
+        'rmj': 'Niwa ni dare ga imasu ka',
+        'words': ['ở ngoài sân', 'có', 'ai', 'vậy', 'cái gì'],
+        'answer': 'ở ngoài sân có ai vậy',
+      },
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '箱の中に何がありますか',
+        'rmj': 'Hako no naka ni nani ga arimasu ka',
+        'words': ['ở', 'trong hộp', 'có', 'cái gì', 'ai'],
+        'answer': 'ở trong hộp có cái gì',
+      },
+      {'type': LessonType.quiz, 'question': 'Trợ từ đi sau Địa điểm để chỉ SỰ TỒN TẠI (Ở đâu có cái gì) là?', 'options': ['に (ni)', 'で (de)', 'へ (he)', 'を (o)'], 'answer': 'に (ni)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '公園に猫がいます',
+        'rmj': 'Kouen ni neko ga imasu',
+        'words': ['ở', 'công viên', 'có', 'con mèo', 'con chó'],
+        'answer': 'ở công viên có con mèo',
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb10LuyenNoiData() {
+    return [
+      {'type': LessonType.vocabQuiz, 'kanji': '隣', 'hiragana': 'となり', 'romaji': 'tonari', 'options': ['bên cạnh', 'gần', 'giữa', 'đối diện'], 'answer': 'bên cạnh'},
+      {'type': LessonType.vocabQuiz, 'kanji': '近く', 'hiragana': 'ちかく', 'romaji': 'chikaku', 'options': ['xa', 'gần', 'trước', 'sau'], 'answer': 'gần'},
+      {'type': LessonType.vocabQuiz, 'kanji': '間', 'hiragana': 'あいだ', 'romaji': 'aida', 'options': ['trong', 'giữa', 'ngoài', 'trên'], 'answer': 'giữa'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '本屋はスーパーの隣にあります',
+        'rmj': 'Honya wa su-pa- no tonari ni arimasu',
+        'words': ['hiệu sách', 'thì', 'ở', 'bên cạnh siêu thị', 'trong siêu thị'],
+        'answer': 'hiệu sách thì ở bên cạnh siêu thị',
+      },
+      {'type': LessonType.listening, 'options': ['となりにあります', 'ちかくにあります', 'あいだにあります', 'なかにあります'], 'answer': 'となりにあります'},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb10LuyenVietData() {
+    return [
+      {'type': LessonType.kanjiDraw, 'kanji_word': '男', 'kanji_target': '男', 'meaning': 'Nam', 'rmj': 'otoko / dan'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '女', 'kanji_target': '女', 'meaning': 'Nữ', 'rmj': 'onna / jo'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '上', 'kanji_target': '上', 'meaning': 'Thượng (Trên)', 'rmj': 'ue / jou'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '下', 'kanji_target': '下', 'meaning': 'Hạ (Dưới)', 'rmj': 'shita / ka'},
+      {'type': LessonType.matching, 'pairs': [{'left': 'Nam', 'right': '男'}, {'left': 'Nữ', 'right': '女'}, {'left': 'Thượng', 'right': '上'}, {'left': 'Hạ', 'right': '下'}]},
+    ];
+  }
+
+  List<Map<String, dynamic>> _getCb10OnTapData() {
+    return [
+      {'type': LessonType.quiz, 'question': 'Trợ từ dùng khi nói "Có A và B..." là?', 'options': ['や (ya)', 'と (to)', 'も (mo)', 'が (ga)'], 'answer': 'や (ya)'},
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': '箱の中に手紙や写真があります',
+        'rmj': 'Hako no naka ni tegami ya shashin ga arimasu',
+        'words': ['ở trong hộp', 'có', 'bức thư', 'và', 'bức ảnh'],
+        'answer': 'ở trong hộp có bức thư và bức ảnh',
+      },
+      {'type': LessonType.vocabQuiz, 'kanji': '犬', 'hiragana': 'いぬ', 'romaji': 'inu', 'options': ['mèo', 'chó', 'chim', 'chuột'], 'answer': 'chó'},
+      {'type': LessonType.kanjiDraw, 'kanji_word': '男の人', 'kanji_target': '男', 'meaning': 'Nam', 'rmj': 'otoko'},
+      {'type': LessonType.listening, 'options': ['うえにあります', 'したにあります', 'まえにあります', 'うしろにあります'], 'answer': 'したにあります'},
+      {
+        'type': LessonType.vocabSummary,
+        'words': [
+          {'kanji': 'あります', 'romaji': 'arimasu', 'meaning': 'Có (Vật, cây cối)'},
+          {'kanji': 'います', 'romaji': 'imasu', 'meaning': 'Có (Người, động vật)'},
+          {'kanji': '男の人', 'romaji': 'otoko no hito', 'meaning': 'Người đàn ông'},
+          {'kanji': '女の人', 'romaji': 'onna no hito', 'meaning': 'Người phụ nữ'},
+          {'kanji': '犬', 'romaji': 'inu', 'meaning': 'Con chó'},
+          {'kanji': '猫', 'romaji': 'neko', 'meaning': 'Con mèo'},
+          {'kanji': '上/下', 'romaji': 'ue/shita', 'meaning': 'Trên/Dưới'},
+          {'kanji': '前/後ろ', 'romaji': 'mae/ushiro', 'meaning': 'Trước/Sau'},
+          {'kanji': '中/外', 'romaji': 'naka/soto', 'meaning': 'Trong/Ngoài'},
+          {'kanji': '隣/近く/間', 'romaji': 'tonari/chikaku/aida', 'meaning': 'Bên cạnh/Gần/Giữa'},
+        ]
+      }
+    ];
+  }
 
   List<Map<String, dynamic>> _getHangAData() => [
     {'type': LessonType.learn, 'char': 'あ', 'romaji': 'a', 'gif': 'assets/gifs/a.gif', 'isHiragana': true},
@@ -414,13 +2167,12 @@ class _LessonScreenState extends State<LessonScreen> {
     {'type': LessonType.listening, 'options': ['ア', 'イ', 'ウ', 'エ'], 'answer': 'イ'},
     {'type': LessonType.listening, 'options': ['お', 'え', 'い', 'あ'], 'answer': 'お'},
     {'type': LessonType.quiz, 'question': 'Chữ nào là "i" (Hiragana)?', 'options': ['あ', 'い', 'ア', 'イ'], 'answer': 'い'},
-    {'type': LessonType.matching, 'pairs': [{'left': 'あ', 'right': 'ア'}, {'left': 'い', 'right': 'イ'}]},
     {'type': LessonType.learn, 'char': 'う', 'romaji': 'u', 'gif': 'assets/gifs/u.gif', 'isHiragana': true},
     {'type': LessonType.learn, 'char': 'ウ', 'romaji': 'u (Katakana)', 'gif': 'assets/gifs/uk.gif', 'isHiragana': false},
     {'type': LessonType.learn, 'char': 'え', 'romaji': 'e', 'gif': 'assets/gifs/e.gif', 'isHiragana': true},
     {'type': LessonType.learn, 'char': 'エ', 'romaji': 'e (Katakana)', 'gif': 'assets/gifs/ek.gif', 'isHiragana': false},
     {'type': LessonType.quiz, 'question': 'Chữ nào là "E" (Katakana)?', 'options': ['エ', 'オ', 'え', 'う'], 'answer': 'エ'},
-    {'type': LessonType.matching, 'pairs': [{'left': 'う', 'right': 'ウ'}, {'left': 'え', 'right': 'エ'}]},
+    {'type': LessonType.matching, 'pairs': [{'left': 'あ', 'right': 'ア'}, {'left': 'い', 'right': 'イ'}, {'left': 'う', 'right': 'ウ'}, {'left': 'え', 'right': 'エ'}]},
     {'type': LessonType.learn, 'char': 'お', 'romaji': 'o', 'gif': 'assets/gifs/o.gif', 'isHiragana': true},
     {'type': LessonType.learn, 'char': 'オ', 'romaji': 'o (Katakana)', 'gif': 'assets/gifs/ok.gif', 'isHiragana': false},
     {'type': LessonType.matching, 'pairs': [{'left': 'あ', 'right': 'ア'}, {'left': 'い', 'right': 'イ'}, {'left': 'う', 'right': 'ウ'}, {'left': 'え', 'right': 'エ'}, {'left': 'お', 'right': 'オ'}]},
@@ -432,24 +2184,19 @@ class _LessonScreenState extends State<LessonScreen> {
       {'type': LessonType.learn, 'char': 'カ', 'romaji': 'ka (Katakana)', 'gif': 'assets/gifs/kak.gif', 'isHiragana': false},
       {'type': LessonType.learn, 'char': 'き', 'romaji': 'ki', 'gif': 'assets/gifs/ki.gif', 'isHiragana': true},
       {'type': LessonType.learn, 'char': 'キ', 'romaji': 'ki (Katakana)', 'gif': 'assets/gifs/kik.gif', 'isHiragana': false},
-
-      // --- Bài tập Nghe Hàng Ka ---
       {'type': LessonType.listening, 'options': ['か', 'き', 'く', 'け'], 'answer': 'か'},
       {'type': LessonType.listening, 'options': ['カ', 'キ', 'ク', 'ケ'], 'answer': 'キ'},
       {'type': LessonType.listening, 'options': ['こ', 'け', 'く', 'き'], 'answer': 'こ'},
-      // -----------------------------
-
       {'type': LessonType.quiz, 'question': 'Chữ nào là "Ki" (Hiragana)?', 'options': ['か', 'き', 'く', 'け'], 'answer': 'き'},
-      {'type': LessonType.matching, 'pairs': [{'left': 'か', 'right': 'カ'}, {'left': 'き', 'right': 'キ'}]},
       {'type': LessonType.learn, 'char': 'く', 'romaji': 'ku', 'gif': 'assets/gifs/ku.gif', 'isHiragana': true},
       {'type': LessonType.learn, 'char': 'ク', 'romaji': 'ku (Katakana)', 'gif': 'assets/gifs/kuk.gif', 'isHiragana': false},
       {'type': LessonType.learn, 'char': 'け', 'romaji': 'ke', 'gif': 'assets/gifs/ke.gif', 'isHiragana': true},
       {'type': LessonType.learn, 'char': 'ケ', 'romaji': 'ke (Katakana)', 'gif': 'assets/gifs/kek.gif', 'isHiragana': false},
       {'type': LessonType.quiz, 'question': 'Chữ nào là "Ku" (Katakana)?', 'options': ['ク', 'シ', 'ツ', 'ソ'], 'answer': 'ク'},
-      {'type': LessonType.matching, 'pairs': [{'left': 'く', 'right': 'ク'}, {'left': 'け', 'right': 'ケ'}]},
+      {'type': LessonType.matching, 'pairs': [{'left': 'か', 'right': 'カ'}, {'left': 'き', 'right': 'キ'}, {'left': 'く', 'right': 'ク'}, {'left': 'け', 'right': 'ケ'}]},
       {'type': LessonType.learn, 'char': 'こ', 'romaji': 'ko', 'gif': 'assets/gifs/ko.gif', 'isHiragana': true},
       {'type': LessonType.learn, 'char': 'コ', 'romaji': 'ko (Katakana)', 'gif': 'assets/gifs/kok.gif', 'isHiragana': false},
-      {'type': LessonType.quiz, 'question': 'Chọn chữ "Ke" (Hiragana)', 'options': ['け', 'い', 'は', 'ほ'], 'answer': 'け'},
+      {'type': LessonType.quiz, 'question': 'Chữ nào là "Ke" (Hiragana)', 'options': ['け', 'い', 'は', 'ほ'], 'answer': 'け'},
       {'type': LessonType.matching, 'pairs': [{'left': 'か', 'right': 'カ'}, {'left': 'き', 'right': 'キ'}, {'left': 'く', 'right': 'ク'}, {'left': 'け', 'right': 'ケ'}, {'left': 'こ', 'right': 'コ'}]},
     ];
   }
@@ -462,7 +2209,6 @@ class _LessonScreenState extends State<LessonScreen> {
       {'type': LessonType.learn, 'char': 'シ', 'romaji': 'shi (Katakana)', 'gif': 'assets/gifs/shik.gif', 'isHiragana': false},
       {'type': LessonType.listening, 'options': ['さ', 'し', 'す', 'せ'], 'answer': 'さ'},
       {'type': LessonType.matching, 'pairs': [{'left': 'さ', 'right': 'サ'}, {'left': 'し', 'right': 'シ'}]},
-
       {'type': LessonType.learn, 'char': 'す', 'romaji': 'su', 'gif': 'assets/gifs/su.gif', 'isHiragana': true},
       {'type': LessonType.learn, 'char': 'ス', 'romaji': 'su (Katakana)', 'gif': 'assets/gifs/suk.gif', 'isHiragana': false},
       {'type': LessonType.learn, 'char': 'せ', 'romaji': 'se', 'gif': 'assets/gifs/se.gif', 'isHiragana': true},
@@ -470,7 +2216,6 @@ class _LessonScreenState extends State<LessonScreen> {
       {'type': LessonType.quiz, 'question': 'Chữ nào là "Shi" (Katakana)?', 'options': ['シ', 'ツ', 'ソ', 'ン'], 'answer': 'シ'},
       {'type': LessonType.listening, 'options': ['サ', 'シ', 'ス', 'セ'], 'answer': 'ス'},
       {'type': LessonType.matching, 'pairs': [{'left': 'す', 'right': 'ス'}, {'left': 'せ', 'right': 'セ'}]},
-
       {'type': LessonType.learn, 'char': 'そ', 'romaji': 'so', 'gif': 'assets/gifs/so.gif', 'isHiragana': true},
       {'type': LessonType.learn, 'char': 'ソ', 'romaji': 'so (Katakana)', 'gif': 'assets/gifs/sok.gif', 'isHiragana': false},
       {'type': LessonType.listening, 'options': ['そ', 'せ', 'す', 'し'], 'answer': 'そ'},
@@ -487,7 +2232,6 @@ class _LessonScreenState extends State<LessonScreen> {
       {'type': LessonType.learn, 'char': 'チ', 'romaji': 'chi (Katakana)', 'gif': 'assets/gifs/chik.gif', 'isHiragana': false},
       {'type': LessonType.listening, 'options': ['た', 'ち', 'つ', 'て'], 'answer': 'た'},
       {'type': LessonType.matching, 'pairs': [{'left': 'た', 'right': 'タ'}, {'left': 'ち', 'right': 'チ'}]},
-
       {'type': LessonType.learn, 'char': 'つ', 'romaji': 'tsu', 'gif': 'assets/gifs/tsu.gif', 'isHiragana': true},
       {'type': LessonType.learn, 'char': 'ツ', 'romaji': 'tsu (Katakana)', 'gif': 'assets/gifs/tsuk.gif', 'isHiragana': false},
       {'type': LessonType.learn, 'char': 'て', 'romaji': 'te', 'gif': 'assets/gifs/te.gif', 'isHiragana': true},
@@ -512,7 +2256,6 @@ class _LessonScreenState extends State<LessonScreen> {
       {'type': LessonType.learn, 'char': 'ニ', 'romaji': 'ni (Katakana)', 'gif': 'assets/gifs/nik.gif', 'isHiragana': false},
       {'type': LessonType.listening, 'options': ['な', 'に', 'ぬ', 'ね'], 'answer': 'な'},
       {'type': LessonType.matching, 'pairs': [{'left': 'な', 'right': 'ナ'}, {'left': 'に', 'right': 'ニ'}]},
-
       {'type': LessonType.learn, 'char': 'ぬ', 'romaji': 'nu', 'gif': 'assets/gifs/nu.gif', 'isHiragana': true},
       {'type': LessonType.learn, 'char': 'ヌ', 'romaji': 'nu (Katakana)', 'gif': 'assets/gifs/nuk.gif', 'isHiragana': false},
       {'type': LessonType.learn, 'char': 'ね', 'romaji': 'ne', 'gif': 'assets/gifs/ne.gif', 'isHiragana': true},
@@ -520,7 +2263,6 @@ class _LessonScreenState extends State<LessonScreen> {
       {'type': LessonType.quiz, 'question': 'Chữ nào là "Ni" (Katakana)?', 'options': ['ニ', 'こ', 'ネ', 'ミ'], 'answer': 'ニ'},
       {'type': LessonType.listening, 'options': ['ナ', 'ニ', 'ヌ', 'ネ'], 'answer': 'ヌ'},
       {'type': LessonType.matching, 'pairs': [{'left': 'ぬ', 'right': 'ヌ'}, {'left': 'ね', 'right': 'ネ'}]},
-
       {'type': LessonType.learn, 'char': 'の', 'romaji': 'no', 'gif': 'assets/gifs/no.gif', 'isHiragana': true},
       {'type': LessonType.learn, 'char': 'ノ', 'romaji': 'no (Katakana)', 'gif': 'assets/gifs/nok.gif', 'isHiragana': false},
       {'type': LessonType.listening, 'options': ['の', 'ね', 'ぬ', 'に'], 'answer': 'の'},
@@ -637,15 +2379,10 @@ class _LessonScreenState extends State<LessonScreen> {
 
   List<Map<String, dynamic>> _getFinalReviewData() {
     return [
-      // 1. Khởi động với trắc nghiệm cơ bản
       {'type': LessonType.quiz, 'question': 'Chữ nào là "O" (Hiragana)?', 'options': ['あ', 'お', 'す', 'む'], 'answer': 'お'},
       {'type': LessonType.quiz, 'question': 'Chữ nào là "Ki" (Katakana)?', 'options': ['キ', 'チ', 'ミ', 'ニ'], 'answer': 'キ'},
-
-      // 2. Bài nghe chữ Hiragana dễ nhầm
-      {'type': LessonType.listening, 'options': ['ぬ', 'ね', 'め', 'の'], 'answer': 'め'}, // Nghe 'Me'
-      {'type': LessonType.listening, 'options': ['わ', 'れ', 'ね', 'る'], 'answer': 'れ'}, // Nghe 'Re'
-
-      // 3. Ghép thẻ Hiragana & Katakana (Cấp độ 1)
+      {'type': LessonType.listening, 'options': ['ぬ', 'ね', 'め', 'の'], 'answer': 'め'},
+      {'type': LessonType.listening, 'options': ['わ', 'れ', 'ね', 'る'], 'answer': 'れ'},
       {'type': LessonType.matching, 'pairs': [
         {'left': 'あ', 'right': 'ア'},
         {'left': 'か', 'right': 'カ'},
@@ -653,16 +2390,10 @@ class _LessonScreenState extends State<LessonScreen> {
         {'left': 'た', 'right': 'タ'},
         {'left': 'な', 'right': 'ナ'}
       ]},
-
-      // 4. Trắc nghiệm phân biệt Katakana
       {'type': LessonType.quiz, 'question': 'Chọn chữ "N" (Katakana)', 'options': ['シ', 'ツ', 'ソ', 'ン'], 'answer': 'ン'},
       {'type': LessonType.quiz, 'question': 'Chọn chữ "Shi" (Katakana)', 'options': ['シ', 'ツ', 'ソ', 'ン'], 'answer': 'シ'},
-
-      // 5. Bài nghe Katakana
-      {'type': LessonType.listening, 'options': ['ハ', 'ヒ', 'フ', 'ヘ'], 'answer': 'フ'}, // Nghe 'Fu'
-      {'type': LessonType.listening, 'options': ['マ', 'ミ', 'ム', 'メ'], 'answer': 'ミ'}, // Nghe 'Mi'
-
-      // 6. Ghép thẻ Hiragana & Katakana (Cấp độ 2)
+      {'type': LessonType.listening, 'options': ['ハ', 'ヒ', 'フ', 'ヘ'], 'answer': 'フ'},
+      {'type': LessonType.listening, 'options': ['マ', 'ミ', 'ム', 'メ'], 'answer': 'ミ'},
       {'type': LessonType.matching, 'pairs': [
         {'left': 'は', 'right': 'ハ'},
         {'left': 'ま', 'right': 'マ'},
@@ -670,7 +2401,6 @@ class _LessonScreenState extends State<LessonScreen> {
         {'left': 'ら', 'right': 'ラ'},
         {'left': 'わ', 'right': 'ワ'}
       ]},
-
       // 7. Chốt hạ bằng các chữ cái đặc biệt
       {'type': LessonType.quiz, 'question': 'Chữ nào là "Wo" (Hiragana)?', 'options': ['を', 'わ', 'ち', 'ん'], 'answer': 'を'},
       {'type': LessonType.listening, 'options': ['ら', 'り', 'る', 'れ'], 'answer': 'る'}, // Nghe 'Ru'
@@ -686,15 +2416,14 @@ class _LessonScreenState extends State<LessonScreen> {
     ];
   }
 
-  // --- LOGIC CHUYỂN BÀI ---
-  void _nextActivity() {
+  void _nextActivity(){
     if (_currentIndex < _activities.length - 1) {
       setState(() {
         _currentIndex++;
         _progress = (_currentIndex + 1) / _activities.length;
       });
       _playCurrentAudio();
-    } else {
+    } else{
       _finishLesson();
     }
   }
@@ -703,10 +2432,12 @@ class _LessonScreenState extends State<LessonScreen> {
     SoundManager.instance.vibrate('heavy');
     await UserProgress().addExp(19);
     await UserProgress().markLessonCompleted(widget.lessonId);
+    if (!mounted) return;
+
     int total = _totalQuizCount > 0 ? _totalQuizCount : 1;
     int correct = _correctAnswers > 0 ? _correctAnswers : total;
 
-    Navigator.pushReplacement(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => LessonCompletionScreen(
@@ -715,10 +2446,8 @@ class _LessonScreenState extends State<LessonScreen> {
           expEarned: 19,
         ),
       ),
-      result: true,
-    ).then((result) {
-      if (mounted) Navigator.pop(context, true);
-    });
+    );
+    if (mounted) Navigator.pop(context, true);
   }
 
   void _showResultSheet(bool isCorrect, String correctAnswer, String userAnswer) {
@@ -823,10 +2552,17 @@ class _LessonScreenState extends State<LessonScreen> {
   Widget _buildBody(Map<String, dynamic> data) {
     switch (data['type'] as LessonType) {
       case LessonType.learn: return _buildLearnView(data);
-      case LessonType.quiz: return _buildQuizView(data);
+      case LessonType.quiz: return StandardQuizView(
+        data: data,
+        onCheckResult: (isCorrect, correctAns, userAns) => _showResultSheet(isCorrect, correctAns, userAns),
+      );
       case LessonType.matching: return _buildMatchingView(data);
       case LessonType.imageQuiz: return _buildImageQuizView(data);
-      case LessonType.listening: return _buildListeningView(data);
+      case LessonType.listening:
+        return ListeningQuizView(
+          data: data,
+          onCheckResult: (isCorrect, correctAns, userAns) => _showResultSheet(isCorrect, correctAns, userAns),
+        );
       case LessonType.sentenceBuilder:
         return SentenceBuilderView(
             data: data,
@@ -842,12 +2578,11 @@ class _LessonScreenState extends State<LessonScreen> {
             onCheckResult: (isCorrect, correctAns, userAns) => _showResultSheet(isCorrect, correctAns, userAns)
         );
       case LessonType.vocabSummary:
-        return VocabSummaryView(words: data['words'], onNext: _nextActivity, onExit: () => Navigator.pop(context));
+        return VocabSummaryView(words: data['words'], onNext: _nextActivity, onExit: _finishLesson,);
       default: return const SizedBox();
     }
   }
 
-  // CÁC GIAO DIỆN BÀI HỌC CŨ
   Widget _buildLearnView(Map<String, dynamic> data) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -865,41 +2600,6 @@ class _LessonScreenState extends State<LessonScreen> {
         IconButton(icon: const Icon(Icons.volume_up, size: 40, color: Color(0xFF58CC02)), onPressed: () => SoundManager.instance.speakJapanese(data['char'])),
         const Spacer(),
         SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: () { SoundManager.instance.vibrate('light'); _nextActivity(); }, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF58CC02)), child: const Text("ĐÃ HIỂU", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white))))
-      ],
-    );
-  }
-
-  Widget _buildQuizView(Map<String, dynamic> data) {
-    return Column(
-      children: [
-        const Text("Chọn đáp án đúng", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey)),
-        const SizedBox(height: 30),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(child: Text(data['question'], textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
-            IconButton(onPressed: () => SoundManager.instance.speakJapanese(data['answer']), icon: const Icon(Icons.volume_up, color: Color(0xFF58CC02), size: 30)),
-          ],
-        ),
-        const SizedBox(height: 30),
-        Expanded(
-          child: GridView.count(
-            crossAxisCount: 2, mainAxisSpacing: 15, crossAxisSpacing: 15, childAspectRatio: 1.1,
-            children: (data['options'] as List<String>).map((opt) {
-              return ElevatedButton(
-                onPressed: () {
-                  bool isCorrect = (opt == data['answer']);
-                  _showResultSheet(isCorrect, data['answer'], opt);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: const BorderSide(color: Colors.grey, width: 2)),
-                ),
-                child: Text(opt, style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
-              );
-            }).toList(),
-          ),
-        ),
       ],
     );
   }
@@ -971,45 +2671,6 @@ class _LessonScreenState extends State<LessonScreen> {
       ],
     );
   }
-
-  // GIAO DIỆN BÀI TẬP NGHE CHỮ CÁI
-  Widget _buildListeningView(Map<String, dynamic> data) {
-    return Column(
-      children: [
-        const Text("Nghe và chọn chữ cái đúng", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey)),
-
-        const SizedBox(height: 60), // Tăng khoảng cách để loa nằm cân đối ở giữa
-
-        // Nút Loa đơn giản (Giống ở màn hình học chữ cái)
-        IconButton(
-          onPressed: () => SoundManager.instance.speakJapanese(data['answer']),
-          icon: const Icon(Icons.volume_up, color: Color(0xFF58CC02), size: 80), // Size to để dễ bấm
-        ),
-
-        const SizedBox(height: 60),
-
-        // 4 đáp án bên dưới
-        Expanded(
-          child: GridView.count(
-            crossAxisCount: 2, mainAxisSpacing: 15, crossAxisSpacing: 15, childAspectRatio: 1.1,
-            children: (data['options'] as List<String>).map((opt) {
-              return ElevatedButton(
-                onPressed: () {
-                  bool isCorrect = (opt == data['answer']);
-                  _showResultSheet(isCorrect, data['answer'], opt);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: const BorderSide(color: Colors.grey, width: 2)),
-                ),
-                child: Text(opt, style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 // 2. GIAO DIỆN GHÉP CÂU MỚI (Stateful Widget để quản lý việc nhặt/thả từ vựng)
@@ -1026,6 +2687,9 @@ class SentenceBuilderView extends StatefulWidget {
 class _SentenceBuilderViewState extends State<SentenceBuilderView> {
   List<String> poolWords = []; // Từ bên dưới
   List<String> selectedWords = []; // Từ được chọn lên trên
+
+  String _normalize(String s) =>
+      s.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
   @override
   void initState() {
@@ -1263,14 +2927,14 @@ class DrawingPainter extends CustomPainter {
   bool shouldRepaint(DrawingPainter oldDelegate) => true;
 }
 
-// CÁC WIDGET PHỤ TRỢ (Matching Game & Màn hình Kết Quả)
-class MatchingGame extends StatefulWidget {
+class MatchingGame extends StatefulWidget{
   final List<Map<String, String>> pairs;
   final VoidCallback onCompleted;
   const MatchingGame({super.key, required this.pairs, required this.onCompleted});
   @override
   State<MatchingGame> createState() => _MatchingGameState();
 }
+
 class _MatchingGameState extends State<MatchingGame> {
   late List<String> leftItems;
   late List<String> rightItems;
@@ -1286,21 +2950,45 @@ class _MatchingGameState extends State<MatchingGame> {
   }
 
   void _handleTap(String item, bool isLeft) {
-    setState(() { if (isLeft) selectedLeft = item; else selectedRight = item; });
+    SoundManager.instance.vibrate('light');
+    setState(() {
+      if (isLeft) {
+        // Cho phép bấm lại để hủy chọn
+        selectedLeft = (selectedLeft == item) ? null : item;
+      } else {
+        selectedRight = (selectedRight == item) ? null : item;
+      }
+    });
     _checkMatch();
   }
 
   void _checkMatch() async {
     if (selectedLeft != null && selectedRight != null) {
       bool isCorrect = widget.pairs.any((pair) => pair['left'] == selectedLeft && pair['right'] == selectedRight);
+
       if (isCorrect) {
         SoundManager.instance.vibrate('light');
-        setState(() { matchedItems.add(selectedLeft!); matchedItems.add(selectedRight!); selectedLeft = null; selectedRight = null; });
-        if (matchedItems.length == widget.pairs.length * 2) { await Future.delayed(const Duration(milliseconds: 500)); widget.onCompleted(); }
+        setState(() {
+          matchedItems.add(selectedLeft!);
+          matchedItems.add(selectedRight!);
+          selectedLeft = null;
+          selectedRight = null;
+        });
+
+        // Hoàn thành tất cả
+        if (matchedItems.length == widget.pairs.length * 2) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          widget.onCompleted();
+        }
       } else {
         SoundManager.instance.vibrate('error');
         await Future.delayed(const Duration(milliseconds: 300));
-        setState(() { selectedLeft = null; selectedRight = null; });
+        if (mounted) {
+          setState(() {
+            selectedLeft = null;
+            selectedRight = null;
+          });
+        }
       }
     }
   }
@@ -1309,14 +2997,27 @@ class _MatchingGameState extends State<MatchingGame> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Text("Nối các cặp tương ứng", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey)),
-        const SizedBox(height: 20),
+        const Text(
+            "Ghép các cặp từ tương ứng",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
+        ),
+        const SizedBox(height: 30),
         Expanded(
           child: Row(
             children: [
-              Expanded(child: ListView(children: leftItems.map((item) => _buildCard(item, true)).toList())),
+              Expanded(
+                  child: ListView(
+                      physics: const BouncingScrollPhysics(), // Hiệu ứng cuộn mượt mà
+                      children: leftItems.map((item) => _buildCard(item, true)).toList()
+                  )
+              ),
               const SizedBox(width: 20),
-              Expanded(child: ListView(children: rightItems.map((item) => _buildCard(item, false)).toList())),
+              Expanded(
+                  child: ListView(
+                      physics: const BouncingScrollPhysics(),
+                      children: rightItems.map((item) => _buildCard(item, false)).toList()
+                  )
+              ),
             ],
           ),
         ),
@@ -1327,6 +3028,24 @@ class _MatchingGameState extends State<MatchingGame> {
   Widget _buildCard(String text, bool isLeft) {
     bool isSelected = isLeft ? (selectedLeft == text) : (selectedRight == text);
     bool isMatched = matchedItems.contains(text);
+    Color bgColor;
+    Color borderColor;
+    Color textColor;
+
+    if (isMatched) {
+      bgColor = const Color(0xFFF0F0F0);
+      borderColor = Colors.transparent;
+      textColor = Colors.grey.shade400;
+    } else if (isSelected) {
+      bgColor = const Color(0xFFE5F6D5);
+      borderColor = const Color(0xFF88D847);
+      textColor = const Color(0xFF58CC02);
+    } else {
+      bgColor = const Color(0xFFF7F7F7);
+      borderColor = Colors.transparent;
+      textColor = Colors.black87;
+    }
+
     return IgnorePointer(
       ignoring: isMatched,
       child: GestureDetector(
@@ -1334,14 +3053,26 @@ class _MatchingGameState extends State<MatchingGame> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           margin: const EdgeInsets.symmetric(vertical: 8),
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
           decoration: BoxDecoration(
-            color: isMatched ? Colors.grey[300] : (isSelected ? Colors.blue[100] : Colors.white),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isMatched ? Colors.transparent : (isSelected ? Colors.blue : Colors.grey.shade300), width: 2),
-            boxShadow: [if (!isMatched) BoxShadow(color: Colors.grey.shade200, offset: const Offset(0, 4), blurRadius: 0)],
+            color: bgColor,
+            borderRadius: BorderRadius.circular(20), // Bo góc tròn xoe
+            border: Border.all(color: borderColor, width: 2),
+            // Đã xóa hoàn toàn boxShadow
           ),
-          child: Center(child: isMatched ? const Icon(Icons.check, color: Colors.grey) : Text(text, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isSelected ? Colors.blue : Colors.black87))),
+          child: Center(
+              child: isMatched
+                  ? const Icon(Icons.check, color: Color(0xFFD0D0D0), size: 28)
+                  : Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: text.length > 5 ? 16 : 22,
+                      fontWeight: FontWeight.bold,
+                      color: textColor
+                  )
+              )
+          ),
         ),
       ),
     );
@@ -1426,12 +3157,31 @@ class FlashCardView extends StatefulWidget {
 class _FlashCardViewState extends State<FlashCardView> {
   bool _isFlipped = false;
 
-  void _flipCard() {
+  // --- BỔ SUNG HÀM NÀY ĐỂ FIX LỖI ---
+  // Hàm này tự động chạy mỗi khi Widget mẹ truyền data mới xuống
+  @override
+  void didUpdateWidget(covariant FlashCardView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Nếu dữ liệu của bài học thay đổi (chuyển sang từ tiếp theo)
+    if (oldWidget.data != widget.data) {
+      setState(() {
+        _isFlipped = false; // Bắt buộc thẻ úp lại về mặt trước (từ vựng)
+      });
+    }
+  }
+  // ----------------------------------
+
+  // Đổi hàm lật thành dạng Toggle (Lật qua lật lại)
+  void _toggleFlip() {
+    SoundManager.instance.vibrate('light');
     setState(() {
-      _isFlipped = true;
+      _isFlipped = !_isFlipped;
     });
-    // Tự động đọc câu ví dụ khi lật sang mặt sau
-    SoundManager.instance.speakJapanese(widget.data['example_jp']);
+
+    // Chỉ tự động đọc câu ví dụ khi lật sang mặt sau
+    if (_isFlipped) {
+      SoundManager.instance.speakJapanese(widget.data['example_jp']);
+    }
   }
 
   @override
@@ -1439,26 +3189,32 @@ class _FlashCardViewState extends State<FlashCardView> {
     return Column(
       children: [
         Expanded(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 400),
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return ScaleTransition(scale: animation, child: child); // Hiệu ứng zoom lật thẻ
-            },
-            child: _isFlipped ? _buildBack() : _buildFront(),
+          child: GestureDetector(
+            onTap: _toggleFlip, // <-- Bấm vào thẻ để lật qua lật lại tuỳ ý
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return ScaleTransition(scale: animation, child: child);
+              },
+              child: _isFlipped ? _buildBack() : _buildFront(),
+            ),
           ),
         ),
         const SizedBox(height: 20),
+
+        // Nút phía dưới
         SizedBox(
           width: double.infinity, height: 55,
           child: ElevatedButton(
-            onPressed: _isFlipped ? widget.onNext : _flipCard,
+            // Nếu chưa lật, bấm nút này sẽ lật thẻ. Nếu đã lật, bấm sẽ sang bài tiếp.
+            onPressed: _isFlipped ? widget.onNext : _toggleFlip,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF58CC02),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              elevation: 0,
             ),
             child: Text(
-                _isFlipped ? "Tiếp tục" : "Lật Thẻ",
+                _isFlipped ? "Tiếp tục" : "Lật thẻ", // Chữ đổi linh hoạt theo ngữ cảnh
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)
             ),
           ),
@@ -1467,88 +3223,131 @@ class _FlashCardViewState extends State<FlashCardView> {
     );
   }
 
-  // Mặt trước: Từ vựng
+  // ================= MẶT TRƯỚC =================
   Widget _buildFront() {
     return Container(
       key: const ValueKey('front'),
       width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF9C4), // Màu vàng nhạt giống thiết kế
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))],
+        color: const Color(0xFFFFF4C7),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
+          // 1. Header (Đã xoá bóng đèn, căn giữa chữ)
+          const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.arrow_back_ios, size: 12, color: Colors.black54),
-              const SizedBox(width: 5),
-              const Text("TỪ MỚI", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-              const SizedBox(width: 5),
-              const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.black54),
-              const SizedBox(width: 15),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                child: const Icon(Icons.lightbulb, color: Colors.amber),
-              )
+              Text("《 TỪ MỚI 》", style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF5A6275), fontSize: 16)),
             ],
           ),
-          const SizedBox(height: 30),
-          Text(widget.data['hiragana'], style: const TextStyle(fontSize: 20, color: Colors.black54)),
-          Text(widget.data['kanji'], style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.black87)),
-          const SizedBox(height: 10),
-          Text(widget.data['romaji'], style: const TextStyle(fontSize: 16, color: Colors.grey)),
-          const SizedBox(height: 20),
-          Text(widget.data['meaning'], style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-          const SizedBox(height: 40),
+
+          const Spacer(),
+
+          // 2. Nội dung chính
+          if (widget.data['kanji'] != widget.data['hiragana'] && widget.data['kanji'].toString().isNotEmpty)
+            Text(widget.data['hiragana'], style: const TextStyle(fontSize: 20, color: Colors.black54)),
+
+          Text(
+              widget.data['kanji'] ?? widget.data['hiragana'],
+              style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: Colors.black87)
+          ),
+
+          const SizedBox(height: 15),
+          Text(widget.data['romaji'], style: const TextStyle(fontSize: 18, color: Color(0xFF7A8394))),
+          const SizedBox(height: 15),
+          Text(widget.data['meaning'], style: const TextStyle(fontSize: 20, color: Colors.black87)),
+
+          const Spacer(),
+
+          // 3. Hai nút âm thanh
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildSoundBtn(Icons.pets, () => SoundManager.instance.speakJapanese(widget.data['hiragana'])), // Nút Rùa (Đọc chậm - Có thể custom hàm đọc chậm sau)
+              _buildSoundBtn(Icons.pets, () => SoundManager.instance.speakJapanese(widget.data['hiragana'] ?? widget.data['kanji'], isSlow: true)),
               const SizedBox(width: 20),
-              _buildSoundBtn(Icons.volume_up, () => SoundManager.instance.speakJapanese(widget.data['hiragana'])),
+              _buildSoundBtn(Icons.volume_up, () => SoundManager.instance.speakJapanese(widget.data['hiragana'] ?? widget.data['kanji'])),
             ],
           ),
-          const SizedBox(height: 20),
-          const Icon(Icons.touch_app, color: Colors.black54, size: 30),
+          const SizedBox(height: 10),
         ],
       ),
     );
   }
 
-  // Mặt sau: Ví dụ
+  // ================= MẶT SAU =================
   Widget _buildBack() {
     return Container(
       key: const ValueKey('back'),
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF9C4),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))],
+        color: const Color(0xFFFFF4C7),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         children: [
+          // 1. Badge "Ví dụ"
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-            decoration: BoxDecoration(color: Colors.amber.shade700, borderRadius: BorderRadius.circular(20)),
-            child: const Text("Ví dụ", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            decoration: BoxDecoration(
+                color: const Color(0xFF9E8A2F),
+                borderRadius: BorderRadius.circular(20)
+            ),
+            child: const Text("Ví dụ", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
+
+          // 2. Hình ảnh minh họa
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Image.asset(widget.data['example_img'], fit: BoxFit.cover, width: double.infinity, errorBuilder: (_,__,___) => Container(color: Colors.grey[200], child: const Icon(Icons.image, size: 50, color: Colors.grey))),
+              child: Image.asset(
+                widget.data['example_img'],
+                fit: BoxFit.cover,
+                width: double.infinity,
+                errorBuilder: (_, __, ___) => Container(
+                  color: Colors.white54,
+                  child: const Icon(Icons.image, size: 50, color: Colors.grey),
+                ),
+              ),
             ),
           ),
+
+          const SizedBox(height: 30),
+
+          // 3. Câu ví dụ tiếng Nhật + Bấm để nghe lại
+          GestureDetector(
+            onTap: () {
+              SoundManager.instance.vibrate('light');
+              SoundManager.instance.speakJapanese(widget.data['example_jp']);
+            },
+            child: Column(
+              children: [
+                Text(
+                  widget.data['example_jp'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.data['example_rmj'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16, color: Color(0xFF7A8394)),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 20),
-          Text(widget.data['example_jp'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
-          Text(widget.data['example_rmj'], style: const TextStyle(fontSize: 16, color: Colors.grey)),
-          const SizedBox(height: 15),
-          Text(widget.data['example_vn'], style: const TextStyle(fontSize: 18, color: Colors.black87)),
+
+          // 4. Nghĩa tiếng Việt
+          Text(
+            widget.data['example_vn'],
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF78C850)),
+          ),
           const SizedBox(height: 10),
         ],
       ),
@@ -1557,11 +3356,17 @@ class _FlashCardViewState extends State<FlashCardView> {
 
   Widget _buildSoundBtn(IconData icon, VoidCallback onTap) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        SoundManager.instance.vibrate('light');
+        onTap();
+      },
       child: Container(
-        padding: const EdgeInsets.all(15),
-        decoration: const BoxDecoration(color: Color(0xFF6D4C41), shape: BoxShape.circle),
-        child: Icon(icon, color: Colors.white, size: 30),
+        width: 70, height: 70,
+        decoration: const BoxDecoration(
+            color: Color(0xFF6B5B15),
+            shape: BoxShape.circle
+        ),
+        child: Icon(icon, color: Colors.white, size: 35),
       ),
     );
   }
@@ -1588,44 +3393,103 @@ class _VocabQuizViewState extends State<VocabQuizView> {
     List<String> options = widget.data['options'];
     bool isSelected = _selectedIndex != null;
 
+    // Kiểm tra xem từ này có Kanji thực sự không (khác với Hiragana)
+    // Nếu là chữ như こんにちは (không có Kanji) thì sẽ ẩn dòng Hiragana nhỏ đi cho giống thiết kế
+    bool hasKanji = widget.data['kanji'] != null &&
+        widget.data['kanji'] != widget.data['hiragana'] &&
+        widget.data['kanji'].toString().isNotEmpty;
+
     return Column(
       children: [
-        const Text("Chọn nghĩa của từ dưới đây", style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 15),
-        Text(widget.data['hiragana'], style: const TextStyle(fontSize: 14, color: Colors.grey)),
-        Text(widget.data['kanji'], style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87)),
-        Text(widget.data['romaji'], style: const TextStyle(fontSize: 16, color: Colors.grey)),
-        const SizedBox(height: 15),
+        // 1. Text hướng dẫn
+        const Text(
+            "Chọn nghĩa của từ dưới đây",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
+        ),
+        const SizedBox(height: 30),
+
+        // 2. Khu vực Từ Vựng Chính
+        // Hiển thị Hiragana nhỏ ở trên (Chỉ hiện nếu từ đó là Kanji)
+        if (hasKanji)
+          Text(widget.data['hiragana'], style: const TextStyle(fontSize: 16, color: Colors.grey)),
+
+        // Từ vựng (Kanji hoặc Hiragana) siêu to khổng lồ
+        Text(
+            widget.data['kanji'] ?? widget.data['hiragana'],
+            style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.black87)
+        ),
+        const SizedBox(height: 8),
+
+        // Romaji
+        Text(widget.data['romaji'], style: const TextStyle(fontSize: 18, color: Color(0xFF7A8394))),
+
+        const SizedBox(height: 25),
+
+        // 3. Nút Loa (Đưa xuống dưới chữ)
         GestureDetector(
-          onTap: () => SoundManager.instance.speakJapanese(widget.data['kanji']),
+          onTap: () {
+            SoundManager.instance.vibrate('light');
+            SoundManager.instance.speakJapanese(widget.data['hiragana'] ?? widget.data['kanji']);
+          },
           child: Container(
-            padding: const EdgeInsets.all(15),
-            decoration: const BoxDecoration(color: Color(0xFFF1F8E9), shape: BoxShape.circle),
+            width: 65, height: 65,
+            decoration: const BoxDecoration(
+                color: Color(0xFFEEF7E8),
+                shape: BoxShape.circle
+            ),
             child: const Icon(Icons.volume_up, color: Color(0xFF58CC02), size: 35),
           ),
         ),
-        const SizedBox(height: 30),
+
+        const SizedBox(height: 40),
+
+        // 4. Grid đáp án phẳng (Flat Design)
         Expanded(
           child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 15, childAspectRatio: 1.5),
+            physics: const NeverScrollableScrollPhysics(), // Tắt cuộn để cố định
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.3 // Tỷ lệ ô chữ nhật mập mạp giống ảnh
+            ),
             itemCount: options.length,
             itemBuilder: (context, index) {
               bool isThisSelected = _selectedIndex == index;
+
               return GestureDetector(
-                onTap: () => setState(() => _selectedIndex = index),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isThisSelected ? const Color(0xFFE8F5E9) : Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: isThisSelected ? const Color(0xFF58CC02) : Colors.grey.shade300, width: 2),
-                  ),
+                onTap: () {
+                  SoundManager.instance.vibrate('light');
+                  setState(() => _selectedIndex = index);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
                   alignment: Alignment.center,
-                  child: Text(options[index], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isThisSelected ? const Color(0xFF58CC02) : Colors.black87)),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    // Màu xanh nhạt khi chọn, màu xám nhạt khi không chọn
+                    color: isThisSelected ? const Color(0xFFE5F6D5) : const Color(0xFFF7F7F7),
+                    borderRadius: BorderRadius.circular(20),
+                    // Xóa bỏ hoàn toàn Border và Shadow để làm thiết kế phẳng
+                  ),
+                  child: Text(
+                      options[index],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          // Màu chữ xanh khi chọn, màu đen khi không chọn
+                          color: isThisSelected ? const Color(0xFF58CC02) : Colors.black87
+                      )
+                  ),
                 ),
               );
             },
           ),
         ),
+
+        // 5. Nút Kiểm tra
+        const SizedBox(height: 10),
         SizedBox(
           width: double.infinity, height: 55,
           child: ElevatedButton(
@@ -1635,18 +3499,24 @@ class _VocabQuizViewState extends State<VocabQuizView> {
               widget.onCheckResult(isCorrect, widget.data['answer'], userAns);
             } : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: isSelected ? const Color(0xFF58CC02) : Colors.grey.shade300,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: isSelected ? 4 : 0,
+              backgroundColor: isSelected ? const Color(0xFF58CC02) : Colors.grey.shade200,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              elevation: 0, // Bỏ bóng đổ của nút
             ),
-            child: Text("Kiểm tra", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.grey.shade500)),
+            child: Text(
+                "Kiểm tra", // Viết hoa chữ K giống UI ảnh 1
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : Colors.grey.shade400
+                )
+            ),
           ),
         ),
       ],
     );
   }
 }
-
 // ==========================================================
 // 3. GIAO DIỆN TỔNG KẾT TỪ VỰNG LÝ THUYẾT
 // ==========================================================
@@ -1727,6 +3597,269 @@ class VocabSummaryView extends StatelessWidget {
             ),
           ],
         )
+      ],
+    );
+  }
+}
+
+// ==========================================================
+// GIAO DIỆN BÀI TẬP NGHE (MỚI - Chuẩn UX thân thiện)
+// ==========================================================
+class ListeningQuizView extends StatefulWidget {
+  final Map<String, dynamic> data;
+  final Function(bool, String, String) onCheckResult;
+
+  const ListeningQuizView({super.key, required this.data, required this.onCheckResult});
+
+  @override
+  State<ListeningQuizView> createState() => _ListeningQuizViewState();
+}
+
+class _ListeningQuizViewState extends State<ListeningQuizView> {
+  String? _selectedOption;
+
+  @override
+  void didUpdateWidget(covariant ListeningQuizView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.data != widget.data) {
+      setState(() => _selectedOption = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<String> options = widget.data['options'];
+    bool canCheck = _selectedOption != null;
+
+    return Column(
+      children: [
+        const Text(
+            "Nghe và chọn chữ cái tương ứng",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
+        ),
+        const SizedBox(height: 40),
+
+        // Khu vực âm thanh (Loa to & Rùa)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildAudioBtn(Icons.volume_up, 90, 45, false),
+            const SizedBox(width: 20),
+            _buildAudioBtn(Icons.pets, 60, 28, true),
+          ],
+        ),
+
+        const SizedBox(height: 40),
+
+        // Grid đáp án phẳng, KHÔNG CÓ ROMAJI
+        Expanded(
+          child: GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.1,
+            physics: const NeverScrollableScrollPhysics(),
+            children: options.map((opt) {
+              bool isSelected = (_selectedOption == opt);
+              return GestureDetector(
+                onTap: () {
+                  SoundManager.instance.vibrate('light');
+                  setState(() => _selectedOption = opt);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFFE5F6D5) : const Color(0xFFF7F7F7),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                        color: isSelected ? const Color(0xFF88D847) : Colors.transparent,
+                        width: 2
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                        opt,
+                        style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? const Color(0xFF58CC02) : Colors.black87
+                        )
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+
+        TextButton(
+          onPressed: () {},
+          child: const Text("Bạn đang không thể nghe", style: TextStyle(fontSize: 15, color: Colors.grey, fontWeight: FontWeight.bold)),
+        ),
+
+        const SizedBox(height: 10),
+
+        SizedBox(
+          width: double.infinity, height: 55,
+          child: ElevatedButton(
+            onPressed: canCheck ? () {
+              widget.onCheckResult(_selectedOption == widget.data['answer'], widget.data['answer'], _selectedOption!);
+            } : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: canCheck ? const Color(0xFF58CC02) : Colors.grey.shade200,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            ),
+            child: Text(
+                "KIỂM TRA",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: canCheck ? Colors.white : Colors.grey.shade400)
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAudioBtn(IconData icon, double boxSize, double iconSize, bool isSlow) {
+    return GestureDetector(
+      onTap: () {
+        SoundManager.instance.vibrate('light');
+        SoundManager.instance.speakJapanese(widget.data['answer'], isSlow: isSlow);
+      },
+      child: Container(
+        width: boxSize, height: boxSize,
+        decoration: const BoxDecoration(color: Color(0xFFEEF7E8), shape: BoxShape.circle),
+        child: Icon(icon, color: const Color(0xFF58CC02), size: iconSize),
+      ),
+    );
+  }
+}
+
+// ==========================================================
+// GIAO DIỆN CÂU HỎI TRẮC NGHIỆM CHỮ (MỚI - Flat Design)
+// ==========================================================
+class StandardQuizView extends StatefulWidget {
+  final Map<String, dynamic> data;
+  final Function(bool, String, String) onCheckResult;
+
+  const StandardQuizView({super.key, required this.data, required this.onCheckResult});
+
+  @override
+  State<StandardQuizView> createState() => _StandardQuizViewState();
+}
+
+class _StandardQuizViewState extends State<StandardQuizView> {
+  String? _selectedOption;
+
+  @override
+  void didUpdateWidget(covariant StandardQuizView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.data != widget.data) {
+      setState(() => _selectedOption = null); // Reset khi qua câu mới
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<String> options = widget.data['options'];
+    bool canCheck = _selectedOption != null;
+
+    return Column(
+      children: [
+        const Text(
+            "Chọn đáp án đúng",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
+        ),
+        const SizedBox(height: 30),
+
+        // Khu vực câu hỏi
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                  widget.data['question'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)
+              ),
+            ),
+            // Nút loa để nghe lại yêu cầu
+            GestureDetector(
+              onTap: () => SoundManager.instance.speakJapanese(widget.data['answer']),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(color: Color(0xFFEEF7E8), shape: BoxShape.circle),
+                child: const Icon(Icons.volume_up, color: Color(0xFF58CC02), size: 30),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 40),
+
+        // Grid đáp án phẳng (Không Romaji theo yêu cầu)
+        Expanded(
+          child: GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.1,
+            physics: const NeverScrollableScrollPhysics(),
+            children: options.map((opt) {
+              bool isSelected = (_selectedOption == opt);
+              return GestureDetector(
+                onTap: () {
+                  SoundManager.instance.vibrate('light');
+                  setState(() => _selectedOption = opt);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFFE5F6D5) : const Color(0xFFF7F7F7),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                        color: isSelected ? const Color(0xFF88D847) : Colors.transparent,
+                        width: 2
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                        opt,
+                        style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? const Color(0xFF58CC02) : Colors.black87
+                        )
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+
+        // Nút Kiểm tra
+        SizedBox(
+          width: double.infinity, height: 55,
+          child: ElevatedButton(
+            onPressed: canCheck ? () {
+              widget.onCheckResult(_selectedOption == widget.data['answer'], widget.data['answer'], _selectedOption!);
+            } : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: canCheck ? const Color(0xFF58CC02) : Colors.grey.shade200,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            ),
+            child: Text(
+                "KIỂM TRA",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: canCheck ? Colors.white : Colors.grey.shade400
+                )
+            ),
+          ),
+        ),
       ],
     );
   }
