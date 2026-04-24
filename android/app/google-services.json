@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "747328417248",
+    "project_id": "japaneseapp-72ffa",
+    "storage_bucket": "japaneseapp-72ffa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747328417248:android:d204db7b40dade7c2ccf85",
+        "android_client_info": {
+          "package_name": "com.example.kanji_summoner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEdIaNAT8y3hrUzqMMzAusv0nrUq5_X9o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -74,9 +74,9 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const SummonerHomePage(), // Tab 1: Học tập
-    const AlphabetScreen(),   // Tab 2: Chữ cái
-    const ProfileScreen(),    // Tab 3: Tôi
+    const SummonerHomePage(),
+    const AlphabetScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -137,7 +137,6 @@ class _MainScreenState extends State<MainScreen> {
 // 2. MÀN HÌNH CHỮ CÁI (DẠNG BẢNG - TABLE)
 // ==========================================================
 class AlphabetScreen extends StatelessWidget {
-  // 1. TẠO BIẾN TOÀN CỤC ĐỂ QUẢN LÝ PHIÊN ĐỌC (Ngắt từ mọi nơi)
   static int readingSessionId = 0;
 
   const AlphabetScreen({super.key});
@@ -902,36 +901,135 @@ class SummonerHomePage extends StatefulWidget {
 class _SummonerHomePageState extends State<SummonerHomePage> {
   final ScrollController _scrollController = ScrollController();
 
-  final List<Map<String, dynamic>> _lessons = [
-    {'id': 1, 'key': 'hang_a', 'title': 'Hàng A (あ)', 'icon': Icons.menu_book, 'status': 1},
-    {'id': 2, 'key': 'hang_ka', 'title': 'Hàng Ka (か)', 'icon': Icons.menu_book, 'status': 0},
-    {'id': 3, 'key': 'hang_sa', 'title': 'Hàng Sa (さ)', 'icon': Icons.menu_book, 'status': 0},
-    {'id': 4, 'key': 'hang_ta', 'title': 'Hàng Ta (た)', 'icon': Icons.menu_book, 'status': 0},
-    {'id': 5, 'key': 'hang_na', 'title': 'Hàng Na (な)', 'icon': Icons.menu_book, 'status': 0},
-    {'id': 6, 'key': 'hang_ha', 'title': 'Hàng Ha (は)', 'icon': Icons.menu_book, 'status': 0},
-    {'id': 7, 'key': 'hang_ma', 'title': 'Hàng Ma (ま)', 'icon': Icons.menu_book, 'status': 0},
-    {'id': 8, 'key': 'hang_ya', 'title': 'Hàng Ya (や)', 'icon': Icons.menu_book, 'status': 0},
-    {'id': 9, 'key': 'hang_ra', 'title': 'Hàng Ra (ら)', 'icon': Icons.menu_book, 'status': 0},
-    {'id': 10, 'key': 'hang_wa', 'title': 'Hàng Wa (わ)', 'icon': Icons.menu_book, 'status': 0},
-    {'id': 11, 'key': 'hang_all', 'title': 'TỔNG HỢP', 'icon': Icons.star, 'status': 0, 'isBoss': true},
-    {'id': 12, 'key': 'cb1_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic1'},
-    {'id': 13, 'key': 'cb1_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic1'},
-    {'id': 14, 'key': 'cb1_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic1'},
-    {'id': 15, 'key': 'cb1_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic1'},
-    {'id': 16, 'key': 'cb1_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic1'},
-    {'id': 17, 'key': 'cb1_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic1'},
-    {'id': 18, 'key': 'cb1_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'section': 'basic1', 'isBoss': true},
+  // 1. ĐỊNH NGHĨA CÁC CHẶNG HỌC (CHAPTERS)
+  // Sau này muốn thêm Cơ bản 5, 6... bạn chỉ cần thêm 1 dòng vào đây
+  final List<Map<String, dynamic>> _sections = [
+    {'id': 'alphabet', 'title': 'Bảng chữ cái', 'subtitle': 'Khởi động', 'icon': Icons.sort_by_alpha, 'color': 0xFF4A89F3, 'bg': 0xFFEDF4FE},
+    {'id': 'basic1', 'title': 'Cơ bản 1', 'subtitle': 'Chào hỏi & Nghề nghiệp', 'icon': Icons.waving_hand, 'color': 0xFFFFA000, 'bg': 0xFFFFF8E1},
+    {'id': 'basic2', 'title': 'Cơ bản 2', 'subtitle': 'Đồ vật & Sở hữu', 'icon': Icons.business_center, 'color': 0xFFE91E63, 'bg': 0xFFFCE4EC},
+    {'id': 'basic3', 'title': 'Cơ bản 3', 'subtitle': 'Địa điểm & Giá tiền', 'icon': Icons.storefront, 'color': 0xFF9C27B0, 'bg': 0xFFF3E5F5},
+    {'id': 'basic4', 'title': 'Cơ bản 4', 'subtitle': 'Thời gian & Sinh hoạt', 'icon': Icons.access_time_filled, 'color': 0xFF00BCD4, 'bg': 0xFFE0F7FA},
+    {'id': 'basic5', 'title': 'Cơ bản 5', 'subtitle': 'Di chuyển & Phương tiện', 'icon': Icons.directions_transit, 'color': 0xFF4CAF50, 'bg': 0xFFE8F5E9},
+    {'id': 'basic6', 'title': 'Cơ bản 6', 'subtitle': 'Ăn uống & Mua sắm', 'icon': Icons.restaurant, 'color': 0xFFFF9800, 'bg': 0xFFFFF3E0},
+    {'id': 'basic7', 'title': 'Cơ bản 7', 'subtitle': 'Cho, Nhận & Công cụ', 'icon': Icons.card_giftcard, 'color': 0xFFF44336, 'bg': 0xFFFFEBEE},
+    {'id': 'basic8', 'title': 'Cơ bản 8', 'subtitle': 'Tính từ (Mô tả)', 'icon': Icons.auto_awesome, 'color': 0xFF3F51B5, 'bg': 0xFFE8EAF6},
+    {'id': 'basic9', 'title': 'Cơ bản 9', 'subtitle': 'Sở thích & Lý do', 'icon': Icons.favorite, 'color': 0xFFE91E63, 'bg': 0xFFFCE4EC},
+    {'id': 'basic10', 'title': 'Cơ bản 10', 'subtitle': 'Sự tồn tại & Vị trí', 'icon': Icons.location_on, 'color': 0xFF009688, 'bg': 0xFFE0F2F1},
   ];
+
+  // 2. DANH SÁCH TOÀN BỘ BÀI HỌC
+  late List<Map<String, dynamic>> _lessons;
 
   @override
   void initState() {
     super.initState();
+    _initLessons(); // Khởi tạo dữ liệu
     _refreshProgress();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(100.0, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
       }
     });
+  }
+
+  // Khai báo tập trung toàn bộ bài học tại đây
+  void _initLessons() {
+    _lessons = [
+      // --- CHẶNG 1: BẢNG CHỮ CÁI ---
+      {'id': 1, 'key': 'hang_a', 'title': 'Hàng A (あ)', 'icon': Icons.menu_book, 'status': 1, 'section': 'alphabet'},
+      {'id': 2, 'key': 'hang_ka', 'title': 'Hàng Ka (か)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
+      {'id': 3, 'key': 'hang_sa', 'title': 'Hàng Sa (さ)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
+      {'id': 4, 'key': 'hang_ta', 'title': 'Hàng Ta (た)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
+      {'id': 5, 'key': 'hang_na', 'title': 'Hàng Na (な)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
+      {'id': 6, 'key': 'hang_ha', 'title': 'Hàng Ha (は)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
+      {'id': 7, 'key': 'hang_ma', 'title': 'Hàng Ma (ま)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
+      {'id': 8, 'key': 'hang_ya', 'title': 'Hàng Ya (や)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
+      {'id': 9, 'key': 'hang_ra', 'title': 'Hàng Ra (ら)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
+      {'id': 10, 'key': 'hang_wa', 'title': 'Hàng Wa (わ)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
+      {'id': 11, 'key': 'hang_all', 'title': 'TỔNG HỢP', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'alphabet'},
+
+      // --- CHẶNG 2: CƠ BẢN 1 ---
+      {'id': 12, 'key': 'cb1_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic1'},
+      {'id': 13, 'key': 'cb1_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic1'},
+      {'id': 14, 'key': 'cb1_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic1'},
+      {'id': 15, 'key': 'cb1_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic1'},
+      {'id': 16, 'key': 'cb1_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic1'},
+      {'id': 17, 'key': 'cb1_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic1'},
+      {'id': 18, 'key': 'cb1_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic1'},
+
+      // --- CHẶNG 3: CƠ BẢN 2 ---
+      {'id': 19, 'key': 'cb2_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic2'},
+      {'id': 20, 'key': 'cb2_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic2'},
+      {'id': 21, 'key': 'cb2_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic2'},
+      {'id': 22, 'key': 'cb2_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic2'},
+      {'id': 23, 'key': 'cb2_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic2'},
+      {'id': 24, 'key': 'cb2_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic2'},
+      {'id': 25, 'key': 'cb2_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic2'},
+
+      // --- CHẶNG 4: CƠ BẢN 3 ---
+      {'id': 26, 'key': 'cb3_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic3'},
+      {'id': 27, 'key': 'cb3_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic3'},
+      {'id': 28, 'key': 'cb3_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic3'},
+      {'id': 29, 'key': 'cb3_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic3'},
+      {'id': 30, 'key': 'cb3_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic3'},
+      {'id': 31, 'key': 'cb3_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic3'},
+      {'id': 32, 'key': 'cb3_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic3'},
+
+      // --- CHẶNG 5: CƠ BẢN 4 ---
+      {'id': 33, 'key': 'cb4_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic4'},
+      {'id': 34, 'key': 'cb4_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic4'},
+      {'id': 35, 'key': 'cb4_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic4'},
+      {'id': 36, 'key': 'cb4_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic4'},
+      {'id': 37, 'key': 'cb4_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic4'},
+      {'id': 38, 'key': 'cb4_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic4'},
+      {'id': 39, 'key': 'cb4_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic4'},
+      {'id': 40, 'key': 'cb5_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic5'},
+      {'id': 41, 'key': 'cb5_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic5'},
+      {'id': 42, 'key': 'cb5_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic5'},
+      {'id': 43, 'key': 'cb5_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic5'},
+      {'id': 44, 'key': 'cb5_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic5'},
+      {'id': 45, 'key': 'cb5_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic5'},
+      {'id': 46, 'key': 'cb5_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic5'},
+
+      // --- CHẶNG 7: CƠ BẢN 6 ---
+      {'id': 47, 'key': 'cb6_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic6'},
+      {'id': 48, 'key': 'cb6_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic6'},
+      {'id': 49, 'key': 'cb6_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic6'},
+      {'id': 50, 'key': 'cb6_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic6'},
+      {'id': 51, 'key': 'cb6_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic6'},
+      {'id': 52, 'key': 'cb6_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic6'},
+      {'id': 53, 'key': 'cb6_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic6'},
+
+      // --- CHẶNG 8: CƠ BẢN 7 ---
+      {'id': 54, 'key': 'cb7_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic7'},
+      {'id': 55, 'key': 'cb7_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic7'},
+      {'id': 56, 'key': 'cb7_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic7'},
+      {'id': 57, 'key': 'cb7_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic7'},
+      {'id': 58, 'key': 'cb7_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic7'},
+      {'id': 59, 'key': 'cb7_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic7'},
+      {'id': 60, 'key': 'cb7_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic7'},
+      {'id': 61, 'key': 'cb8_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic8'},
+      {'id': 62, 'key': 'cb8_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic8'},
+      {'id': 63, 'key': 'cb8_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic8'},
+      {'id': 64, 'key': 'cb8_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic8'},
+      {'id': 65, 'key': 'cb8_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic8'},
+      {'id': 66, 'key': 'cb8_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic8'},
+      {'id': 67, 'key': 'cb8_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic8'},
+      {'id': 68, 'key': 'cb9_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic9'},
+      {'id': 69, 'key': 'cb9_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic9'},
+      {'id': 70, 'key': 'cb9_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic9'},
+      {'id': 71, 'key': 'cb9_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic9'},
+      {'id': 72, 'key': 'cb9_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic9'},
+      {'id': 73, 'key': 'cb9_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic9'},
+      {'id': 74, 'key': 'cb9_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic9'},
+      {'id': 75, 'key': 'cb10_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic10'},
+      {'id': 76, 'key': 'cb10_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic10'},
+      {'id': 77, 'key': 'cb10_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic10'},
+      {'id': 78, 'key': 'cb10_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic10'},
+      {'id': 79, 'key': 'cb10_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic10'},
+      {'id': 80, 'key': 'cb10_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic10'},
+      {'id': 81, 'key': 'cb10_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic10'},
+    ];
   }
 
   Future<void> _refreshProgress() async {
@@ -941,19 +1039,14 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
       for (var lesson in _lessons) {
         lesson['status'] = 0;
       }
-      _lessons[0]['status'] = 1;
+      if (_lessons.isNotEmpty) _lessons[0]['status'] = 1;
 
-      // 2. Duyệt qua từng bài để cập nhật trạng thái
       for (int i = 0; i < _lessons.length; i++) {
         String key = _lessons[i]['key'];
-
         if (completed.contains(key)) {
           _lessons[i]['status'] = 2;
-
-          if (i + 1 < _lessons.length) {
-            if (_lessons[i+1]['status'] != 2) {
-              _lessons[i+1]['status'] = 1;
-            }
+          if (i + 1 < _lessons.length && _lessons[i+1]['status'] != 2) {
+            _lessons[i+1]['status'] = 1;
           }
         }
       }
@@ -964,13 +1057,13 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      appBar: AppBar( /* ... AppBar giữ nguyên như cũ ... */
         backgroundColor: Colors.white,
         elevation: 0,
         title: GestureDetector(
           onTap: () {
             SoundManager.instance.vibrate('light');
-            _showCourseSelection(context);
+            //_showCourseSelection(context); // Bật lại nếu bạn muốn dùng Popup chọn khóa học
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -982,22 +1075,17 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Text("Cơ bản - lv1", style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text("Sơ cấp 1 - N5", style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold)),
                 SizedBox(width: 5),
                 Icon(Icons.arrow_drop_down, color: Colors.black54),
               ],
             ),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.tune, color: Colors.grey),
-            onPressed: () {},
-          )
-        ],
       ),
       body: Stack(
         children: [
+          // Nền lặp lại
           Positioned.fill(
             child: Opacity(
               opacity: 0.05,
@@ -1008,216 +1096,82 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
               ),
             ),
           ),
+
+          // Danh sách các chặng học được sinh ra tự động
           SingleChildScrollView(
             controller: _scrollController,
             padding: const EdgeInsets.only(bottom: 100),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final group1 = _lessons.where((l) => l['section'] != 'basic1').toList();
-                final group2 = _lessons.where((l) => l['section'] == 'basic1').toList();
+                List<Widget> columnChildren = [];
+                int totalNodesSoFar = 0;
 
-                return Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        SoundManager.instance.vibrate('light');
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AlphabetPracticeListScreen()));
-                      },
-                      child: _buildSectionHeader("Bảng chữ cái", "${group1.where((l) => l['status'] == 2).length}/${group1.length} bài học"),
-                    ),
-                    const SizedBox(height: 10),
-                    _buildRoadMapChunk(constraints.maxWidth, group1, 0),
+                // Vòng lặp duyệt qua tất cả các Chặng (Sections)
+                for (var section in _sections) {
+                  // Lấy các bài học thuộc Section này
+                  final chunkLessons = _lessons.where((l) => l['section'] == section['id']).toList();
+                  if (chunkLessons.isEmpty) continue;
 
-                    const SizedBox(height: 20),
+                  // Tính số bài đã học
+                  int completed = chunkLessons.where((l) => l['status'] == 2).length;
 
-                    _buildSectionHeader("Cơ bản 1", "${group2.where((l) => l['status'] == 2).length}/${group2.length} bài học"),
-                    const SizedBox(height: 10),
-                    _buildRoadMapChunk(constraints.maxWidth, group2, group1.length),
-                  ],
-                );
+                  // 1. Thêm Khung Tiêu Đề
+                  columnChildren.add(
+                      _buildDynamicSectionHeader(
+                        title: section['title'],
+                        subtitle: "${section['subtitle']} • $completed/${chunkLessons.length} bài",
+                        icon: section['icon'],
+                        bgColor: Color(section['bg']),
+                        iconColor: Color(section['color']),
+                      )
+                  );
+                  columnChildren.add(const SizedBox(height: 10));
+
+                  // 2. Thêm Đường zigzag bài học (Truyền totalNodesSoFar để nét đứt nối mượt mà)
+                  columnChildren.add(
+                      _buildRoadMapChunk(constraints.maxWidth, chunkLessons, totalNodesSoFar)
+                  );
+                  columnChildren.add(const SizedBox(height: 30));
+
+                  // Cộng dồn tổng số node để tính đường zigzag cho chặng tiếp theo
+                  totalNodesSoFar += chunkLessons.length;
+                }
+                return Column(children: columnChildren);
               },
             ),
           ),
-          Positioned(
-            right: 20,
-            top: 350,
-            child: _buildFloatingGameIcon(),
-          ),
         ],
       ),
     );
   }
 
-  // --- HÀM HIỂN THỊ POPUP CHỌN KHÓA HỌC ---
-  void _showCourseSelection(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // Để popup cao hơn
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.85, // Chiếm 85% màn hình
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-          ),
-          child: Column(
-            children: [
-              // 1. Header Popup
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Chọn khóa học", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.grey, size: 28),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1, color: Colors.grey),
-
-              // 2. Nội dung danh sách
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    // --- KHÓA CƠ BẢN (ĐANG MỞ RỘNG) ---
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F8E9), // Nền xanh nhạt
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFDCEDC8), width: 2),
-                      ),
-                      child: Column(
-                        children: [
-                          // Header của Card
-                          Padding(
-                            padding: const EdgeInsets.all(15.0),
-                            child: Row(
-                              children: [
-                                Image.asset('assets/images/dog_happy.png', width: 60, height: 60), // Ảnh đại diện khóa học
-                                const SizedBox(width: 15),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text("Cơ bản", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF58CC02))),
-                                      Text("221 bài", style: TextStyle(fontSize: 14, color: Colors.green)),
-                                    ],
-                                  ),
-                                ),
-                                const Icon(Icons.keyboard_arrow_up, color: Colors.grey, size: 30),
-                              ],
-                            ),
-                          ),
-
-                          // Grid các Level (Bảng chữ cái, Mới bắt đầu...)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(child: _buildLevelButton("Bảng chữ cái", Icons.translate, true)),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: _buildLevelButton("Mới bắt đầu", Icons.signal_cellular_alt_1_bar, false)),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    Expanded(child: _buildLevelButton("Cơ bản", Icons.signal_cellular_alt_2_bar, false)),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: _buildLevelButton("Trung cấp", Icons.signal_cellular_alt, false)),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    Expanded(child: _buildLevelButton("Thành thạo", Icons.bar_chart, false)),
-                                    const SizedBox(width: 10),
-                                    const Expanded(child: SizedBox()), // Placeholder để căn trái
-                                  ],
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // --- KHÓA DU LỊCH ---
-                    _buildSimpleCourseCard("Du lịch", "56 bài", Icons.flight_takeoff, const Color(0xFFEDE7F6), Colors.deepPurple),
-
-                    const SizedBox(height: 20),
-
-                    // --- KHÓA ANIME ---
-                    _buildSimpleCourseCard("Anime", "93 bài", Icons.movie_filter, const Color(0xFFFFEBEE), Colors.redAccent),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // Widget con: Nút chọn Level (Xanh hoặc Trắng)
-  Widget _buildLevelButton(String title, IconData icon, bool isSelected) {
+  // Khung tiêu đề linh hoạt màu sắc cho từng Chặng
+  Widget _buildDynamicSectionHeader({required String title, required String subtitle, required IconData icon, required Color bgColor, required Color iconColor}) {
     return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF58CC02) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: isSelected ? null : Border.all(color: Colors.grey.shade300, width: 2),
-        boxShadow: isSelected
-            ? [const BoxShadow(color: Color(0xFF46A302), offset: Offset(0, 3))]
-            : [BoxShadow(color: Colors.grey.shade300, offset: const Offset(0, 3))],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 20, color: isSelected ? Colors.white : Colors.blue),
-          const SizedBox(width: 8),
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.black87)),
-        ],
-      ),
-    );
-  }
-
-  // Widget con: Card khóa học đơn giản (Du lịch, Anime)
-  Widget _buildSimpleCourseCard(String title, String subtitle, IconData icon, Color bgColor, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.all(15),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: bgColor.withOpacity(0.5), width: 2),
+        borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Dùng tạm Icon nếu chưa có ảnh riêng
-          Container(
-            width: 60, height: 60,
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-            child: Icon(icon, color: textColor, size: 35),
-          ),
-          const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
-                Text(subtitle, style: TextStyle(fontSize: 14, color: textColor.withOpacity(0.7))),
+                Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF5A6275))),
+                const SizedBox(height: 5),
+                Text(subtitle, style: const TextStyle(fontSize: 14, color: Color(0xFF808B9F), fontWeight: FontWeight.w600)),
               ],
             ),
           ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            child: Icon(icon, color: iconColor, size: 28),
+          )
         ],
       ),
     );
@@ -1322,7 +1276,6 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
           lesson['title'],
           style: TextStyle(
               fontWeight: FontWeight.bold,
-
               color: lesson['status'] == 0 ? Colors.grey.shade400 : Colors.black54,
               fontSize: 13
           ),
@@ -1331,35 +1284,6 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
     );
   }
 
-  Widget _buildFloatingGameIcon() {
-    return Column(
-      children: [
-        Container(
-          width: 60, height: 60,
-          decoration: BoxDecoration(
-            color: Colors.blueAccent,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white, width: 2),
-            boxShadow: [BoxShadow(color: Colors.blue.shade700, offset: const Offset(0, 4), blurRadius: 0)],
-          ),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Wrap(
-                spacing: 2, runSpacing: 2,
-                children: [
-                  Icon(Icons.text_fields, color: Colors.white, size: 12),
-                  Icon(Icons.text_fields, color: Colors.white, size: 12),
-                  Icon(Icons.text_fields, color: Colors.white, size: 12),
-                  Icon(Icons.text_fields, color: Colors.white, size: 12),
-                ],
-              )
-            ],
-          ),
-        ),
-      ],
-    );
-  }
   // --- HÀM TẠO KHUNG TIÊU ĐỀ GIỐNG HÌNH YÊU CẦU ---
   Widget _buildSectionHeader(String title, String subtitle) {
     return Container(
@@ -1380,7 +1304,7 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF5A6275), // Màu xám xanh đậm
+                  color: Color(0xFF5A6275),
                 ),
               ),
               const SizedBox(height: 5),
@@ -1388,22 +1312,21 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
                 subtitle,
                 style: const TextStyle(
                   fontSize: 15,
-                  color: Color(0xFF808B9F), // Màu xám nhạt
+                  color: Color(0xFF808B9F),
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
-          // Nút Icon bên phải
           Container(
             padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(
-              color: Colors.white, // Nền trắng
+              color: Colors.white,
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.style, // Icon thẻ bài khá giống trong hình
-              color: Color(0xFF4A89F3), // Màu xanh dương của icon
+              Icons.style,
+              color: Color(0xFF4A89F3),
               size: 28,
             ),
           )
