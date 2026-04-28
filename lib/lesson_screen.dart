@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'sound_manager.dart';
 import 'user_progress.dart';
 
-enum LessonType { learn, quiz, matching, imageQuiz, sentenceBuilder, kanjiDraw, listening, flashCard, vocabQuiz, vocabSummary}
+enum LessonType { learn, quiz, matching, imageQuiz, sentenceBuilder, kanjiDraw, listening, flashCard, vocabQuiz, vocabSummary, speaking}
 
 class LessonScreen extends StatefulWidget{
   final String lessonId;
   final String lessonTitle;
+  static DateTime? audioDisabledUntil;
   const LessonScreen({super.key, required this.lessonId, required this.lessonTitle});
 
   @override
@@ -25,6 +26,13 @@ class _LessonScreenState extends State<LessonScreen>{
   void initState() {
     super.initState();
     _loadLessonData();
+    bool isAudioDisabled = LessonScreen.audioDisabledUntil != null &&
+        DateTime.now().isBefore(LessonScreen.audioDisabledUntil!);
+    if (isAudioDisabled && _activities.isNotEmpty && _activities[0]['type'] == LessonType.listening) {
+      while (_currentIndex < _activities.length - 1 && _activities[_currentIndex]['type'] == LessonType.listening) {
+        _currentIndex++;
+      }
+    }
     _totalQuizCount = _activities.where((e) =>
         e['type'] == LessonType.quiz ||
         e['type'] == LessonType.matching ||
@@ -57,8 +65,9 @@ class _LessonScreenState extends State<LessonScreen>{
     } else if (type == LessonType.vocabQuiz) {
       textToRead = activity['hiragana'] ?? activity['kanji'];
     } else if (type == LessonType.quiz) {
-      // Ví dụ: "Chữ nào là 'a'?" -> Đọc 'a'
       textToRead = activity['answer'];
+    } else if (type == LessonType.speaking) {
+      textToRead = activity['jp'];
     }
 
     if (textToRead.isNotEmpty) {
@@ -157,44 +166,80 @@ class _LessonScreenState extends State<LessonScreen>{
   // =======================================================
   // --- KHU VỰC DỮ LIỆU CÁC BÀI HỌC ---
   // =======================================================
+  // ==========================================
+  // LUYỆN TẬP 1 (Sử dụng 5 từ đầu của bài 1)
+  // ==========================================
   List<Map<String, dynamic>> _getLuyenTap1Data() {
     return [
       {
-        'type': LessonType.flashCard,
-        'kanji': '医者', 'hiragana': 'いしゃ', 'romaji': 'isha', 'meaning': 'bác sĩ',
-        'example_img': 'assets/images/example_isha.png',
-        'example_jp': 'シュミットさんは医者です。', 'example_rmj': 'Shumitto-san wa isha desu.', 'example_vn': 'Anh Schmidt là bác sĩ.'
+        'type': LessonType.imageQuiz,
+        'question': 'Xin chào.',
+        'answerIndex': 1,
+        'options': [
+          {'img': 'assets/images/example_sayounara.png', 'jp': 'さようなら', 'rmj': 'sayounara'},
+          {'img': 'assets/images/example_konnichiwa.png', 'jp': 'こんにちは', 'rmj': 'konnichiwa'},
+          {'img': 'assets/images/example_musume.png', 'jp': 'むすめ', 'rmj': 'musume'},
+          {'img': 'assets/images/example_musuko.png', 'jp': 'むすこ', 'rmj': 'musuko'},
+        ]
       },
       {
-        'type': LessonType.flashCard,
-        'kanji': '会社員', 'hiragana': 'かいしゃいん', 'romaji': 'kaishain', 'meaning': 'nhân viên công ty',
-        'example_img': 'assets/images/example_kaishain.png',
-        'example_jp': 'ミラーさんは会社員です。', 'example_rmj': 'Mira-san wa kaishain desu.', 'example_vn': 'Anh Miller là nhân viên công ty.'
+        'type': LessonType.listening,
+        'options': ['こんにちは', 'さようなら', 'むすめ', 'むすこ'],
+        'answer': 'さようなら'
       },
+
+      // 3. CÂU HỎI HÌNH ẢNH (Giống Hình 1) - Tập trung vào "Musume"
       {
-        'type': LessonType.vocabQuiz,
-        'kanji': '学生',
-        'hiragana': 'がくせい',
-        'romaji': 'gakusei',
-        'options': ['giáo viên', 'học sinh', 'kỹ sư', 'bác sĩ'],
-        'answer': 'học sinh'
+        'type': LessonType.imageQuiz,
+        'question': 'Con gái.',
+        'answerIndex': 2,
+        'options': [
+          {'img': 'assets/images/example_musuko.png', 'jp': 'むすこ', 'rmj': 'musuko'},
+          {'img': 'assets/images/example_chichi.png', 'jp': 'おとうさん', 'rmj': 'otousan'},
+          {'img': 'assets/images/example_musume.png', 'jp': 'むすめ', 'rmj': 'musume'},
+          {'img': 'assets/images/example_haha.png', 'jp': 'おかあさん', 'rmj': 'okaasan'},
+        ]
       },
+
+      // 4. CÂU HỎI NGHE (Giống Hình 2) - Tập trung vào "Chichi / Otousan"
       {
-        'type': LessonType.vocabQuiz,
-        'kanji': '先生',
-        'hiragana': 'せんせい',
-        'romaji': 'sensei',
-        'options': ['nhân viên ngân hàng', 'nhà nghiên cứu', 'giáo viên', 'học sinh'],
-        'answer': 'giáo viên'
+        'type': LessonType.listening,
+        'options': ['お父さん', 'お母さん', '息子', '娘'],
+        'answer': 'お父さん'
       },
-      {'type': LessonType.listening, 'options': ['いしゃ', 'かいしゃいん', 'エンジニア', 'ぎんこういん'], 'answer': 'エンジニア'},
-      {'type': LessonType.matching, 'pairs': [
-        {'left': 'Bác sĩ', 'right': '医者'},
-        {'left': 'Giáo viên', 'right': '先生'},
-        {'left': 'Học sinh', 'right': '学生'},
-        {'left': 'Kỹ sư', 'right': 'エンジニア'},
-        {'left': 'Nhân viên', 'right': '会社員'}
-      ]},
+
+      // 5. CÂU HỎI GHÉP CHỮ (Giống Hình 3)
+      {
+        'type': LessonType.sentenceBuilder,
+        'jp': 'こんにちは、お父さん',
+        'rmj': 'konnichiwa, otousan',
+        'words': ['xin chào', 'bố', 'tạm biệt', 'con gái', 'mẹ'],
+        'answer': 'xin chào bố',
+      },
+
+      {
+        'type': LessonType.speaking,
+        'jp': 'こんにちは',
+        'answer': 'こんにちは',
+      },
+
+      // 6. CÂU HỎI VẼ KANJI (Giống Hình 4) - Từ "Con gái"
+      {
+        'type': LessonType.kanjiDraw,
+        'kanji_word': '娘',
+        'kanji_target': '娘',
+        'meaning': 'Con gái',
+        'rmj': 'musume'
+      },
+
+      // 7. CÂU HỎI VẼ KANJI (Giống Hình 4) - Từ "Bố"
+      {
+        'type': LessonType.kanjiDraw,
+        'kanji_word': '父 / お父さん',
+        'kanji_target': '父',
+        'meaning': 'Bố',
+        'rmj': 'chichi / otousan'
+      },
     ];
   }
 
@@ -203,105 +248,168 @@ class _LessonScreenState extends State<LessonScreen>{
   // ==========================================
 
   // 1. Lý thuyết (Từ vựng cơ bản)
-  List<Map<String, dynamic>> _getCb1LyThuyetData() {
+  List<Map<String, dynamic>> _getCb1LyThuyetData(){
     return [
+      // --- NHÓM 1: CHÀO HỎI (4 TỪ) ---
+      {
+        'type': LessonType.flashCard, 'kanji': '', 'hiragana': 'こんにちは', 'romaji': 'konnichiwa', 'meaning': 'Xin chào',
+        'example_img': 'assets/images/example_konnichiwa.png',
+        'example_jp': 'こんにちは、元気ですか。', 'example_rmj': 'Konnichiwa, genki desu ka.', 'example_vn': 'Xin chào, bạn có khỏe không?'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '', 'hiragana': 'さようなら', 'romaji': 'sayounara', 'meaning': 'Tạm biệt',
+        'example_img': 'assets/images/example_sayounara.png',
+        'example_jp': '先生、さようなら。', 'example_rmj': 'Sensei, sayounara.', 'example_vn': 'Em chào thầy, em về ạ.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '娘', 'hiragana': 'むすめ', 'romaji': 'musume', 'meaning': 'Con gái (của mình)',
+        'example_img': 'assets/images/example_musume.png',
+        'example_jp': '私の娘は５歳です。', 'example_rmj': 'Watashi no musume wa gosai desu.', 'example_vn': 'Con gái tôi 5 tuổi.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '息子', 'hiragana': 'むすこ', 'romaji': 'musuko', 'meaning': 'Con trai (của mình)',
+        'example_img': 'assets/images/example_musuko.png',
+        'example_jp': '息子は学生です。', 'example_rmj': 'Musuko wa gakusei desu.', 'example_vn': 'Con trai tôi là học sinh.'
+      },
+
+      // --- QUIZ NHÓM 1 ---
+      {'type': LessonType.vocabQuiz, 'kanji': '', 'hiragana': 'こんにちは', 'romaji': 'konnichiwa', 'options': ['tạm biệt', 'xin chào', 'cảm ơn', 'xin lỗi'], 'answer': 'xin chào'},
+      {'type': LessonType.vocabQuiz, 'kanji': '娘', 'hiragana': 'むすめ', 'romaji': 'musume', 'options': ['con trai', 'vợ', 'chồng', 'con gái'], 'answer': 'con gái'},
+      {'type': LessonType.listening, 'options': ['こんにちは', 'さようなら', 'むすめ', 'むすこ'], 'answer': 'さようなら'},
+
+      // --- NHÓM 2: GIA ĐÌNH & ĐẠI TỪ (4 TỪ) ---
+      {
+        'type': LessonType.flashCard, 'kanji': '父 / お父さん', 'hiragana': 'ちち / おとうさん', 'romaji': 'chichi / otousan', 'meaning': 'Bố',
+        'example_img': 'assets/images/example_chichi.png',
+        'example_jp': 'お父さんは会社員です。', 'example_rmj': 'Otousan wa kaishain desu.', 'example_vn': 'Bố tôi là nhân viên công ty.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '母 / お母さん', 'hiragana': 'はは / おかあさん', 'romaji': 'haha / okasan', 'meaning': 'Mẹ',
+        'example_img': 'assets/images/example_haha.png',
+        'example_jp': '母は料理が上手です。', 'example_rmj': 'Haha wa ryouri ga jouzu desu.', 'example_vn': 'Mẹ tôi nấu ăn giỏi.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '彼', 'hiragana': 'かれ', 'romaji': 'kare', 'meaning': 'Anh ấy / Bạn trai',
+        'example_img': 'assets/images/example_kare.png',
+        'example_jp': '彼は私の友達です。', 'example_rmj': 'Kare wa watashi no tomodachi desu.', 'example_vn': 'Anh ấy là bạn của tôi.'
+      },
+      {
+        'type': LessonType.flashCard, 'kanji': '彼女', 'hiragana': 'かのじょ', 'romaji': 'kanojo', 'meaning': 'Cô ấy / Bạn gái',
+        'example_img': 'assets/images/example_kanojo.png',
+        'example_jp': '彼女はとてもきれいです。', 'example_rmj': 'Kanojo wa totemo kirei desu.', 'example_vn': 'Cô ấy rất đẹp.'
+      },
+
+      // --- QUIZ NHÓM 2 ---
+      {'type': LessonType.vocabQuiz, 'kanji': '母', 'hiragana': 'はは', 'romaji': 'haha', 'options': ['bố', 'mẹ', 'anh trai', 'chị gái'], 'answer': 'mẹ'},
+      {'type': LessonType.vocabQuiz, 'kanji': '彼', 'hiragana': 'かれ', 'romaji': 'kare', 'options': ['cô ấy', 'tôi', 'bạn', 'anh ấy'], 'answer': 'anh ấy'},
+      {'type': LessonType.listening, 'options': ['ちち', 'はは', 'かれ', 'かのじょ'], 'answer': 'かのじょ'},
+
+      // --- NHÓM 3: ĐẠI TỪ CƠ BẢN (2 TỪ CUỐI) ---
       {
         'type': LessonType.flashCard, 'kanji': '私', 'hiragana': 'わたし', 'romaji': 'watashi', 'meaning': 'Tôi',
         'example_img': 'assets/images/example_watashi.png',
-        'example_jp': '私はマイクです。', 'example_rmj': 'Watashi wa Maiku desu.', 'example_vn': 'Tôi là Mike.'
-      },
-      {
-        'type': LessonType.flashCard, 'kanji': 'あなた', 'hiragana': 'あなた', 'romaji': 'anata', 'meaning': 'Bạn / Anh / Chị',
-        'example_img': 'assets/images/example_anata.png',
-        'example_jp': 'あなたは学生ですか。', 'example_rmj': 'Anata wa gakusei desu ka.', 'example_vn': 'Bạn có phải là học sinh không?'
-      },
-      {
-        'type': LessonType.flashCard, 'kanji': 'あの人', 'hiragana': 'あのひと', 'romaji': 'ano hito', 'meaning': 'Người kia, người đó',
-        'example_img': 'assets/images/example_anohito.png',
-        'example_jp': 'あの人は誰ですか。', 'example_rmj': 'Ano hito wa dare desu ka.', 'example_vn': 'Người kia là ai vậy?'
-      },
-      {'type': LessonType.vocabQuiz, 'kanji': '私', 'hiragana': 'わたし', 'romaji': 'watashi', 'options': ['bạn', 'người kia', 'tôi', 'ai'], 'answer': 'tôi'},
-      {
-        'type': LessonType.flashCard, 'kanji': '先生', 'hiragana': 'せんせい', 'romaji': 'sensei', 'meaning': 'Giáo viên',
-        'example_img': 'assets/images/example_sensei.png',
-        'example_jp': '先生、おはようございます。', 'example_rmj': 'Sensei, ohayou gozaimasu.', 'example_vn': 'Em chào thầy/cô ạ.'
-      },
-      {
-        'type': LessonType.flashCard, 'kanji': '学生', 'hiragana': 'がくせい', 'romaji': 'gakusei', 'meaning': 'Học sinh, sinh viên',
-        'example_img': 'assets/images/example_gakusei.png',
         'example_jp': '私は学生です。', 'example_rmj': 'Watashi wa gakusei desu.', 'example_vn': 'Tôi là học sinh.'
       },
       {
-        'type': LessonType.flashCard, 'kanji': '会社員', 'hiragana': 'かいしゃいん', 'romaji': 'kaishain', 'meaning': 'Nhân viên công ty',
-        'example_img': 'assets/images/example_kaishain.png',
-        'example_jp': '父は会社員です。', 'example_rmj': 'Chichi wa kaishain desu.', 'example_vn': 'Bố tôi là nhân viên công ty.'
+        'type': LessonType.flashCard, 'kanji': '', 'hiragana': 'あなた', 'romaji': 'anata', 'meaning': 'Bạn / Anh / Chị',
+        'example_img': 'assets/images/example_anata.png',
+        'example_jp': 'あなたは会社員ですか。', 'example_rmj': 'Anata wa kaishain desu ka.', 'example_vn': 'Bạn có phải là nhân viên công ty không?'
       },
-      {
-        'type': LessonType.flashCard, 'kanji': '医者', 'hiragana': 'いしゃ', 'romaji': 'isha', 'meaning': 'Bác sĩ',
-        'example_img': 'assets/images/example_isha.png',
-        'example_jp': '母は医者です。', 'example_rmj': 'Haha wa isha desu.', 'example_vn': 'Mẹ tôi là bác sĩ.'
-      },
-      {'type': LessonType.listening, 'options': ['わたし', 'あなた', 'がくせい', 'せんせい'], 'answer': 'せんせい'},
-      {'type': LessonType.vocabQuiz, 'kanji': '会社員', 'hiragana': 'かいしゃいん', 'romaji': 'kaishain', 'options': ['bác sĩ', 'giáo viên', 'nhân viên công ty', 'học sinh'], 'answer': 'nhân viên công ty'},
-      {'type': LessonType.vocabQuiz, 'kanji': '医者', 'hiragana': 'いしゃ', 'romaji': 'isha', 'options': ['kỹ sư', 'bác sĩ', 'ngân hàng', 'nhân viên'], 'answer': 'bác sĩ'},
+
+      // --- TỔNG KẾT BÀI HỌC ---
       {
         'type': LessonType.vocabSummary,
         'words': [
+          {'kanji': 'こんにちは', 'romaji': 'konnichiwa', 'meaning': 'Xin chào'},
+          {'kanji': 'さようなら', 'romaji': 'sayounara', 'meaning': 'Tạm biệt'},
+          {'kanji': '娘', 'romaji': 'musume', 'meaning': 'Con gái'},
+          {'kanji': '息子', 'romaji': 'musuko', 'meaning': 'Con trai'},
+          {'kanji': '父', 'romaji': 'chichi', 'meaning': 'Bố'},
+          {'kanji': '母', 'romaji': 'haha', 'meaning': 'Mẹ'},
+          {'kanji': '彼', 'romaji': 'kare', 'meaning': 'Anh ấy'},
+          {'kanji': '彼女', 'romaji': 'kanojo', 'meaning': 'Cô ấy'},
           {'kanji': '私', 'romaji': 'watashi', 'meaning': 'Tôi'},
           {'kanji': 'あなた', 'romaji': 'anata', 'meaning': 'Bạn'},
-          {'kanji': 'あの人', 'romaji': 'ano hito', 'meaning': 'Người kia'},
-          {'kanji': '先生', 'romaji': 'sensei', 'meaning': 'Giáo viên'},
-          {'kanji': '学生', 'romaji': 'gakusei', 'meaning': 'Học sinh'},
-          {'kanji': '会社員', 'romaji': 'kaishain', 'meaning': 'Nhân viên công ty'},
-          {'kanji': '医者', 'romaji': 'isha', 'meaning': 'Bác sĩ'},
         ]
       }
     ];
   }
 
-  // 3. Luyện tập 2 (Ngữ pháp: N1 wa N2 desu / ja arimasen) - 10 bài
+  // 3. Luyện tập 2
   List<Map<String, dynamic>> _getCb1LuyenTap2Data() {
     return [
       {
-        'type': LessonType.sentenceBuilder,
-        'jp': '私は学生です',
-        'rmj': 'watashi wa gakusei desu',
-        'words': ['tôi', 'là', 'học sinh', 'giáo viên', 'không phải'],
-        'answer': 'tôi là học sinh',
+        'type': LessonType.imageQuiz,
+        'question': 'Mẹ (của mình).',
+        'answerIndex': 0,
+        'options': [
+          {'img': 'assets/images/example_haha.png', 'jp': 'はは', 'rmj': 'haha'},
+          {'img': 'assets/images/example_chichi.png', 'jp': 'ちち', 'rmj': 'chichi'},
+          {'img': 'assets/images/example_kare.png', 'jp': 'かれ', 'rmj': 'kare'},
+          {'img': 'assets/images/example_kanojo.png', 'jp': 'かのじょ', 'rmj': 'kanojo'},
+        ]
       },
+
+      // 2. CÂU HỎI HÌNH ẢNH (Focus: Anh ấy)
+      {
+        'type': LessonType.imageQuiz,
+        'question': 'Anh ấy.',
+        'answerIndex': 2,
+        'options': [
+          {'img': 'assets/images/example_anata.png', 'jp': 'あなた', 'rmj': 'anata'},
+          {'img': 'assets/images/example_watashi.png', 'jp': 'わたし', 'rmj': 'watashi'},
+          {'img': 'assets/images/example_kare.png', 'jp': 'かれ', 'rmj': 'kare'},
+          {'img': 'assets/images/example_kanojo.png', 'jp': 'かのじょ', 'rmj': 'kanojo'},
+        ]
+      },
+
+      // 3. CÂU HỎI NGHE (Focus: Mẹ - Dùng dạng lịch sự)
+      {
+        'type': LessonType.listening,
+        'options': ['お母さん', 'お父さん', '娘', '息子'],
+        'answer': 'お母さん'
+      },
+
+      // 4. CÂU HỎI NGHE (Focus: Anh ấy)
+      {
+        'type': LessonType.listening,
+        'options': ['かれ', 'かのじょ', 'わたし', 'あなた'],
+        'answer': 'かれ'
+      },
+
+      // 5. CÂU HỎI GHÉP CHỮ (Sử dụng "Cô ấy")
       {
         'type': LessonType.sentenceBuilder,
-        'jp': '山田さんは銀行員です',
-        'rmj': 'Yamada-san wa ginkouin desu',
-        'words': ['anh Yamada', 'là', 'nhân viên ngân hàng', 'bác sĩ', 'cũng'],
-        'answer': 'anh Yamada là nhân viên ngân hàng',
+        'jp': '彼女は私の母です',
+        'rmj': 'kanojo wa watashi no haha desu',
+        'words': ['cô ấy', 'là', 'mẹ', 'của tôi', 'anh ấy'],
+        'answer': 'cô ấy là mẹ của tôi',
       },
+
+      // 6. CÂU HỎI LUYỆN NÓI (Sử dụng "Tôi")
       {
-        'type': LessonType.sentenceBuilder,
-        'jp': '私は先生じゃありません',
-        'rmj': 'watashi wa sensei ja arimasen',
-        'words': ['tôi', 'là', 'không phải', 'giáo viên', 'bác sĩ'],
-        'answer': 'tôi không phải là giáo viên',
+        'type': LessonType.speaking,
+        'jp': 'わたし',
+        'answer': 'わたし',
       },
+
+      // 7. CÂU HỎI VẼ KANJI - Từ "Mẹ" (母)
       {
-        'type': LessonType.sentenceBuilder,
-        'jp': 'サントスさんは医者じゃありません',
-        'rmj': 'Santosu-san wa isha ja arimasen',
-        'words': ['anh Santos', 'không phải', 'là', 'bác sĩ', 'học sinh'],
-        'answer': 'anh Santos không phải là bác sĩ',
+        'type': LessonType.kanjiDraw,
+        'kanji_word': '母',
+        'kanji_target': '母',
+        'meaning': 'Mẹ',
+        'rmj': 'haha / okaasan'
       },
+
+      // 8. CÂU HỎI VẼ KANJI - Từ "Tôi" (私)
       {
-        'type': LessonType.sentenceBuilder,
-        'jp': 'ワットさんはイギリス人じゃありません',
-        'rmj': 'Watto-san wa Igirisujin ja arimasen',
-        'words': ['anh Watt', 'không phải', 'là', 'người Anh', 'người Mỹ'],
-        'answer': 'anh Watt không phải là người Anh',
+        'type': LessonType.kanjiDraw,
+        'kanji_word': '私',
+        'kanji_target': '私',
+        'meaning': 'Tôi',
+        'rmj': 'watashi'
       },
-      {'type': LessonType.listening, 'options': ['わたしはがくせいじゃありません', 'わたしはがくせいです', 'あなたはがくせいです', 'あのひとはがくせいです'], 'answer': 'わたしはがくせいじゃありません'},
-      {'type': LessonType.listening, 'options': ['アメリカじんです', 'ベトナムじんです', 'にほんじんです', 'インドじんです'], 'answer': 'にほんじんです'},
-      {'type': LessonType.quiz, 'question': 'Trợ từ đi sau chủ ngữ (Tôi, Anh ấy...) được đọc là gì?', 'options': ['ha', 'wa', 'ga', 'o'], 'answer': 'wa'},
-      {'type': LessonType.quiz, 'question': 'Từ nào dùng để phủ định (Không phải là)?', 'options': ['です (desu)', 'ですか (desu ka)', 'じゃありません (ja arimasen)', 'も (mo)'], 'answer': 'じゃありません (ja arimasen)'},
-      {'type': LessonType.quiz, 'question': 'Điền vào chỗ trống: ミラーさん ( ... ) アメリカじんです。', 'options': ['は (wa)', 'が (ga)', 'を (o)', 'に (ni)'], 'answer': 'は (wa)'},
     ];
   }
 
@@ -2420,8 +2528,14 @@ class _LessonScreenState extends State<LessonScreen>{
     if (_currentIndex < _activities.length - 1) {
       setState(() {
         _currentIndex++;
-        _progress = (_currentIndex + 1) / _activities.length;
       });
+      bool isAudioDisabled = LessonScreen.audioDisabledUntil != null &&
+          DateTime.now().isBefore(LessonScreen.audioDisabledUntil!);
+      if (isAudioDisabled && _activities[_currentIndex]['type'] == LessonType.listening) {
+        _nextActivity();
+        return;
+      }
+      _progress = (_currentIndex + 1) / _activities.length;
       _playCurrentAudio();
     } else{
       _finishLesson();
@@ -2544,8 +2658,147 @@ class _LessonScreenState extends State<LessonScreen>{
         leading: IconButton(icon: const Icon(Icons.close, color: Colors.black54), onPressed: () => Navigator.pop(context)),
         title: LinearProgressIndicator(value: _progress, backgroundColor: Colors.grey[200], color: const Color(0xFF58CC02), minHeight: 12, borderRadius: BorderRadius.circular(6)),
         centerTitle: true, backgroundColor: Colors.white, elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.black54),
+            onPressed: _showSettingsSheet, // Gọi hàm mở bảng cài đặt
+          )
+        ],
       ),
       body: SafeArea(child: Padding(padding: const EdgeInsets.all(20.0), child: _buildBody(activity))),
+    );
+  }
+
+  double _fontScaleValue = 2.0; // 0, 1, 2 (Mặc định), 3, 4
+  double _sfxVolumeValue = 40.0; // Từ 0 đến 100
+
+  void _showSettingsSheet() {
+    SoundManager.instance.vibrate('light');
+
+    // Biến tạm để lưu trạng thái trượt khi chưa bấm "Lưu"
+    double tempFontScale = _fontScaleValue;
+    double tempSfxVolume = _sfxVolumeValue;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent, // Nền trong suốt để bo góc đẹp hơn
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. THANH CHỈNH CỠ CHỮ
+                  const Text("Cỡ chữ", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  const SizedBox(height: 10),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: const Color(0xFF66BB6A),
+                      inactiveTrackColor: Colors.grey.shade300,
+                      thumbColor: const Color(0xFF66BB6A),
+                      tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 5),
+                      activeTickMarkColor: const Color(0xFF66BB6A),
+                      inactiveTickMarkColor: Colors.black87, // Dấu chấm đen ở phần chưa trượt tới
+                      trackHeight: 4.0,
+                    ),
+                    child: Slider(
+                      value: tempFontScale,
+                      min: 0, max: 4, divisions: 4, // 5 mức độ
+                      onChanged: (value) {
+                        setModalState(() => tempFontScale = value);
+                        SoundManager.instance.vibrate('light');
+                      },
+                    ),
+                  ),
+                  Center(
+                    child: Text(
+                        "Mặc định",
+                        style: TextStyle(
+                            color: tempFontScale == 2 ? const Color(0xFF58CC02) : Colors.grey,
+                            fontWeight: FontWeight.bold
+                        )
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // 2. THANH CHỈNH ÂM LƯỢNG / RUNG
+                  const Text("Âm lượng hiệu ứng âm thanh", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  const SizedBox(height: 10),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: const Color(0xFF66BB6A),
+                      inactiveTrackColor: const Color(0xFF66BB6A), // Theo thiết kế, thanh này full màu xanh
+                      thumbColor: const Color(0xFF66BB6A),
+                      tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 5),
+                      activeTickMarkColor: const Color(0xFF66BB6A),
+                      inactiveTickMarkColor: const Color(0xFF66BB6A),
+                      trackHeight: 4.0,
+                    ),
+                    child: Slider(
+                      value: tempSfxVolume,
+                      min: 0, max: 100, divisions: 4, // Các mốc: 0, 25, 50, 75, 100
+                      onChanged: (value) {
+                        setModalState(() => tempSfxVolume = value);
+                        SoundManager.instance.vibrate('light');
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text("0", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                        Text("25", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                        Text("50", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                        Text("75", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                        Text("100", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 35),
+
+                  // 3. NÚT LƯU
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        SoundManager.instance.vibrate('light');
+                        // LƯU TRẠNG THÁI VÀ ĐÓNG BẢNG
+                        setState(() {
+                          _fontScaleValue = tempFontScale;
+                          _sfxVolumeValue = tempSfxVolume;
+                        });
+
+                        // TODO: Sau này bạn có thể truyền _sfxVolumeValue sang SoundManager để set Volume thật
+
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF66BB6A), // Màu xanh lá mềm theo thiết kế
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        elevation: 0,
+                      ),
+                      child: const Text("Lưu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -2567,6 +2820,12 @@ class _LessonScreenState extends State<LessonScreen>{
         return SentenceBuilderView(
             data: data,
             onCheckResult: (isCorrect, correctAns, userAns) => _showResultSheet(isCorrect, correctAns, userAns)
+        );
+      case LessonType.speaking:
+        return SpeakingPracticeView(
+          data: data,
+          onCheckResult: (isCorrect, correctAns, userAns) => _showResultSheet(isCorrect, correctAns, userAns),
+          onSkip: _nextActivity,
         );
       case LessonType.kanjiDraw:
         return KanjiDrawView(data: data, onNext: _nextActivity);
@@ -3626,6 +3885,73 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
     }
   }
 
+  // --- HÀM HIỂN THỊ POPUP KHI KHÔNG THỂ NGHE ---
+  void _showCantListenDialog() {
+    SoundManager.instance.vibrate('light');
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: const Color(0xFFFFF4C7), // Nền vàng pastel giống thiết kế
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Tự động co hẹp theo nội dung
+              children: [
+                const Text(
+                  "Chúng tôi sẽ tạm thời ẩn đi các câu hỏi cần nghe audio trong 15 phút tiếp theo!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                      height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 30),
+
+                // Nút "Đồng ý"
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      SoundManager.instance.vibrate('light');
+                      LessonScreen.audioDisabledUntil = DateTime.now().add(const Duration(minutes: 15));
+                      Navigator.pop(context);
+                      widget.onCheckResult(true, widget.data['answer'], widget.data['answer']);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF78C850), // Màu xanh lá mềm
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                    ),
+                    child: const Text("Đồng ý", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ),
+                const SizedBox(height: 15),
+
+                // Nút "Đóng" dạng text
+                GestureDetector(
+                  onTap: () {
+                    SoundManager.instance.vibrate('light');
+                    Navigator.pop(context); // Chỉ đóng popup, không làm gì cả
+                  },
+                  child: const Text(
+                      "Đóng",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF78C850))
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  // ---------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     List<String> options = widget.data['options'];
@@ -3651,7 +3977,7 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
 
         const SizedBox(height: 40),
 
-        // Grid đáp án phẳng, KHÔNG CÓ ROMAJI
+        // Grid đáp án phẳng
         Expanded(
           child: GridView.count(
             crossAxisCount: 2,
@@ -3692,13 +4018,15 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
           ),
         ),
 
+        // Nút mở Popup Không Thể Nghe
         TextButton(
-          onPressed: () {},
+          onPressed: _showCantListenDialog, // <-- Gọi hàm hiển thị Popup ở đây
           child: const Text("Bạn đang không thể nghe", style: TextStyle(fontSize: 15, color: Colors.grey, fontWeight: FontWeight.bold)),
         ),
 
         const SizedBox(height: 10),
 
+        // Nút Kiểm Tra
         SizedBox(
           width: double.infinity, height: 55,
           child: ElevatedButton(
@@ -3720,6 +4048,7 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
     );
   }
 
+  // Widget hỗ trợ vẽ nút loa nhanh gọn
   Widget _buildAudioBtn(IconData icon, double boxSize, double iconSize, bool isSlow) {
     return GestureDetector(
       onTap: () {
@@ -3860,6 +4189,137 @@ class _StandardQuizViewState extends State<StandardQuizView> {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+// ==========================================================
+// GIAO DIỆN BÀI TẬP LUYỆN NÓI (Nghe và nói lại)
+// ==========================================================
+class SpeakingPracticeView extends StatefulWidget {
+  final Map<String, dynamic> data;
+  final Function(bool, String, String) onCheckResult;
+  final VoidCallback onSkip;
+
+  const SpeakingPracticeView({
+    super.key,
+    required this.data,
+    required this.onCheckResult,
+    required this.onSkip
+  });
+
+  @override
+  State<SpeakingPracticeView> createState() => _SpeakingPracticeViewState();
+}
+
+class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
+  bool _isRecording = false;
+
+  void _simulateRecording() async {
+    SoundManager.instance.vibrate('light');
+    setState(() => _isRecording = true);
+
+    // Giả lập app đang nghe người dùng nói trong 2.5 giây
+    await Future.delayed(const Duration(milliseconds: 2500));
+    if (!mounted) return;
+
+    setState(() => _isRecording = false);
+
+    // Hiện popup chúc mừng (Giả định người dùng nói đúng)
+    widget.onCheckResult(true, widget.data['answer'], widget.data['answer']);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text(
+            "Nghe và nói lại câu sau",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
+        ),
+        const SizedBox(height: 40),
+
+        // Nút loa và rùa
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () {
+                SoundManager.instance.vibrate('light');
+                SoundManager.instance.speakJapanese(widget.data['jp']);
+              },
+              child: Container(
+                width: 90, height: 90,
+                decoration: const BoxDecoration(color: Color(0xFFEEF7E8), shape: BoxShape.circle),
+                child: const Icon(Icons.volume_up, color: Color(0xFF58CC02), size: 45),
+              ),
+            ),
+            const SizedBox(width: 20),
+            GestureDetector(
+              onTap: () {
+                SoundManager.instance.vibrate('light');
+                SoundManager.instance.speakJapanese(widget.data['jp'], isSlow: true);
+              },
+              child: Container(
+                width: 60, height: 60,
+                decoration: const BoxDecoration(color: Color(0xFFEEF7E8), shape: BoxShape.circle),
+                child: const Icon(Icons.pets, color: Color(0xFF58CC02), size: 28),
+              ),
+            ),
+          ],
+        ),
+
+        const Spacer(),
+
+        // Khu vực Nút Thu Âm & Bỏ Qua
+        SizedBox(
+          height: 100, // Cố định chiều cao để không bị giật UI khi nút thu âm phình to
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Nút Thu Âm (Ở giữa)
+              GestureDetector(
+                onTap: _isRecording ? null : _simulateRecording,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: _isRecording ? 100 : 85,
+                  height: _isRecording ? 100 : 85,
+                  decoration: BoxDecoration(
+                    // Đổi sang màu đỏ khi đang thu âm
+                    color: _isRecording ? const Color(0xFFFF4B4B) : const Color(0xFF78C850),
+                    shape: BoxShape.circle,
+                    boxShadow: _isRecording
+                        ? [BoxShadow(color: Colors.red.withOpacity(0.4), blurRadius: 20, spreadRadius: 5)]
+                        : [],
+                  ),
+                  child: const Icon(Icons.mic, color: Colors.white, size: 45),
+                ),
+              ),
+
+              // Nút Bỏ qua (Skip - Ở góc phải)
+              Positioned(
+                right: 0,
+                child: GestureDetector(
+                  onTap: () {
+                    SoundManager.instance.vibrate('light');
+                    widget.onSkip();
+                  },
+                  child: Container(
+                    width: 50, height: 50,
+                    decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey.shade300, width: 1.5)
+                    ),
+                    child: const Icon(Icons.keyboard_double_arrow_right, color: Colors.grey, size: 24),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
       ],
     );
   }
