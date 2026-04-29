@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'sound_manager.dart';
 import 'user_progress.dart';
 import 'app_settings.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 enum LessonType { learn, quiz, matching, imageQuiz, sentenceBuilder, kanjiDraw, listening, flashCard, vocabQuiz, vocabSummary, speaking}
 
@@ -4246,19 +4252,148 @@ class SpeakingPracticeView extends StatefulWidget {
 
 class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
   bool _isRecording = false;
+  bool _isProcessing = false;
 
-  void _simulateRecording() async {
-    SoundManager.instance.vibrate('light');
-    setState(() => _isRecording = true);
+  late final AudioRecorder _audioRecorder;
+  String? _audioPath;
 
-    // Giả lập app đang nghe người dùng nói trong 2.5 giây
-    await Future.delayed(const Duration(milliseconds: 2500));
-    if (!mounted) return;
+  @override
+  void initState() {
+    super.initState();
+    _audioRecorder = AudioRecorder();
+  }
 
-    setState(() => _isRecording = false);
+  @override
+  void dispose() {
+    _audioRecorder.dispose();
+    super.dispose();
+  }
 
-    // Hiện popup chúc mừng (Giả định người dùng nói đúng)
-    widget.onCheckResult(true, widget.data['answer'], widget.data['answer']);
+  // --- HÀM XỬ LÝ BẤM NÚT (TOGGLE) ---
+  void _toggleRecording() {
+    if (_isProcessing) return; // Đang chờ AI thì không cho bấm
+
+    if (_isRecording) {
+      _stopRecordingAndCheck(); // Đang thu thì dừng và chấm điểm
+    } else {
+      _startRecording(); // Chưa thu thì bắt đầu
+    }
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      if (await Permission.microphone.request().isGranted) {
+        final dir = await getTemporaryDirectory();
+        _audioPath = '${dir.path}/speech_temp.m4a';
+
+        await _audioRecorder.start(
+          const RecordConfig(encoder: AudioEncoder.aacLc),
+          path: _audioPath!,
+        );
+
+        SoundManager.instance.vibrate('light');
+        setState(() => _isRecording = true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng cấp quyền Micro để thu âm!")));
+      }
+    } catch (e) {
+      debugPrint("Lỗi ghi âm: $e");
+    }
+  }
+
+  Future<void> _stopRecordingAndCheck() async {
+    try {
+      final path = await _audioRecorder.stop();
+      if (path == null) return;
+
+      SoundManager.instance.vibrate('light');
+      setState(() {
+        _isRecording = false;
+        _isProcessing = true;
+      });
+
+      String transcribedText = await _sendToWhisperAPI(path);
+
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+
+      if (transcribedText.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Không nghe rõ, vui lòng thử lại!")));
+        return;
+      }
+
+      // --- LOGIC CHẤM ĐIỂM CHÂM CHƯỚC (FUZZY MATCHING) ---
+      String targetAnswer = widget.data['answer'].toString();
+      bool isCorrect = _compareJapaneseText(targetAnswer, transcribedText);
+
+      widget.onCheckResult(isCorrect, targetAnswer, transcribedText);
+
+    } catch (e) {
+      setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi kết nối AI: $e")));
+    }
+  }
+
+  // Thuật toán so sánh thông minh
+  bool _compareJapaneseText(String target, String input) {
+    // 1. Lọc bỏ dấu câu và khoảng trắng
+    String cleanTarget = target.replaceAll(RegExp(r'[。、！？\s]'), '');
+    String cleanInput = input.replaceAll(RegExp(r'[。、！？\s]'), '');
+
+    // 2. Chuẩn hóa các âm dễ nhầm lẫn (Ví dụ: AI có thể nghe Konnichiwa thành Konnichiwa 'わ' thay vì 'は')
+    cleanTarget = cleanTarget.replaceAll('こんにちは', 'こんにちわ').replaceAll('こんばんは', 'こんばんわ');
+    cleanInput = cleanInput.replaceAll('こんにちは', 'こんにちわ').replaceAll('こんばんは', 'こんばんわ');
+
+    // Nếu giống hệt nhau 100% thì trả về true luôn
+    if (cleanTarget == cleanInput) return true;
+
+    // 3. Tính độ giống nhau bằng thuật toán Levenshtein Distance
+    double similarity = _calculateSimilarity(cleanTarget, cleanInput);
+
+    // NẾU GIỐNG TỪ 80% TRỞ LÊN LÀ ĐƯỢC CHẤM ĐÚNG (Châm chước sai 1-2 âm do mic/giọng)
+    return similarity >= 0.8;
+  }
+
+  // Hàm tính tỷ lệ % giống nhau giữa 2 chuỗi
+  double _calculateSimilarity(String s1, String s2) {
+    if (s1.isEmpty && s2.isEmpty) return 1.0;
+    if (s1.isEmpty || s2.isEmpty) return 0.0;
+
+    List<List<int>> dp = List.generate(s1.length + 1, (i) => List.filled(s2.length + 1, 0));
+    for (int i = 0; i <= s1.length; i++) dp[i][0] = i;
+    for (int j = 0; j <= s2.length; j++) dp[0][j] = j;
+
+    for (int i = 1; i <= s1.length; i++) {
+      for (int j = 1; j <= s2.length; j++) {
+        int cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
+        dp[i][j] = [dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost].reduce((a, b) => a < b ? a : b);
+      }
+    }
+
+    int maxLength = s1.length > s2.length ? s1.length : s2.length;
+    int distance = dp[s1.length][s2.length];
+    return (maxLength - distance) / maxLength;
+  }
+
+  Future<String> _sendToWhisperAPI(String filePath) async {
+    const String apiKey = 'sk-proj-YOUR_OPENAI_API_KEY'; // Nhớ thay API Key vào đây!
+    var uri = Uri.parse('https://api.openai.com/v1/audio/transcriptions');
+    var request = http.MultipartRequest('POST', uri)
+      ..headers['Authorization'] = 'Bearer $apiKey'
+      ..fields['model'] = 'whisper-1'
+      ..fields['language'] = 'ja'
+      ..files.add(await http.MultipartFile.fromPath('file', filePath));
+
+    var response = await request.send();
+    var responseData = await response.stream.bytesToString();
+    var jsonResponse = jsonDecode(responseData);
+
+    if (response.statusCode == 200) {
+      return jsonResponse['text']?.toString().trim() ?? '';
+    } else {
+      debugPrint("Whisper Error: $responseData");
+      return '';
+    }
   }
 
   @override
@@ -4271,7 +4406,6 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
         ),
         const SizedBox(height: 40),
 
-        // Nút loa và rùa
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -4303,32 +4437,39 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
 
         const Spacer(),
 
-        // Khu vực Nút Thu Âm & Bỏ Qua
+        if (_isProcessing)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 20),
+            child: Text("AI đang chấm điểm...", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16)),
+          ),
+
         SizedBox(
-          height: 100, // Cố định chiều cao để không bị giật UI khi nút thu âm phình to
+          height: 100,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Nút Thu Âm (Ở giữa)
+              // NÚT MICRO ĐÃ ĐƯỢC ĐỔI SANG DẠNG CHẠM (TAP)
               GestureDetector(
-                onTap: _isRecording ? null : _simulateRecording,
+                onTap: _toggleRecording,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 200),
                   width: _isRecording ? 100 : 85,
                   height: _isRecording ? 100 : 85,
                   decoration: BoxDecoration(
-                    // Đổi sang màu đỏ khi đang thu âm
-                    color: _isRecording ? const Color(0xFFFF4B4B) : const Color(0xFF78C850),
+                    color: _isProcessing
+                        ? Colors.grey
+                        : (_isRecording ? const Color(0xFFFF4B4B) : const Color(0xFF78C850)),
                     shape: BoxShape.circle,
                     boxShadow: _isRecording
                         ? [BoxShadow(color: Colors.red.withOpacity(0.4), blurRadius: 20, spreadRadius: 5)]
                         : [],
                   ),
-                  child: const Icon(Icons.mic, color: Colors.white, size: 45),
+                  child: _isProcessing
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Icon(_isRecording ? Icons.stop : Icons.mic, color: Colors.white, size: 45),
                 ),
               ),
 
-              // Nút Bỏ qua (Skip - Ở góc phải)
               Positioned(
                 right: 0,
                 child: GestureDetector(
@@ -4349,6 +4490,12 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
               )
             ],
           ),
+        ),
+        const SizedBox(height: 10),
+        // Đổi Text hướng dẫn cho đúng UX mới
+        Text(
+            _isRecording ? "Bấm lại để dừng" : "Bấm để thu âm",
+            style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)
         ),
         const SizedBox(height: 20),
       ],
