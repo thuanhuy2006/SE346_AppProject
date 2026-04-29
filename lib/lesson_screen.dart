@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'sound_manager.dart';
 import 'user_progress.dart';
+import 'app_settings.dart';
 
 enum LessonType { learn, quiz, matching, imageQuiz, sentenceBuilder, kanjiDraw, listening, flashCard, vocabQuiz, vocabSummary, speaking}
 
@@ -34,12 +35,12 @@ class _LessonScreenState extends State<LessonScreen>{
       }
     }
     _totalQuizCount = _activities.where((e) =>
-        e['type'] == LessonType.quiz ||
+    e['type'] == LessonType.quiz ||
         e['type'] == LessonType.matching ||
         e['type'] == LessonType.imageQuiz ||
         e['type'] == LessonType.sentenceBuilder ||
         e['type'] == LessonType.listening ||
-            e['type'] == LessonType.vocabQuiz
+        e['type'] == LessonType.vocabQuiz
     ).length;
 
     _playCurrentAudio();
@@ -169,7 +170,7 @@ class _LessonScreenState extends State<LessonScreen>{
   // ==========================================
   // LUYỆN TẬP 1 (Sử dụng 5 từ đầu của bài 1)
   // ==========================================
-  List<Map<String, dynamic>> _getLuyenTap1Data() {
+  List<Map<String, dynamic>> _getLuyenTap1Data(){
     return [
       {
         'type': LessonType.imageQuiz,
@@ -184,11 +185,14 @@ class _LessonScreenState extends State<LessonScreen>{
       },
       {
         'type': LessonType.listening,
-        'options': ['こんにちは', 'さようなら', 'むすめ', 'むすこ'],
+        'options': [
+          {'kanji': '', 'hiragana': 'こんにちは'},
+          {'kanji': '', 'hiragana': 'さようなら'},
+          {'kanji': '娘', 'hiragana': 'むすめ'},
+          {'kanji': '息子', 'hiragana': 'むすこ'},
+        ],
         'answer': 'さようなら'
       },
-
-      // 3. CÂU HỎI HÌNH ẢNH (Giống Hình 1) - Tập trung vào "Musume"
       {
         'type': LessonType.imageQuiz,
         'question': 'Con gái.',
@@ -200,11 +204,14 @@ class _LessonScreenState extends State<LessonScreen>{
           {'img': 'assets/images/example_haha.png', 'jp': 'おかあさん', 'rmj': 'okaasan'},
         ]
       },
-
-      // 4. CÂU HỎI NGHE (Giống Hình 2) - Tập trung vào "Chichi / Otousan"
       {
         'type': LessonType.listening,
-        'options': ['お父さん', 'お母さん', '息子', '娘'],
+        'options': [
+          {'kanji': 'お父さん', 'hiragana': 'おとうさん'},
+          {'kanji': 'お母さん', 'hiragana': 'おかあさん'},
+          {'kanji': '息子', 'hiragana': 'むすこ'},
+          {'kanji': '娘', 'hiragana': 'むすめ'},
+        ],
         'answer': 'お父さん'
       },
 
@@ -222,8 +229,6 @@ class _LessonScreenState extends State<LessonScreen>{
         'jp': 'こんにちは',
         'answer': 'こんにちは',
       },
-
-      // 6. CÂU HỎI VẼ KANJI (Giống Hình 4) - Từ "Con gái"
       {
         'type': LessonType.kanjiDraw,
         'kanji_word': '娘',
@@ -231,8 +236,6 @@ class _LessonScreenState extends State<LessonScreen>{
         'meaning': 'Con gái',
         'rmj': 'musume'
       },
-
-      // 7. CÂU HỎI VẼ KANJI (Giống Hình 4) - Từ "Bố"
       {
         'type': LessonType.kanjiDraw,
         'kanji_word': '父 / お父さん',
@@ -2665,7 +2668,17 @@ class _LessonScreenState extends State<LessonScreen>{
           )
         ],
       ),
-      body: SafeArea(child: Padding(padding: const EdgeInsets.all(20.0), child: _buildBody(activity))),
+      body: SafeArea(
+        child: MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(AppSettings.textScale),
+          ),
+          child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: _buildBody(activity)
+          ),
+        ),
+      ),
     );
   }
 
@@ -2674,15 +2687,13 @@ class _LessonScreenState extends State<LessonScreen>{
 
   void _showSettingsSheet() {
     SoundManager.instance.vibrate('light');
-
-    // Biến tạm để lưu trạng thái trượt khi chưa bấm "Lưu"
-    double tempFontScale = _fontScaleValue;
-    double tempSfxVolume = _sfxVolumeValue;
+    double tempFontScale = AppSettings.fontScaleValue;
+    double tempSfxVolume = AppSettings.sfxVolumeValue;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent, // Nền trong suốt để bo góc đẹp hơn
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
@@ -2696,7 +2707,6 @@ class _LessonScreenState extends State<LessonScreen>{
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. THANH CHỈNH CỠ CHỮ
                   const Text("Cỡ chữ", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
                   const SizedBox(height: 10),
                   SliderTheme(
@@ -2706,12 +2716,12 @@ class _LessonScreenState extends State<LessonScreen>{
                       thumbColor: const Color(0xFF66BB6A),
                       tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 5),
                       activeTickMarkColor: const Color(0xFF66BB6A),
-                      inactiveTickMarkColor: Colors.black87, // Dấu chấm đen ở phần chưa trượt tới
+                      inactiveTickMarkColor: Colors.black87,
                       trackHeight: 4.0,
                     ),
                     child: Slider(
                       value: tempFontScale,
-                      min: 0, max: 4, divisions: 4, // 5 mức độ
+                      min: 0, max: 4, divisions: 4,
                       onChanged: (value) {
                         setModalState(() => tempFontScale = value);
                         SoundManager.instance.vibrate('light');
@@ -2730,33 +2740,32 @@ class _LessonScreenState extends State<LessonScreen>{
 
                   const SizedBox(height: 25),
 
-                  // 2. THANH CHỈNH ÂM LƯỢNG / RUNG
                   const Text("Âm lượng hiệu ứng âm thanh", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
                   const SizedBox(height: 10),
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       activeTrackColor: const Color(0xFF66BB6A),
-                      inactiveTrackColor: const Color(0xFF66BB6A), // Theo thiết kế, thanh này full màu xanh
+                      inactiveTrackColor: Colors.grey.shade300,
                       thumbColor: const Color(0xFF66BB6A),
                       tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 5),
                       activeTickMarkColor: const Color(0xFF66BB6A),
-                      inactiveTickMarkColor: const Color(0xFF66BB6A),
+                      inactiveTickMarkColor: Colors.black87,
                       trackHeight: 4.0,
                     ),
                     child: Slider(
                       value: tempSfxVolume,
-                      min: 0, max: 100, divisions: 4, // Các mốc: 0, 25, 50, 75, 100
+                      min: 0, max: 100, divisions: 4,
                       onChanged: (value) {
                         setModalState(() => tempSfxVolume = value);
                         SoundManager.instance.vibrate('light');
                       },
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
+                      children: [
                         Text("0", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
                         Text("25", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
                         Text("50", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
@@ -2775,18 +2784,15 @@ class _LessonScreenState extends State<LessonScreen>{
                     child: ElevatedButton(
                       onPressed: () {
                         SoundManager.instance.vibrate('light');
-                        // LƯU TRẠNG THÁI VÀ ĐÓNG BẢNG
+                        // SỬA LỖI 3: Lưu thẳng vào AppSettings
                         setState(() {
-                          _fontScaleValue = tempFontScale;
-                          _sfxVolumeValue = tempSfxVolume;
+                          AppSettings.fontScaleValue = tempFontScale;
+                          AppSettings.sfxVolumeValue = tempSfxVolume;
                         });
-
-                        // TODO: Sau này bạn có thể truyền _sfxVolumeValue sang SoundManager để set Volume thật
-
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF66BB6A), // Màu xanh lá mềm theo thiết kế
+                        backgroundColor: const Color(0xFF66BB6A),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         elevation: 0,
                       ),
@@ -3484,6 +3490,16 @@ class _FlashCardViewState extends State<FlashCardView> {
 
   // ================= MẶT TRƯỚC =================
   Widget _buildFront() {
+    // 1. CHUẨN HOÁ DỮ LIỆU ĐỂ TRÁNH LỖI CHUỖI RỖNG
+    String kanji = widget.data['kanji']?.toString() ?? '';
+    String hiragana = widget.data['hiragana']?.toString() ?? '';
+
+    // Nếu có Kanji thì chữ chính là Kanji, không có thì chữ chính là Hiragana
+    String mainText = kanji.isNotEmpty ? kanji : hiragana;
+
+    // Chỉ hiện Hiragana nhỏ (Furigana) ở trên nếu có Kanji và Kanji khác Hiragana
+    bool showFurigana = kanji.isNotEmpty && kanji != hiragana;
+
     return Container(
       key: const ValueKey('front'),
       width: double.infinity,
@@ -3494,7 +3510,6 @@ class _FlashCardViewState extends State<FlashCardView> {
       ),
       child: Column(
         children: [
-          // 1. Header (Đã xoá bóng đèn, căn giữa chữ)
           const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -3504,12 +3519,12 @@ class _FlashCardViewState extends State<FlashCardView> {
 
           const Spacer(),
 
-          // 2. Nội dung chính
-          if (widget.data['kanji'] != widget.data['hiragana'] && widget.data['kanji'].toString().isNotEmpty)
-            Text(widget.data['hiragana'], style: const TextStyle(fontSize: 20, color: Colors.black54)),
+          // 2. HIỂN THỊ CHỮ THEO LOGIC MỚI
+          if (showFurigana)
+            Text(hiragana, style: const TextStyle(fontSize: 20, color: Colors.black54)),
 
           Text(
-              widget.data['kanji'] ?? widget.data['hiragana'],
+              mainText, // Dùng biến mainText đã xử lý ở trên
               style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: Colors.black87)
           ),
 
@@ -3520,13 +3535,12 @@ class _FlashCardViewState extends State<FlashCardView> {
 
           const Spacer(),
 
-          // 3. Hai nút âm thanh
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildSoundBtn(Icons.pets, () => SoundManager.instance.speakJapanese(widget.data['hiragana'] ?? widget.data['kanji'], isSlow: true)),
+              _buildSoundBtn(Icons.pets, () => SoundManager.instance.speakJapanese(hiragana.isNotEmpty ? hiragana : mainText, isSlow: true)),
               const SizedBox(width: 20),
-              _buildSoundBtn(Icons.volume_up, () => SoundManager.instance.speakJapanese(widget.data['hiragana'] ?? widget.data['kanji'])),
+              _buildSoundBtn(Icons.volume_up, () => SoundManager.instance.speakJapanese(hiragana.isNotEmpty ? hiragana : mainText)),
             ],
           ),
           const SizedBox(height: 10),
@@ -3652,43 +3666,38 @@ class _VocabQuizViewState extends State<VocabQuizView> {
     List<String> options = widget.data['options'];
     bool isSelected = _selectedIndex != null;
 
-    // Kiểm tra xem từ này có Kanji thực sự không (khác với Hiragana)
-    // Nếu là chữ như こんにちは (không có Kanji) thì sẽ ẩn dòng Hiragana nhỏ đi cho giống thiết kế
-    bool hasKanji = widget.data['kanji'] != null &&
-        widget.data['kanji'] != widget.data['hiragana'] &&
-        widget.data['kanji'].toString().isNotEmpty;
+    String kanji = widget.data['kanji']?.toString() ?? '';
+    String hiragana = widget.data['hiragana']?.toString() ?? '';
+
+    String mainText = kanji.isNotEmpty ? kanji : hiragana;
+    bool showFurigana = kanji.isNotEmpty && kanji != hiragana;
 
     return Column(
       children: [
-        // 1. Text hướng dẫn
         const Text(
             "Chọn nghĩa của từ dưới đây",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
         ),
         const SizedBox(height: 30),
 
-        // 2. Khu vực Từ Vựng Chính
-        // Hiển thị Hiragana nhỏ ở trên (Chỉ hiện nếu từ đó là Kanji)
-        if (hasKanji)
-          Text(widget.data['hiragana'], style: const TextStyle(fontSize: 16, color: Colors.grey)),
+        // 2. HIỂN THỊ CHỮ THEO LOGIC MỚI
+        if (showFurigana)
+          Text(hiragana, style: const TextStyle(fontSize: 16, color: Colors.grey)),
 
-        // Từ vựng (Kanji hoặc Hiragana) siêu to khổng lồ
         Text(
-            widget.data['kanji'] ?? widget.data['hiragana'],
+            mainText, // Dùng biến mainText đã xử lý ở trên
             style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.black87)
         ),
         const SizedBox(height: 8),
 
-        // Romaji
         Text(widget.data['romaji'], style: const TextStyle(fontSize: 18, color: Color(0xFF7A8394))),
 
         const SizedBox(height: 25),
 
-        // 3. Nút Loa (Đưa xuống dưới chữ)
         GestureDetector(
           onTap: () {
             SoundManager.instance.vibrate('light');
-            SoundManager.instance.speakJapanese(widget.data['hiragana'] ?? widget.data['kanji']);
+            SoundManager.instance.speakJapanese(hiragana.isNotEmpty ? hiragana : mainText);
           },
           child: Container(
             width: 65, height: 65,
@@ -3903,10 +3912,10 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
                   "Chúng tôi sẽ tạm thời ẩn đi các câu hỏi cần nghe audio trong 15 phút tiếp theo!",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                      height: 1.5,
+                    fontSize: 16,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -3954,7 +3963,7 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> options = widget.data['options'];
+    List<dynamic> options = widget.data['options'];
     bool canCheck = _selectedOption != null;
 
     return Column(
@@ -3977,40 +3986,50 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
 
         const SizedBox(height: 40),
 
-        // Grid đáp án phẳng
         Expanded(
           child: GridView.count(
             crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1.1,
+            mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.1,
             physics: const NeverScrollableScrollPhysics(),
-            children: options.map((opt) {
-              bool isSelected = (_selectedOption == opt);
+            children: widget.data['options'].map<Widget>((dynamic opt) {
+
+              String kanji = '';
+              String hiragana = '';
+              String matchValue = '';
+
+              if (opt is String) {
+                kanji = opt;
+                matchValue = opt;
+              } else if (opt is Map) {
+                kanji = opt['kanji']?.isNotEmpty == true ? opt['kanji'] : opt['hiragana'];
+                hiragana = (opt['kanji']?.isNotEmpty == true && opt['kanji'] != opt['hiragana']) ? opt['hiragana'] : '';
+                matchValue = opt['kanji']?.isNotEmpty == true ? opt['kanji'] : opt['hiragana'];
+              }
+
+              bool isSelected = (_selectedOption == matchValue);
+
               return GestureDetector(
                 onTap: () {
                   SoundManager.instance.vibrate('light');
-                  setState(() => _selectedOption = opt);
+                  setState(() => _selectedOption = matchValue);
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   decoration: BoxDecoration(
                     color: isSelected ? const Color(0xFFE5F6D5) : const Color(0xFFF7F7F7),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                        color: isSelected ? const Color(0xFF88D847) : Colors.transparent,
-                        width: 2
-                    ),
+                    border: Border.all(color: isSelected ? const Color(0xFF88D847) : Colors.transparent, width: 2),
                   ),
-                  child: Center(
-                    child: Text(
-                        opt,
-                        style: TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? const Color(0xFF58CC02) : Colors.black87
-                        )
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // HIỂN THỊ HIRAGANA NHỎ Ở TRÊN NẾU CÓ KANJI
+                      if (hiragana.isNotEmpty)
+                        Text(hiragana, style: TextStyle(fontSize: 14, color: isSelected ? const Color(0xFF58CC02) : Colors.grey.shade600)),
+
+                      // HIỂN THỊ KANJI SIÊU TO
+                      Text(kanji, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: isSelected ? const Color(0xFF58CC02) : Colors.black87)),
+                    ],
                   ),
                 ),
               );
@@ -4090,7 +4109,7 @@ class _StandardQuizViewState extends State<StandardQuizView> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> options = widget.data['options'];
+    List<dynamic> options = widget.data['options'];
     bool canCheck = _selectedOption != null;
 
     return Column(
@@ -4130,36 +4149,48 @@ class _StandardQuizViewState extends State<StandardQuizView> {
         Expanded(
           child: GridView.count(
             crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1.1,
+            mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.1,
             physics: const NeverScrollableScrollPhysics(),
-            children: options.map((opt) {
-              bool isSelected = (_selectedOption == opt);
+            children: widget.data['options'].map<Widget>((dynamic opt) {
+
+              // LOGIC PHÂN TÍCH DỮ LIỆU ĐỂ LẤY KANJI VÀ HIRAGANA
+              String kanji = '';
+              String hiragana = '';
+              String matchValue = '';
+
+              if (opt is String) {
+                kanji = opt; // Hỗ trợ bài học cũ
+                matchValue = opt;
+              } else if (opt is Map) {
+                kanji = opt['kanji']?.isNotEmpty == true ? opt['kanji'] : opt['hiragana'];
+                hiragana = (opt['kanji']?.isNotEmpty == true && opt['kanji'] != opt['hiragana']) ? opt['hiragana'] : '';
+                matchValue = opt['kanji']?.isNotEmpty == true ? opt['kanji'] : opt['hiragana'];
+              }
+
+              bool isSelected = (_selectedOption == matchValue);
+
               return GestureDetector(
                 onTap: () {
                   SoundManager.instance.vibrate('light');
-                  setState(() => _selectedOption = opt);
+                  setState(() => _selectedOption = matchValue);
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   decoration: BoxDecoration(
                     color: isSelected ? const Color(0xFFE5F6D5) : const Color(0xFFF7F7F7),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                        color: isSelected ? const Color(0xFF88D847) : Colors.transparent,
-                        width: 2
-                    ),
+                    border: Border.all(color: isSelected ? const Color(0xFF88D847) : Colors.transparent, width: 2),
                   ),
-                  child: Center(
-                    child: Text(
-                        opt,
-                        style: TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? const Color(0xFF58CC02) : Colors.black87
-                        )
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // HIỂN THỊ HIRAGANA NHỎ Ở TRÊN NẾU CÓ KANJI
+                      if (hiragana.isNotEmpty)
+                        Text(hiragana, style: TextStyle(fontSize: 14, color: isSelected ? const Color(0xFF58CC02) : Colors.grey.shade600)),
+
+                      // HIỂN THỊ KANJI SIÊU TO
+                      Text(kanji, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: isSelected ? const Color(0xFF58CC02) : Colors.black87)),
+                    ],
                   ),
                 ),
               );

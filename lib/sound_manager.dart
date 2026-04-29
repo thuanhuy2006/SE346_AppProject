@@ -1,5 +1,6 @@
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:vibration/vibration.dart';
+import 'app_settings.dart';
 
 class SoundManager {
   static final SoundManager instance = SoundManager._init();
@@ -40,19 +41,16 @@ class SoundManager {
   }
 
   Future<void> vibrate(String type) async {
-    // Kiểm tra xem máy có bộ rung không
+    if (AppSettings.sfxRatio == 0) return;
     if (await Vibration.hasVibrator() == true) {
       switch (type) {
         case 'light':
-        // Rung nhẹ 50 mili-giây (cho nút bấm)
           Vibration.vibrate(duration: 50, amplitude: 64);
           break;
         case 'heavy':
-        // Rung mạnh 500 mili-giây (khi chiến thắng)
           Vibration.vibrate(duration: 500, amplitude: 255);
           break;
         case 'error':
-        // Rung kiểu "È è" (2 lần) khi sai
           Vibration.vibrate(pattern: [0, 200, 100, 200], intensities: [0, 255, 0, 255]);
           break;
       }
