@@ -33,15 +33,18 @@ class AlphabetPracticeListScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final item = practiceItems[index];
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
+            ),
             child: Row(
               children: [
                 // Biểu tượng cuốn sách màu xanh lá cây
                 Container(
                   width: 50,
                   height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5FDF5), // Màu xanh lá cây rất nhạt
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5FDF5), // Màu xanh lá cây rất nhạt
                     shape: BoxShape.circle,
                   ),
                   child: const Center(

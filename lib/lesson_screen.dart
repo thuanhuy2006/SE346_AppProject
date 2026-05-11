@@ -14,17 +14,21 @@ enum LessonType {
   vocabListIntro, grammarListIntro, grammarStructure, grammarUsage, grammarExample
 }
 
-class LessonScreen extends StatefulWidget{
+class LessonScreen extends StatefulWidget {
   final String lessonId;
   final String lessonTitle;
   static DateTime? audioDisabledUntil;
-  const LessonScreen({super.key, required this.lessonId, required this.lessonTitle});
+  const LessonScreen({
+    super.key,
+    required this.lessonId,
+    required this.lessonTitle,
+  });
 
   @override
   State<LessonScreen> createState() => _LessonScreenState();
 }
 
-class _LessonScreenState extends State<LessonScreen>{
+class _LessonScreenState extends State<LessonScreen> {
   int _currentIndex = 0;
   double _progress = 0;
   List<Map<String, dynamic>> _activities = [];
@@ -38,21 +42,28 @@ class _LessonScreenState extends State<LessonScreen>{
   void initState() {
     super.initState();
     _loadLessonData();
-    bool isAudioDisabled = LessonScreen.audioDisabledUntil != null &&
+    bool isAudioDisabled =
+        LessonScreen.audioDisabledUntil != null &&
         DateTime.now().isBefore(LessonScreen.audioDisabledUntil!);
-    if (isAudioDisabled && _activities.isNotEmpty && _activities[0]['type'] == LessonType.listening) {
-      while (_currentIndex < _activities.length - 1 && _activities[_currentIndex]['type'] == LessonType.listening) {
+    if (isAudioDisabled &&
+        _activities.isNotEmpty &&
+        _activities[0]['type'] == LessonType.listening) {
+      while (_currentIndex < _activities.length - 1 &&
+          _activities[_currentIndex]['type'] == LessonType.listening) {
         _currentIndex++;
       }
     }
-    _totalQuizCount = _activities.where((e) =>
-    e['type'] == LessonType.quiz ||
-        e['type'] == LessonType.matching ||
-        e['type'] == LessonType.imageQuiz ||
-        e['type'] == LessonType.sentenceBuilder ||
-        e['type'] == LessonType.listening ||
-        e['type'] == LessonType.vocabQuiz
-    ).length;
+    _totalQuizCount = _activities
+        .where(
+          (e) =>
+              e['type'] == LessonType.quiz ||
+              e['type'] == LessonType.matching ||
+              e['type'] == LessonType.imageQuiz ||
+              e['type'] == LessonType.sentenceBuilder ||
+              e['type'] == LessonType.listening ||
+              e['type'] == LessonType.vocabQuiz,
+        )
+        .length;
 
     _playCurrentAudio();
   }
@@ -304,11 +315,27 @@ class _LessonScreenState extends State<LessonScreen>{
         'question': 'Xin chào.',
         'answerIndex': 1,
         'options': [
-          {'img': 'assets/images/example_sayounara.png', 'jp': 'さようなら', 'rmj': 'sayounara'},
-          {'img': 'assets/images/example_konnichiwa.png', 'jp': 'こんにちは', 'rmj': 'konnichiwa'},
-          {'img': 'assets/images/example_musume.png', 'jp': 'むすめ', 'rmj': 'musume'},
-          {'img': 'assets/images/example_musuko.png', 'jp': 'むすこ', 'rmj': 'musuko'},
-        ]
+          {
+            'img': 'assets/images/example_sayounara.png',
+            'jp': 'さようなら',
+            'rmj': 'sayounara',
+          },
+          {
+            'img': 'assets/images/example_konnichiwa.png',
+            'jp': 'こんにちは',
+            'rmj': 'konnichiwa',
+          },
+          {
+            'img': 'assets/images/example_musume.png',
+            'jp': 'むすめ',
+            'rmj': 'musume',
+          },
+          {
+            'img': 'assets/images/example_musuko.png',
+            'jp': 'むすこ',
+            'rmj': 'musuko',
+          },
+        ],
       },
       {
         'type': LessonType.listening,
@@ -318,18 +345,34 @@ class _LessonScreenState extends State<LessonScreen>{
           {'kanji': '娘', 'hiragana': 'むすめ'},
           {'kanji': '息子', 'hiragana': 'むすこ'},
         ],
-        'answer': 'さようなら'
+        'answer': 'さようなら',
       },
       {
         'type': LessonType.imageQuiz,
         'question': 'Con gái.',
         'answerIndex': 2,
         'options': [
-          {'img': 'assets/images/example_musuko.png', 'jp': 'むすこ', 'rmj': 'musuko'},
-          {'img': 'assets/images/example_chichi.png', 'jp': 'おとうさん', 'rmj': 'otousan'},
-          {'img': 'assets/images/example_musume.png', 'jp': 'むすめ', 'rmj': 'musume'},
-          {'img': 'assets/images/example_haha.png', 'jp': 'おかあさん', 'rmj': 'okaasan'},
-        ]
+          {
+            'img': 'assets/images/example_musuko.png',
+            'jp': 'むすこ',
+            'rmj': 'musuko',
+          },
+          {
+            'img': 'assets/images/example_chichi.png',
+            'jp': 'おとうさん',
+            'rmj': 'otousan',
+          },
+          {
+            'img': 'assets/images/example_musume.png',
+            'jp': 'むすめ',
+            'rmj': 'musume',
+          },
+          {
+            'img': 'assets/images/example_haha.png',
+            'jp': 'おかあさん',
+            'rmj': 'okaasan',
+          },
+        ],
       },
       {
         'type': LessonType.listening,
@@ -339,7 +382,7 @@ class _LessonScreenState extends State<LessonScreen>{
           {'kanji': '息子', 'hiragana': 'むすこ'},
           {'kanji': '娘', 'hiragana': 'むすめ'},
         ],
-        'answer': 'お父さん'
+        'answer': 'お父さん',
       },
       {
         'type': LessonType.sentenceBuilder,
@@ -358,15 +401,17 @@ class _LessonScreenState extends State<LessonScreen>{
         'kanji_word': '娘',
         'kanji_target': '娘',
         'meaning': 'Con gái',
-        'rmj': 'musume'
+        'rmj': 'musume',
       },
+      {'type': LessonType.speaking, 'jp': '娘', 'answer': '娘'},
       {
         'type': LessonType.kanjiDraw,
         'kanji_word': '父 / お父さん',
         'kanji_target': '父',
         'meaning': 'Bố',
-        'rmj': 'chichi / otousan'
+        'rmj': 'chichi / otousan',
       },
+      {'type': LessonType.speaking, 'jp': 'お父さん', 'answer': 'お父さん'},
     ];
   }
 
@@ -539,6 +584,7 @@ class _LessonScreenState extends State<LessonScreen>{
         'meaning': 'Mẹ',
         'rmj': 'haha'
       },
+      {'type': LessonType.speaking, 'jp': '母', 'answer': '母'},
 
       // 8. CÂU HỎI VẼ KANJI - Từ "Tôi" (私)
       {
@@ -546,8 +592,9 @@ class _LessonScreenState extends State<LessonScreen>{
         'kanji_word': '私',
         'kanji_target': '私',
         'meaning': 'Tôi',
-        'rmj': 'watashi'
+        'rmj': 'watashi',
       },
+      {'type': LessonType.speaking, 'jp': '私', 'answer': '私'},
     ];
   }
   List<Map<String, dynamic>> _getCb1LuyenNoiData() {
@@ -4363,20 +4410,22 @@ class _LessonScreenState extends State<LessonScreen>{
   List<Map<String, dynamic>> _getFinalReviewData() { return [ /* Dữ liệu bạn đã có */ ]; }
 
 
-  void _nextActivity(){
+  void _nextActivity() {
     if (_currentIndex < _activities.length - 1) {
       setState(() {
         _currentIndex++;
       });
-      bool isAudioDisabled = LessonScreen.audioDisabledUntil != null &&
+      bool isAudioDisabled =
+          LessonScreen.audioDisabledUntil != null &&
           DateTime.now().isBefore(LessonScreen.audioDisabledUntil!);
-      if (isAudioDisabled && _activities[_currentIndex]['type'] == LessonType.listening) {
+      if (isAudioDisabled &&
+          _activities[_currentIndex]['type'] == LessonType.listening) {
         _nextActivity();
         return;
       }
       _progress = (_currentIndex + 1) / _activities.length;
       _playCurrentAudio();
-    } else{
+    } else {
       _finishLesson();
     }
   }
@@ -4403,7 +4452,11 @@ class _LessonScreenState extends State<LessonScreen>{
     if (mounted) Navigator.pop(context, true);
   }
 
-  void _showResultSheet(bool isCorrect, String correctAnswer, String userAnswer) {
+  void _showResultSheet(
+    bool isCorrect,
+    String correctAnswer,
+    String userAnswer,
+  ) {
     if (isCorrect) {
       _correctAnswers++;
       SoundManager.instance.vibrate('light');
@@ -4416,11 +4469,17 @@ class _LessonScreenState extends State<LessonScreen>{
       SoundManager.instance.speakJapanese(correctAnswer);
     }
 
-    Color typeColor = isCorrect ? const Color(0xFF58CC02) : const Color(0xFFFF4B4B);
-    Color bgColor = isCorrect ? const Color(0xFFD7FFB8) : const Color(0xFFFFDFE0);
+    Color typeColor = isCorrect
+        ? const Color(0xFF58CC02)
+        : const Color(0xFFFF4B4B);
+    Color bgColor = isCorrect
+        ? const Color(0xFFD7FFB8)
+        : const Color(0xFFFFDFE0);
     String title = isCorrect ? "Đúng rồi!" : "Sai rồi";
     String msg = isCorrect ? "Tuyệt vời! Tiếp tục nào." : "Đáp án đúng:";
-    String imageAsset = isCorrect ? 'assets/images/dog_happy.png' : 'assets/images/dog_sad.png';
+    String imageAsset = isCorrect
+        ? 'assets/images/dog_happy.png'
+        : 'assets/images/dog_sad.png';
 
     showModalBottomSheet(
       context: context,
@@ -4433,7 +4492,10 @@ class _LessonScreenState extends State<LessonScreen>{
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -4441,7 +4503,16 @@ class _LessonScreenState extends State<LessonScreen>{
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset(imageAsset, width: 80, height: 80, errorBuilder: (_,__,___) => Icon(isCorrect ? Icons.emoji_emotions : Icons.mood_bad, size: 80, color: typeColor)),
+                  Image.asset(
+                    imageAsset,
+                    width: 80,
+                    height: 80,
+                    errorBuilder: (_, __, ___) => Icon(
+                      isCorrect ? Icons.emoji_emotions : Icons.mood_bad,
+                      size: 80,
+                      color: typeColor,
+                    ),
+                  ),
                   const SizedBox(width: 15),
                   Expanded(
                     child: Column(
@@ -4450,17 +4521,38 @@ class _LessonScreenState extends State<LessonScreen>{
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(title, style: TextStyle(color: typeColor, fontSize: 22, fontWeight: FontWeight.bold)),
+                            Text(
+                              title,
+                              style: TextStyle(
+                                color: typeColor,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             IconButton(
                               icon: Icon(Icons.volume_up, color: typeColor),
-                              onPressed: () => SoundManager.instance.speakJapanese(correctAnswer),
+                              onPressed: () => SoundManager.instance
+                                  .speakJapanese(correctAnswer),
                             ),
                           ],
                         ),
                         const SizedBox(height: 5),
-                        Text(msg, style: TextStyle(color: isCorrect ? typeColor : Colors.black54, fontSize: 16)),
+                        Text(
+                          msg,
+                          style: TextStyle(
+                            color: isCorrect ? typeColor : Colors.black54,
+                            fontSize: 16,
+                          ),
+                        ),
                         if (!isCorrect)
-                          Text(correctAnswer, style: TextStyle(color: typeColor, fontSize: 20, fontWeight: FontWeight.bold)),
+                          Text(
+                            correctAnswer,
+                            style: TextStyle(
+                              color: typeColor,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -4468,7 +4560,8 @@ class _LessonScreenState extends State<LessonScreen>{
               ),
               const SizedBox(height: 20),
               SizedBox(
-                width: double.infinity, height: 50,
+                width: double.infinity,
+                height: 50,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
@@ -4477,9 +4570,18 @@ class _LessonScreenState extends State<LessonScreen>{
                   style: ElevatedButton.styleFrom(
                     backgroundColor: typeColor,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text("TIẾP TỤC", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    "TIẾP TỤC",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -4491,15 +4593,27 @@ class _LessonScreenState extends State<LessonScreen>{
 
   @override
   Widget build(BuildContext context) {
-    if (_activities.isEmpty) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_activities.isEmpty)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     final activity = _activities[_currentIndex];
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.close, color: Colors.black54), onPressed: () => Navigator.pop(context)),
-        title: LinearProgressIndicator(value: _progress, backgroundColor: Colors.grey[200], color: const Color(0xFF58CC02), minHeight: 12, borderRadius: BorderRadius.circular(6)),
-        centerTitle: true, backgroundColor: Colors.white, elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.black54),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: LinearProgressIndicator(
+          value: _progress,
+          backgroundColor: Colors.grey[200],
+          color: const Color(0xFF58CC02),
+          minHeight: 12,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert, color: Colors.black54),
@@ -4509,12 +4623,12 @@ class _LessonScreenState extends State<LessonScreen>{
       ),
       body: SafeArea(
         child: MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(AppSettings.textScale),
-          ),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(AppSettings.textScale)),
           child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: _buildBody(activity)
+            padding: const EdgeInsets.all(20.0),
+            child: _buildBody(activity),
           ),
         ),
       ),
@@ -4537,27 +4651,41 @@ class _LessonScreenState extends State<LessonScreen>{
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Cỡ chữ", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  const Text(
+                    "Cỡ chữ",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       activeTrackColor: const Color(0xFF66BB6A),
                       inactiveTrackColor: Colors.grey.shade300,
                       thumbColor: const Color(0xFF66BB6A),
-                      tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 5),
+                      tickMarkShape: const RoundSliderTickMarkShape(
+                        tickMarkRadius: 5,
+                      ),
                       activeTickMarkColor: const Color(0xFF66BB6A),
                       inactiveTickMarkColor: Colors.black87,
                       trackHeight: 4.0,
                     ),
                     child: Slider(
                       value: tempFontScale,
-                      min: 0, max: 4, divisions: 4,
+                      min: 0,
+                      max: 4,
+                      divisions: 4,
                       onChanged: (value) {
                         setModalState(() => tempFontScale = value);
                         SoundManager.instance.vibrate('light');
@@ -4566,31 +4694,44 @@ class _LessonScreenState extends State<LessonScreen>{
                   ),
                   Center(
                     child: Text(
-                        "Mặc định",
-                        style: TextStyle(
-                            color: tempFontScale == 2 ? const Color(0xFF58CC02) : Colors.grey,
-                            fontWeight: FontWeight.bold
-                        )
+                      "Mặc định",
+                      style: TextStyle(
+                        color: tempFontScale == 2
+                            ? const Color(0xFF58CC02)
+                            : Colors.grey,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 25),
 
-                  const Text("Âm lượng hiệu ứng âm thanh", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  const Text(
+                    "Âm lượng hiệu ứng âm thanh",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       activeTrackColor: const Color(0xFF66BB6A),
                       inactiveTrackColor: Colors.grey.shade300,
                       thumbColor: const Color(0xFF66BB6A),
-                      tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 5),
+                      tickMarkShape: const RoundSliderTickMarkShape(
+                        tickMarkRadius: 5,
+                      ),
                       activeTickMarkColor: const Color(0xFF66BB6A),
                       inactiveTickMarkColor: Colors.black87,
                       trackHeight: 4.0,
                     ),
                     child: Slider(
                       value: tempSfxVolume,
-                      min: 0, max: 100, divisions: 4,
+                      min: 0,
+                      max: 100,
+                      divisions: 4,
                       onChanged: (value) {
                         setModalState(() => tempSfxVolume = value);
                         SoundManager.instance.vibrate('light');
@@ -4602,11 +4743,41 @@ class _LessonScreenState extends State<LessonScreen>{
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("0", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                        Text("25", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                        Text("50", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                        Text("75", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                        Text("100", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                        Text(
+                          "0",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          "25",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          "50",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          "75",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          "100",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -4627,10 +4798,19 @@ class _LessonScreenState extends State<LessonScreen>{
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF66BB6A),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         elevation: 0,
                       ),
-                      child: const Text("Lưu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      child: const Text(
+                        "Lưu",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -4664,17 +4844,20 @@ class _LessonScreenState extends State<LessonScreen>{
       case LessonType.listening:
         return ListeningQuizView(
           data: data,
-          onCheckResult: (isCorrect, correctAns, userAns) => _showResultSheet(isCorrect, correctAns, userAns),
+          onCheckResult: (isCorrect, correctAns, userAns) =>
+              _showResultSheet(isCorrect, correctAns, userAns),
         );
       case LessonType.sentenceBuilder:
         return SentenceBuilderView(
-            data: data,
-            onCheckResult: (isCorrect, correctAns, userAns) => _showResultSheet(isCorrect, correctAns, userAns)
+          data: data,
+          onCheckResult: (isCorrect, correctAns, userAns) =>
+              _showResultSheet(isCorrect, correctAns, userAns),
         );
       case LessonType.speaking:
         return SpeakingPracticeView(
           data: data,
-          onCheckResult: (isCorrect, correctAns, userAns) => _showResultSheet(isCorrect, correctAns, userAns),
+          onCheckResult: (isCorrect, correctAns, userAns) =>
+              _showResultSheet(isCorrect, correctAns, userAns),
           onSkip: _nextActivity,
         );
       case LessonType.kanjiDraw:
@@ -4683,8 +4866,9 @@ class _LessonScreenState extends State<LessonScreen>{
         return FlashCardView(data: data, onNext: _nextActivity);
       case LessonType.vocabQuiz:
         return VocabQuizView(
-            data: data,
-            onCheckResult: (isCorrect, correctAns, userAns) => _showResultSheet(isCorrect, correctAns, userAns)
+          data: data,
+          onCheckResult: (isCorrect, correctAns, userAns) =>
+              _showResultSheet(isCorrect, correctAns, userAns),
         );
       case LessonType.vocabSummary:
         return VocabSummaryView(words: data['words'], wrongAnswers: _wrongAnswers, onNext: _nextActivity, onExit: _finishLesson,);
@@ -5041,7 +5225,11 @@ class SentenceBuilderView extends StatefulWidget {
   final Map<String, dynamic> data;
   final Function(bool, String, String) onCheckResult;
 
-  const SentenceBuilderView({super.key, required this.data, required this.onCheckResult});
+  const SentenceBuilderView({
+    super.key,
+    required this.data,
+    required this.onCheckResult,
+  });
 
   @override
   State<SentenceBuilderView> createState() => _SentenceBuilderViewState();
@@ -5126,34 +5314,60 @@ class _SentenceBuilderViewState extends State<SentenceBuilderView> {
           width: double.infinity,
           alignment: Alignment.center,
           child: Wrap(
-            spacing: 12, runSpacing: 12, alignment: WrapAlignment.center,
-            children: selectedWords.map((word) => _buildWordChip(word, true)).toList(),
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: selectedWords
+                .map((word) => _buildWordChip(word, true))
+                .toList(),
           ),
         ),
 
         const Spacer(),
 
         Wrap(
-          spacing: 12, runSpacing: 12, alignment: WrapAlignment.center,
-          children: poolWords.map((word) => _buildWordChip(word, false)).toList(),
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: poolWords
+              .map((word) => _buildWordChip(word, false))
+              .toList(),
         ),
 
         const SizedBox(height: 40),
 
         SizedBox(
-          width: double.infinity, height: 50,
+          width: double.infinity,
+          height: 50,
           child: ElevatedButton(
-            onPressed: selectedWords.isEmpty ? null : () {
-              String userAnswer = selectedWords.join(' ');
-              bool isCorrect = (userAnswer == widget.data['answer']);
-              widget.onCheckResult(isCorrect, widget.data['answer'], userAnswer);
-            },
+            onPressed: selectedWords.isEmpty
+                ? null
+                : () {
+                    String userAnswer = selectedWords.join(' ');
+                    bool isCorrect = (userAnswer == widget.data['answer']);
+                    widget.onCheckResult(
+                      isCorrect,
+                      widget.data['answer'],
+                      userAnswer,
+                    );
+                  },
             style: ElevatedButton.styleFrom(
-              backgroundColor: selectedWords.isEmpty ? Colors.grey.shade300 : const Color(0xFF58CC02),
+              backgroundColor: selectedWords.isEmpty
+                  ? Colors.grey.shade300
+                  : const Color(0xFF58CC02),
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
             ),
-            child: Text("Kiểm tra", style: TextStyle(color: selectedWords.isEmpty ? Colors.grey : Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            child: Text(
+              "Kiểm tra",
+              style: TextStyle(
+                color: selectedWords.isEmpty ? Colors.grey : Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
       ],
@@ -5180,9 +5394,18 @@ class _SentenceBuilderViewState extends State<SentenceBuilderView> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey.shade300, width: 2),
-          boxShadow: [BoxShadow(color: Colors.grey.shade200, offset: const Offset(0, 3))],
+          boxShadow: [
+            BoxShadow(color: Colors.grey.shade200, offset: const Offset(0, 3)),
+          ],
         ),
-        child: Text(word, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+        child: Text(
+          word,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
       ),
     );
   }
@@ -5206,40 +5429,70 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(widget.data['rmj'], style: const TextStyle(fontSize: 14, color: Colors.grey)),
+        Text(
+          widget.data['rmj'],
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(widget.data['kanji_word'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              widget.data['kanji_word'],
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(width: 10),
             GestureDetector(
-              onTap: () => SoundManager.instance.speakJapanese(widget.data['kanji_word']),
-              child: const Icon(Icons.volume_up, color: Color(0xFF58CC02), size: 28),
-            )
+              onTap: () => SoundManager.instance.speakJapanese(
+                widget.data['kanji_word'],
+              ),
+              child: const Icon(
+                Icons.volume_up,
+                color: Color(0xFF58CC02),
+                size: 28,
+              ),
+            ),
           ],
         ),
-        Text(widget.data['meaning'], style: const TextStyle(fontSize: 14, color: Colors.grey)),
+        Text(
+          widget.data['meaning'],
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
+        ),
         const SizedBox(height: 20),
 
         Container(
-          width: 300, height: 300,
+          width: 300,
+          height: 300,
           decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade300, width: 2),
-              boxShadow: [BoxShadow(color: Colors.grey.shade100, blurRadius: 10, offset: const Offset(0, 5))]
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade300, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade100,
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Stack(
             children: [
               Center(child: Container(width: double.infinity, height: 1, color: Colors.grey.shade200)),
               Center(child: Container(height: double.infinity, width: 1, color: Colors.grey.shade200)),
               Center(
-                child: Text(widget.data['kanji_target'], style: TextStyle(fontSize: 220, color: Colors.grey.shade200, height: 1.1)),
+                child: Text(
+                  widget.data['kanji_target'],
+                  style: TextStyle(
+                    fontSize: 220,
+                    color: Colors.grey.shade200,
+                    height: 1.1,
+                  ),
+                ),
               ),
               GestureDetector(
                 onPanUpdate: (details) {
                   setState(() {
-                    RenderBox renderBox = context.findRenderObject() as RenderBox;
+                    RenderBox renderBox =
+                        context.findRenderObject() as RenderBox;
                     points.add(renderBox.globalToLocal(details.globalPosition));
                   });
                 },
@@ -5258,33 +5511,78 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.green.shade50, shape: BoxShape.circle), child: const Icon(Icons.visibility_off, color: Colors.green)),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.visibility_off, color: Colors.green),
+            ),
             const SizedBox(width: 20),
             GestureDetector(
               onTap: () => setState(() => points.clear()),
-              child: Container(padding: const EdgeInsets.all(16), decoration: const BoxDecoration(color: Color(0xFF58CC02), shape: BoxShape.circle), child: const Icon(Icons.cleaning_services, color: Colors.white, size: 30)),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF58CC02),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.cleaning_services,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ),
             ),
             const SizedBox(width: 20),
-            Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.green.shade50, shape: BoxShape.circle), child: const Icon(Icons.visibility, color: Colors.green)),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.visibility, color: Colors.green),
+            ),
             const SizedBox(width: 20),
             GestureDetector(
               onTap: widget.onNext,
-              child: Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.grey.shade200, shape: BoxShape.circle), child: const Icon(Icons.keyboard_double_arrow_right, color: Colors.black54)),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.keyboard_double_arrow_right,
+                  color: Colors.black54,
+                ),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 20),
 
         SizedBox(
-          width: double.infinity, height: 50,
+          width: double.infinity,
+          height: 50,
           child: ElevatedButton(
             onPressed: widget.onNext,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF58CC02),
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
             ),
-            child: const Text("Tiếp tục", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            child: const Text(
+              "Tiếp tục",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
       ],
@@ -5309,14 +5607,19 @@ class DrawingPainter extends CustomPainter {
       }
     }
   }
+
   @override
   bool shouldRepaint(DrawingPainter oldDelegate) => true;
 }
 
-class MatchingGame extends StatefulWidget{
+class MatchingGame extends StatefulWidget {
   final List<Map<String, String>> pairs;
   final VoidCallback onCompleted;
-  const MatchingGame({super.key, required this.pairs, required this.onCompleted});
+  const MatchingGame({
+    super.key,
+    required this.pairs,
+    required this.onCompleted,
+  });
   @override
   State<MatchingGame> createState() => _MatchingGameState();
 }
@@ -5349,7 +5652,10 @@ class _MatchingGameState extends State<MatchingGame> {
 
   void _checkMatch() async {
     if (selectedLeft != null && selectedRight != null) {
-      bool isCorrect = widget.pairs.any((pair) => pair['left'] == selectedLeft && pair['right'] == selectedRight);
+      bool isCorrect = widget.pairs.any(
+        (pair) =>
+            pair['left'] == selectedLeft && pair['right'] == selectedRight,
+      );
 
       if (isCorrect) {
         SoundManager.instance.vibrate('light');
@@ -5381,8 +5687,12 @@ class _MatchingGameState extends State<MatchingGame> {
     return Column(
       children: [
         const Text(
-            "Ghép các cặp từ tương ứng",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
+          "Ghép các cặp từ tương ứng",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF777777),
+          ),
         ),
         const SizedBox(height: 30),
         Expanded(
@@ -5396,10 +5706,12 @@ class _MatchingGameState extends State<MatchingGame> {
               ),
               const SizedBox(width: 20),
               Expanded(
-                  child: ListView(
-                      physics: const BouncingScrollPhysics(),
-                      children: rightItems.map((item) => _buildCard(item, false)).toList()
-                  )
+                child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  children: rightItems
+                      .map((item) => _buildCard(item, false))
+                      .toList(),
+                ),
               ),
             ],
           ),
@@ -5443,17 +5755,17 @@ class _MatchingGameState extends State<MatchingGame> {
             border: Border.all(color: borderColor, width: 2),
           ),
           child: Center(
-              child: isMatched
-                  ? const Icon(Icons.check, color: Color(0xFFD0D0D0), size: 28)
-                  : Text(
-                  text,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
+            child: isMatched
+                ? const Icon(Icons.check, color: Color(0xFFD0D0D0), size: 28)
+                : Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
                       fontSize: text.length > 5 ? 16 : 22,
                       fontWeight: FontWeight.bold,
-                      color: textColor
-                  )
-              )
+                      color: textColor,
+                    ),
+                  ),
           ),
         ),
       ),
@@ -5466,11 +5778,18 @@ class LessonCompletionScreen extends StatelessWidget {
   final int totalCount;
   final int expEarned;
 
-  const LessonCompletionScreen({super.key, required this.correctCount, required this.totalCount, required this.expEarned});
+  const LessonCompletionScreen({
+    super.key,
+    required this.correctCount,
+    required this.totalCount,
+    required this.expEarned,
+  });
 
   @override
   Widget build(BuildContext context) {
-    int percent = totalCount > 0 ? ((correctCount / totalCount) * 100).round() : 100;
+    int percent = totalCount > 0
+        ? ((correctCount / totalCount) * 100).round()
+        : 100;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -5480,27 +5799,125 @@ class LessonCompletionScreen extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              Image.asset('assets/images/dog_happy.png', height: 200, errorBuilder: (_, __, ___) => const Icon(Icons.emoji_events, size: 150, color: Colors.amber)),
+              Image.asset(
+                'assets/images/dog_happy.png',
+                height: 200,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.emoji_events,
+                  size: 150,
+                  color: Colors.amber,
+                ),
+              ),
               const SizedBox(height: 20),
-              const Text("Bạn đã hoàn thành bài học!", textAlign: TextAlign.center, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF3C3C3C))),
+              const Text(
+                "Bạn đã hoàn thành bài học!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3C3C3C),
+                ),
+              ),
               const SizedBox(height: 30),
               Row(
                 children: [
-                  Expanded(child: _buildResultCard(label: "$correctCount/$totalCount", icon: Icons.track_changes, color: const Color(0xFF4285F4), bgColor: const Color(0xFFE8F0FE))),
+                  Expanded(
+                    child: _buildResultCard(
+                      label: "$correctCount/$totalCount",
+                      icon: Icons.track_changes,
+                      color: const Color(0xFF4285F4),
+                      bgColor: const Color(0xFFE8F0FE),
+                    ),
+                  ),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildResultCard(label: "$percent%", icon: Icons.headphones, color: const Color(0xFF58CC02), bgColor: const Color(0xFFE5F6D5), badge: "+5 ⚡")),
+                  Expanded(
+                    child: _buildResultCard(
+                      label: "$percent%",
+                      icon: Icons.headphones,
+                      color: const Color(0xFF58CC02),
+                      bgColor: const Color(0xFFE5F6D5),
+                      badge: "+5 ⚡",
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
-              const Text("~~ ❇ ~~", style: TextStyle(color: Colors.grey, fontSize: 20)),
+              const Text(
+                "~~ ❇ ~~",
+                style: TextStyle(color: Colors.grey, fontSize: 20),
+              ),
               const Spacer(),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text("EXP", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)), Text("+$expEarned ⚡", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.amber, fontSize: 18))]),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "EXP",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Text(
+                    "+$expEarned ⚡",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
-              ClipRRect(borderRadius: BorderRadius.circular(10), child: LinearProgressIndicator(value: 0.9, minHeight: 12, backgroundColor: Colors.grey[200], color: const Color(0xFFFFC800))),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  value: 0.9,
+                  minHeight: 12,
+                  backgroundColor: Colors.grey[200],
+                  color: const Color(0xFFFFC800),
+                ),
+              ),
               const SizedBox(height: 8),
-              const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text("-", style: TextStyle(color: Colors.grey)), Text("9 exp để lên cấp", style: TextStyle(color: Colors.grey)), Text("Tân binh", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold))]),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("-", style: TextStyle(color: Colors.grey)),
+                  Text(
+                    "9 exp để lên cấp",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  Text(
+                    "Tân binh",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 30),
-              SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: () => Navigator.pop(context, true), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF58CC02), elevation: 5, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))), child: const Text("Tiếp tục", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)))),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF58CC02),
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    "Tiếp tục",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
             ],
           ),
@@ -5509,15 +5926,61 @@ class LessonCompletionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildResultCard({required String label, required IconData icon, required Color color, required Color bgColor, String? badge}) {
+  Widget _buildResultCard({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required Color bgColor,
+    String? badge,
+  }) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
         Container(
-          height: 100, decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: bgColor, width: 2)),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, color: color, size: 30), const SizedBox(height: 8), Center(child: Text(label, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)))]),
+          height: 100,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: bgColor, width: 2),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 30),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        if (badge != null) Positioned(top: -10, right: -5, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(12)), child: Text(badge, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))))
+        if (badge != null)
+          Positioned(
+            top: -10,
+            right: -5,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                badge,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -5576,12 +6039,15 @@ class _FlashCardViewState extends State<FlashCardView> {
         const SizedBox(height: 20),
 
         SizedBox(
-          width: double.infinity, height: 55,
+          width: double.infinity,
+          height: 55,
           child: ElevatedButton(
             onPressed: _isFlipped ? widget.onNext : _toggleFlip,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF58CC02),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               elevation: 0,
             ),
             child: Text(
@@ -5614,14 +6080,24 @@ class _FlashCardViewState extends State<FlashCardView> {
           const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("《 TỪ MỚI 》", style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF5A6275), fontSize: 16)),
+              Text(
+                "《 TỪ MỚI 》",
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF5A6275),
+                  fontSize: 16,
+                ),
+              ),
             ],
           ),
 
           const Spacer(),
 
           if (showFurigana)
-            Text(hiragana, style: const TextStyle(fontSize: 20, color: Colors.black54)),
+            Text(
+              hiragana,
+              style: const TextStyle(fontSize: 20, color: Colors.black54),
+            ),
 
           Text(
               mainText,
@@ -5629,18 +6105,35 @@ class _FlashCardViewState extends State<FlashCardView> {
           ),
 
           const SizedBox(height: 15),
-          Text(widget.data['romaji'], style: const TextStyle(fontSize: 18, color: Color(0xFF7A8394))),
+          Text(
+            widget.data['romaji'],
+            style: const TextStyle(fontSize: 18, color: Color(0xFF7A8394)),
+          ),
           const SizedBox(height: 15),
-          Text(widget.data['meaning'], style: const TextStyle(fontSize: 20, color: Colors.black87)),
+          Text(
+            widget.data['meaning'],
+            style: const TextStyle(fontSize: 20, color: Colors.black87),
+          ),
 
           const Spacer(),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildSoundBtn(Icons.pets, () => SoundManager.instance.speakJapanese(hiragana.isNotEmpty ? hiragana : mainText, isSlow: true)),
+              _buildSoundBtn(
+                Icons.pets,
+                () => SoundManager.instance.speakJapanese(
+                  hiragana.isNotEmpty ? hiragana : mainText,
+                  isSlow: true,
+                ),
+              ),
               const SizedBox(width: 20),
-              _buildSoundBtn(Icons.volume_up, () => SoundManager.instance.speakJapanese(hiragana.isNotEmpty ? hiragana : mainText)),
+              _buildSoundBtn(
+                Icons.volume_up,
+                () => SoundManager.instance.speakJapanese(
+                  hiragana.isNotEmpty ? hiragana : mainText,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -5663,10 +6156,17 @@ class _FlashCardViewState extends State<FlashCardView> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             decoration: BoxDecoration(
-                color: const Color(0xFF9E8A2F),
-                borderRadius: BorderRadius.circular(20)
+              color: const Color(0xFF9E8A2F),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text("Ví dụ", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+            child: const Text(
+              "Ví dụ",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
           ),
           const SizedBox(height: 25),
 
@@ -5697,13 +6197,20 @@ class _FlashCardViewState extends State<FlashCardView> {
                 Text(
                   widget.data['example_jp'],
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   widget.data['example_rmj'],
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16, color: Color(0xFF7A8394)),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF7A8394),
+                  ),
                 ),
               ],
             ),
@@ -5714,7 +6221,11 @@ class _FlashCardViewState extends State<FlashCardView> {
           Text(
             widget.data['example_vn'],
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF78C850)),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF78C850),
+            ),
           ),
           const SizedBox(height: 10),
         ],
@@ -5729,10 +6240,11 @@ class _FlashCardViewState extends State<FlashCardView> {
         onTap();
       },
       child: Container(
-        width: 70, height: 70,
+        width: 70,
+        height: 70,
         decoration: const BoxDecoration(
-            color: Color(0xFF6B5B15),
-            shape: BoxShape.circle
+          color: Color(0xFF6B5B15),
+          shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white, size: 35),
       ),
@@ -5744,7 +6256,11 @@ class VocabQuizView extends StatefulWidget {
   final Map<String, dynamic> data;
   final Function(bool, String, String) onCheckResult;
 
-  const VocabQuizView({super.key, required this.data, required this.onCheckResult});
+  const VocabQuizView({
+    super.key,
+    required this.data,
+    required this.onCheckResult,
+  });
 
   @override
   State<VocabQuizView> createState() => _VocabQuizViewState();
@@ -5767,13 +6283,20 @@ class _VocabQuizViewState extends State<VocabQuizView> {
     return Column(
       children: [
         const Text(
-            "Chọn nghĩa của từ dưới đây",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
+          "Chọn nghĩa của từ dưới đây",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF777777),
+          ),
         ),
         const SizedBox(height: 30),
 
         if (showFurigana)
-          Text(hiragana, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+          Text(
+            hiragana,
+            style: const TextStyle(fontSize: 16, color: Colors.grey),
+          ),
 
         Text(
             mainText,
@@ -5781,22 +6304,32 @@ class _VocabQuizViewState extends State<VocabQuizView> {
         ),
         const SizedBox(height: 8),
 
-        Text(widget.data['romaji'], style: const TextStyle(fontSize: 18, color: Color(0xFF7A8394))),
+        Text(
+          widget.data['romaji'],
+          style: const TextStyle(fontSize: 18, color: Color(0xFF7A8394)),
+        ),
 
         const SizedBox(height: 25),
 
         GestureDetector(
           onTap: () {
             SoundManager.instance.vibrate('light');
-            SoundManager.instance.speakJapanese(hiragana.isNotEmpty ? hiragana : mainText);
+            SoundManager.instance.speakJapanese(
+              hiragana.isNotEmpty ? hiragana : mainText,
+            );
           },
           child: Container(
-            width: 65, height: 65,
+            width: 65,
+            height: 65,
             decoration: const BoxDecoration(
-                color: Color(0xFFEEF7E8),
-                shape: BoxShape.circle
+              color: Color(0xFFEEF7E8),
+              shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.volume_up, color: Color(0xFF58CC02), size: 35),
+            child: const Icon(
+              Icons.volume_up,
+              color: Color(0xFF58CC02),
+              size: 35,
+            ),
           ),
         ),
 
@@ -5845,13 +6378,20 @@ class _VocabQuizViewState extends State<VocabQuizView> {
 
         const SizedBox(height: 10),
         SizedBox(
-          width: double.infinity, height: 55,
+          width: double.infinity,
+          height: 55,
           child: ElevatedButton(
-            onPressed: isSelected ? () {
-              String userAns = options[_selectedIndex!];
-              bool isCorrect = userAns == widget.data['answer'];
-              widget.onCheckResult(isCorrect, widget.data['answer'], userAns);
-            } : null,
+            onPressed: isSelected
+                ? () {
+                    String userAns = options[_selectedIndex!];
+                    bool isCorrect = userAns == widget.data['answer'];
+                    widget.onCheckResult(
+                      isCorrect,
+                      widget.data['answer'],
+                      userAns,
+                    );
+                  }
+                : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: isSelected ? const Color(0xFF58CC02) : Colors.grey.shade200,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -5910,12 +6450,22 @@ class _VocabSummaryViewState extends State<VocabSummaryView> {
 
     return Column(
       children: [
-        const Text("Tổng kết bài học", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+        const Text(
+          "Tổng kết bài học",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
         const SizedBox(height: 20),
 
         // TAB SELECTOR
         Container(
-          decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(20)),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Row(
             children: [
               Expanded(
@@ -5953,7 +6503,13 @@ class _VocabSummaryViewState extends State<VocabSummaryView> {
         ),
 
         const SizedBox(height: 20),
-        const Align(alignment: Alignment.centerLeft, child: Text("TỪ VỰNG", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))),
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "TỪ VỰNG",
+            style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+          ),
+        ),
         const SizedBox(height: 10),
 
         Expanded(
@@ -5973,10 +6529,21 @@ class _VocabSummaryViewState extends State<VocabSummaryView> {
                 ),
                 title: RichText(
                   text: TextSpan(
-                    style: const TextStyle(fontSize: 18, color: Colors.black87, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
                     children: [
                       TextSpan(text: w['kanji']! + " "),
-                      TextSpan(text: "(${w['romaji']})", style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.normal)),
+                      TextSpan(
+                        text: "(${w['romaji']})",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -6008,7 +6575,7 @@ class _VocabSummaryViewState extends State<VocabSummaryView> {
               ),
             ),
           ],
-        )
+        ),
       ],
     );
   }
@@ -6018,7 +6585,11 @@ class ListeningQuizView extends StatefulWidget {
   final Map<String, dynamic> data;
   final Function(bool, String, String) onCheckResult;
 
-  const ListeningQuizView({super.key, required this.data, required this.onCheckResult});
+  const ListeningQuizView({
+    super.key,
+    required this.data,
+    required this.onCheckResult,
+  });
 
   @override
   State<ListeningQuizView> createState() => _ListeningQuizViewState();
@@ -6044,7 +6615,10 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
           backgroundColor: const Color(0xFFFFF4C7),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 30.0,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -6066,16 +6640,31 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
                   child: ElevatedButton(
                     onPressed: () {
                       SoundManager.instance.vibrate('light');
-                      LessonScreen.audioDisabledUntil = DateTime.now().add(const Duration(minutes: 15));
+                      LessonScreen.audioDisabledUntil = DateTime.now().add(
+                        const Duration(minutes: 15),
+                      );
                       Navigator.pop(context);
-                      widget.onCheckResult(true, widget.data['answer'], widget.data['answer']);
+                      widget.onCheckResult(
+                        true,
+                        widget.data['answer'],
+                        widget.data['answer'],
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF78C850),
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
                     ),
-                    child: const Text("Đồng ý", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: const Text(
+                      "Đồng ý",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -6086,8 +6675,12 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
                     Navigator.pop(context);
                   },
                   child: const Text(
-                      "Đóng",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF78C850))
+                    "Đóng",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF78C850),
+                    ),
                   ),
                 ),
               ],
@@ -6106,8 +6699,12 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
     return Column(
       children: [
         const Text(
-            "Nghe và chọn chữ cái tương ứng",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
+          "Nghe và chọn chữ cái tương ứng",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF777777),
+          ),
         ),
         const SizedBox(height: 40),
 
@@ -6125,10 +6722,11 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
         Expanded(
           child: GridView.count(
             crossAxisCount: 2,
-            mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.1,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.1,
             physics: const NeverScrollableScrollPhysics(),
             children: widget.data['options'].map<Widget>((dynamic opt) {
-
               String kanji = '';
               String hiragana = '';
               String matchValue = '';
@@ -6137,9 +6735,17 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
                 kanji = opt;
                 matchValue = opt;
               } else if (opt is Map) {
-                kanji = opt['kanji']?.isNotEmpty == true ? opt['kanji'] : opt['hiragana'];
-                hiragana = (opt['kanji']?.isNotEmpty == true && opt['kanji'] != opt['hiragana']) ? opt['hiragana'] : '';
-                matchValue = opt['kanji']?.isNotEmpty == true ? opt['kanji'] : opt['hiragana'];
+                kanji = opt['kanji']?.isNotEmpty == true
+                    ? opt['kanji']
+                    : opt['hiragana'];
+                hiragana =
+                    (opt['kanji']?.isNotEmpty == true &&
+                        opt['kanji'] != opt['hiragana'])
+                    ? opt['hiragana']
+                    : '';
+                matchValue = opt['kanji']?.isNotEmpty == true
+                    ? opt['kanji']
+                    : opt['hiragana'];
               }
 
               bool isSelected = (_selectedOption == matchValue);
@@ -6152,15 +6758,30 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFE5F6D5) : const Color(0xFFF7F7F7),
+                    color: isSelected
+                        ? const Color(0xFFE5F6D5)
+                        : const Color(0xFFF7F7F7),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: isSelected ? const Color(0xFF88D847) : Colors.transparent, width: 2),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF88D847)
+                          : Colors.transparent,
+                      width: 2,
+                    ),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (hiragana.isNotEmpty)
-                        Text(hiragana, style: TextStyle(fontSize: 14, color: isSelected ? const Color(0xFF58CC02) : Colors.grey.shade600)),
+                        Text(
+                          hiragana,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isSelected
+                                ? const Color(0xFF58CC02)
+                                : Colors.grey.shade600,
+                          ),
+                        ),
 
                       Text(kanji, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: isSelected ? const Color(0xFF58CC02) : Colors.black87)),
                     ],
@@ -6179,19 +6800,34 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
         const SizedBox(height: 10),
 
         SizedBox(
-          width: double.infinity, height: 55,
+          width: double.infinity,
+          height: 55,
           child: ElevatedButton(
-            onPressed: canCheck ? () {
-              widget.onCheckResult(_selectedOption == widget.data['answer'], widget.data['answer'], _selectedOption!);
-            } : null,
+            onPressed: canCheck
+                ? () {
+                    widget.onCheckResult(
+                      _selectedOption == widget.data['answer'],
+                      widget.data['answer'],
+                      _selectedOption!,
+                    );
+                  }
+                : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: canCheck ? const Color(0xFF58CC02) : Colors.grey.shade200,
+              backgroundColor: canCheck
+                  ? const Color(0xFF58CC02)
+                  : Colors.grey.shade200,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
             ),
             child: Text(
-                "KIỂM TRA",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: canCheck ? Colors.white : Colors.grey.shade400)
+              "KIỂM TRA",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: canCheck ? Colors.white : Colors.grey.shade400,
+              ),
             ),
           ),
         ),
@@ -6203,11 +6839,18 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
     return GestureDetector(
       onTap: () {
         SoundManager.instance.vibrate('light');
-        SoundManager.instance.speakJapanese(widget.data['answer'], isSlow: isSlow);
+        SoundManager.instance.speakJapanese(
+          widget.data['answer'],
+          isSlow: isSlow,
+        );
       },
       child: Container(
-        width: boxSize, height: boxSize,
-        decoration: const BoxDecoration(color: Color(0xFFEEF7E8), shape: BoxShape.circle),
+        width: boxSize,
+        height: boxSize,
+        decoration: const BoxDecoration(
+          color: Color(0xFFEEF7E8),
+          shape: BoxShape.circle,
+        ),
         child: Icon(icon, color: const Color(0xFF58CC02), size: iconSize),
       ),
     );
@@ -6218,7 +6861,11 @@ class StandardQuizView extends StatefulWidget {
   final Map<String, dynamic> data;
   final Function(bool, String, String) onCheckResult;
 
-  const StandardQuizView({super.key, required this.data, required this.onCheckResult});
+  const StandardQuizView({
+    super.key,
+    required this.data,
+    required this.onCheckResult,
+  });
 
   @override
   State<StandardQuizView> createState() => _StandardQuizViewState();
@@ -6309,7 +6956,9 @@ class _StandardQuizViewState extends State<StandardQuizView> {
         Expanded(
           child: GridView.count(
             crossAxisCount: 2,
-            mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.1,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.1,
             physics: const NeverScrollableScrollPhysics(),
             children: widget.data['options'].map<Widget>((dynamic opt) {
 
@@ -6321,9 +6970,17 @@ class _StandardQuizViewState extends State<StandardQuizView> {
                 kanji = opt;
                 matchValue = opt;
               } else if (opt is Map) {
-                kanji = opt['kanji']?.isNotEmpty == true ? opt['kanji'] : opt['hiragana'];
-                hiragana = (opt['kanji']?.isNotEmpty == true && opt['kanji'] != opt['hiragana']) ? opt['hiragana'] : '';
-                matchValue = opt['kanji']?.isNotEmpty == true ? opt['kanji'] : opt['hiragana'];
+                kanji = opt['kanji']?.isNotEmpty == true
+                    ? opt['kanji']
+                    : opt['hiragana'];
+                hiragana =
+                    (opt['kanji']?.isNotEmpty == true &&
+                        opt['kanji'] != opt['hiragana'])
+                    ? opt['hiragana']
+                    : '';
+                matchValue = opt['kanji']?.isNotEmpty == true
+                    ? opt['kanji']
+                    : opt['hiragana'];
               }
 
               bool isSelected = (_selectedOption == matchValue);
@@ -6336,15 +6993,30 @@ class _StandardQuizViewState extends State<StandardQuizView> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFE5F6D5) : const Color(0xFFF7F7F7),
+                    color: isSelected
+                        ? const Color(0xFFE5F6D5)
+                        : const Color(0xFFF7F7F7),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: isSelected ? const Color(0xFF88D847) : Colors.transparent, width: 2),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF88D847)
+                          : Colors.transparent,
+                      width: 2,
+                    ),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (hiragana.isNotEmpty)
-                        Text(hiragana, style: TextStyle(fontSize: 14, color: isSelected ? const Color(0xFF58CC02) : Colors.grey.shade600)),
+                        Text(
+                          hiragana,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isSelected
+                                ? const Color(0xFF58CC02)
+                                : Colors.grey.shade600,
+                          ),
+                        ),
 
                       Text(kanji, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: isSelected ? const Color(0xFF58CC02) : Colors.black87)),
                     ],
@@ -6356,23 +7028,34 @@ class _StandardQuizViewState extends State<StandardQuizView> {
         ),
 
         SizedBox(
-          width: double.infinity, height: 55,
+          width: double.infinity,
+          height: 55,
           child: ElevatedButton(
-            onPressed: canCheck ? () {
-              widget.onCheckResult(_selectedOption == widget.data['answer'], widget.data['answer'], _selectedOption!);
-            } : null,
+            onPressed: canCheck
+                ? () {
+                    widget.onCheckResult(
+                      _selectedOption == widget.data['answer'],
+                      widget.data['answer'],
+                      _selectedOption!,
+                    );
+                  }
+                : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: canCheck ? const Color(0xFF58CC02) : Colors.grey.shade200,
+              backgroundColor: canCheck
+                  ? const Color(0xFF58CC02)
+                  : Colors.grey.shade200,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
             ),
             child: Text(
-                "KIỂM TRA",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: canCheck ? Colors.white : Colors.grey.shade400
-                )
+              "KIỂM TRA",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: canCheck ? Colors.white : Colors.grey.shade400,
+              ),
             ),
           ),
         ),
@@ -6390,7 +7073,7 @@ class SpeakingPracticeView extends StatefulWidget {
     super.key,
     required this.data,
     required this.onCheckResult,
-    required this.onSkip
+    required this.onSkip,
   });
 
   @override
@@ -6398,21 +7081,29 @@ class SpeakingPracticeView extends StatefulWidget {
 }
 
 class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
-  bool _isRecording = false;
-  bool _isProcessing = false;
-
-  late final AudioRecorder _audioRecorder;
-  String? _audioPath;
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  String _recognizedText = "";
+  bool _isAvailable = false;
+  bool _hasSpoken = false;
 
   @override
   void initState() {
     super.initState();
-    _audioRecorder = AudioRecorder();
+    _speech = stt.SpeechToText();
+    _initSpeech();
+  }
+
+  Future<void> _initSpeech() async {
+    _isAvailable = await _speech.initialize(
+      onError: (val) => debugPrint('onError: $val'),
+    );
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _audioRecorder.dispose();
+    _speech.cancel();
     super.dispose();
   }
 
@@ -6440,48 +7131,57 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
         SoundManager.instance.vibrate('light');
         setState(() => _isRecording = true);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng cấp quyền Micro để thu âm!")));
+        _isAvailable = true;
       }
-    } catch (e) {
-      debugPrint("Lỗi ghi âm: $e");
     }
+
+    SoundManager.instance.vibrate('light');
+    setState(() {
+      _isListening = true;
+      _recognizedText = "";
+      _hasSpoken = false;
+    });
+
+    _speech.listen(
+      onResult: (val) {
+        if (mounted) {
+          setState(() {
+            _recognizedText = val.recognizedWords;
+          });
+        }
+      },
+      localeId: 'ja_JP', // Nhận diện giọng nói theo tiếng Nhật
+    );
   }
 
-  Future<void> _stopRecordingAndCheck() async {
-    try {
-      final path = await _audioRecorder.stop();
-      if (path == null) return;
-
-      SoundManager.instance.vibrate('light');
-      setState(() {
-        _isRecording = false;
-        _isProcessing = true;
-      });
-
-      String transcribedText = await _sendToWhisperAPI(path);
-
-      if (!mounted) return;
-      setState(() => _isProcessing = false);
-
-      if (transcribedText.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Không nghe rõ, vui lòng thử lại!")));
-        return;
-      }
+  void _stopListening() {
+    if (!_isListening) return;
+    SoundManager.instance.vibrate('light');
+    _speech.stop();
+    setState(() {
+      _isListening = false;
+      _hasSpoken = true;
+    });
+  }
 
       String targetAnswer = widget.data['answer'].toString();
       bool isCorrect = _compareJapaneseText(targetAnswer, transcribedText);
 
-      widget.onCheckResult(isCorrect, targetAnswer, transcribedText);
+    String targetAnswer = widget.data['answer'].toString();
+    bool isCorrect = _compareJapaneseText(targetAnswer, _recognizedText);
 
-    } catch (e) {
-      setState(() => _isProcessing = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi kết nối AI: $e")));
-    }
+    widget.onCheckResult(isCorrect, targetAnswer, _recognizedText);
   }
 
   bool _compareJapaneseText(String target, String input) {
     String cleanTarget = target.replaceAll(RegExp(r'[。、！？\s]'), '');
     String cleanInput = input.replaceAll(RegExp(r'[。、！？\s]'), '');
+    cleanTarget = cleanTarget
+        .replaceAll('こんにちは', 'こんにちわ')
+        .replaceAll('こんばんは', 'こんばんわ');
+    cleanInput = cleanInput
+        .replaceAll('こんにちは', 'こんにちわ')
+        .replaceAll('こんばんは', 'こんばんわ');
 
     cleanTarget = cleanTarget.replaceAll('こんにちは', 'こんにちわ').replaceAll('こんばんは', 'こんばんわ');
     cleanInput = cleanInput.replaceAll('こんにちは', 'こんにちわ').replaceAll('こんばんは', 'こんばんわ');
@@ -6497,14 +7197,21 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
     if (s1.isEmpty && s2.isEmpty) return 1.0;
     if (s1.isEmpty || s2.isEmpty) return 0.0;
 
-    List<List<int>> dp = List.generate(s1.length + 1, (i) => List.filled(s2.length + 1, 0));
+    List<List<int>> dp = List.generate(
+      s1.length + 1,
+      (i) => List.filled(s2.length + 1, 0),
+    );
     for (int i = 0; i <= s1.length; i++) dp[i][0] = i;
     for (int j = 0; j <= s2.length; j++) dp[0][j] = j;
 
     for (int i = 1; i <= s1.length; i++) {
       for (int j = 1; j <= s2.length; j++) {
         int cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
-        dp[i][j] = [dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost].reduce((a, b) => a < b ? a : b);
+        dp[i][j] = [
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + cost,
+        ].reduce((a, b) => a < b ? a : b);
       }
     }
 
@@ -6539,8 +7246,12 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
     return Column(
       children: [
         const Text(
-            "Nghe và nói lại câu sau",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF777777))
+          "Nghe và nói lại câu sau",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF777777),
+          ),
         ),
         const SizedBox(height: 40),
 
@@ -6553,21 +7264,40 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
                 SoundManager.instance.speakJapanese(widget.data['jp']);
               },
               child: Container(
-                width: 90, height: 90,
-                decoration: const BoxDecoration(color: Color(0xFFEEF7E8), shape: BoxShape.circle),
-                child: const Icon(Icons.volume_up, color: Color(0xFF58CC02), size: 45),
+                width: 90,
+                height: 90,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEEF7E8),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.volume_up,
+                  color: Color(0xFF58CC02),
+                  size: 45,
+                ),
               ),
             ),
             const SizedBox(width: 20),
             GestureDetector(
               onTap: () {
                 SoundManager.instance.vibrate('light');
-                SoundManager.instance.speakJapanese(widget.data['jp'], isSlow: true);
+                SoundManager.instance.speakJapanese(
+                  widget.data['jp'],
+                  isSlow: true,
+                );
               },
               child: Container(
-                width: 60, height: 60,
-                decoration: const BoxDecoration(color: Color(0xFFEEF7E8), shape: BoxShape.circle),
-                child: const Icon(Icons.pets, color: Color(0xFF58CC02), size: 28),
+                width: 60,
+                height: 60,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEEF7E8),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.pets,
+                  color: Color(0xFF58CC02),
+                  size: 28,
+                ),
               ),
             ),
           ],
@@ -6575,16 +7305,15 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
 
         const Spacer(),
 
-        if (_isProcessing)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 20),
-            child: Text("AI đang chấm điểm...", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16)),
+        Container(
+          padding: const EdgeInsets.all(16),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-
-        SizedBox(
-          height: 100,
-          child: Stack(
-            alignment: Alignment.center,
+          child: Column(
             children: [
               GestureDetector(
                 onTap: _toggleRecording,
@@ -6606,34 +7335,97 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
                       : Icon(_isRecording ? Icons.stop : Icons.mic, color: Colors.white, size: 45),
                 ),
               ),
-
-              Positioned(
-                right: 0,
-                child: GestureDetector(
-                  onTap: () {
-                    SoundManager.instance.vibrate('light');
-                    widget.onSkip();
-                  },
-                  child: Container(
-                    width: 50, height: 50,
-                    decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade300, width: 1.5)
-                    ),
-                    child: const Icon(Icons.keyboard_double_arrow_right, color: Colors.grey, size: 24),
-                  ),
+              const SizedBox(height: 8),
+              Text(
+                _recognizedText.isEmpty ? "..." : _recognizedText,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
-              )
+                textAlign: TextAlign.center,
+              ),
             ],
+          ),
+        ),
+        const Spacer(),
+
+        GestureDetector(
+          onTapDown: (_) => _startListening(),
+          onTapUp: (_) => _stopListening(),
+          onTapCancel: () => _stopListening(),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: _isListening ? 100 : 85,
+            height: _isListening ? 100 : 85,
+            decoration: BoxDecoration(
+              color: _isListening
+                  ? const Color(0xFFFF4B4B)
+                  : const Color(0xFF78C850),
+              shape: BoxShape.circle,
+              boxShadow: _isListening
+                  ? [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.4),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ]
+                  : [],
+            ),
+            child: const Icon(Icons.mic, color: Colors.white, size: 45),
           ),
         ),
         const SizedBox(height: 10),
         Text(
-            _isRecording ? "Bấm lại để dừng" : "Bấm để thu âm",
-            style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)
+          _isListening ? "Thả ra để dừng" : "Ấn giữ để nói",
+          style: const TextStyle(
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 20),
+
+        TextButton(
+          onPressed: () {
+            SoundManager.instance.vibrate('light');
+            widget.onSkip();
+          },
+          child: const Text(
+            "Tôi không thể nói",
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          height: 55,
+          child: ElevatedButton(
+            onPressed: _hasSpoken ? _checkAnswer : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _hasSpoken
+                  ? const Color(0xFF58CC02)
+                  : Colors.grey.shade300,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              elevation: _hasSpoken ? 5 : 0,
+            ),
+            child: Text(
+              "KIỂM TRA",
+              style: TextStyle(
+                color: _hasSpoken ? Colors.white : Colors.grey.shade500,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
