@@ -899,6 +899,7 @@ class SummonerHomePage extends StatefulWidget {
 }
 
 class _SummonerHomePageState extends State<SummonerHomePage> {
+  String _currentCourse = 'Sơ cấp 1 - N5';
   final ScrollController _scrollController = ScrollController();
 
   // 1. ĐỊNH NGHĨA CÁC CHẶNG HỌC (CHAPTERS)
@@ -1031,6 +1032,73 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
       {'id': 81, 'key': 'cb10_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic10'},
     ];
   }
+  void _initN4Lessons() {
+      _lessons = [];
+          int idCounter = 200;
+          for (int i = 1; i <= 10; i++) {
+            String sectionId = 'basic$i';
+            _lessons.addAll([
+              {'id': idCounter++, 'key': 'n4_bai${i}_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n4_bai${i}_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n4_bai${i}_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n4_bai${i}_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n4_bai${i}_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n4_bai${i}_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n4_bai${i}_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': sectionId},
+            ]);
+          }
+    }
+
+    void _initN3Lessons() {
+      _lessons = [];
+          int idCounter = 300; // Đặt ID bắt đầu cho N3
+          for (int i = 1; i <= 10; i++) {
+            String sectionId = 'basic$i';
+            _lessons.addAll([
+              {'id': idCounter++, 'key': 'n3_bai${i}_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n3_bai${i}_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n3_bai${i}_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n3_bai${i}_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n3_bai${i}_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n3_bai${i}_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n3_bai${i}_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': sectionId},
+            ]);
+          }
+    }
+
+    void _initN2Lessons() {
+      _lessons = [];
+          int idCounter = 400; // Đặt ID bắt đầu cho N2
+          for (int i = 1; i <= 10; i++) {
+            String sectionId = 'basic$i';
+            _lessons.addAll([
+              {'id': idCounter++, 'key': 'n2_bai${i}_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n2_bai${i}_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n2_bai${i}_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n2_bai${i}_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n2_bai${i}_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n2_bai${i}_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n2_bai${i}_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': sectionId},
+            ]);
+          }
+    }
+
+    void _initN1Lessons() {
+      _lessons = [];
+          int idCounter = 500; // Đặt ID bắt đầu cho N1
+          for (int i = 1; i <= 10; i++) {
+            String sectionId = 'basic$i';
+            _lessons.addAll([
+              {'id': idCounter++, 'key': 'n1_bai${i}_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n1_bai${i}_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n1_bai${i}_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n1_bai${i}_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n1_bai${i}_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n1_bai${i}_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': sectionId},
+              {'id': idCounter++, 'key': 'n1_bai${i}_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': sectionId},
+            ]);
+          }
+    }
 
   Future<void> _refreshProgress() async {
     List<String> completed = await UserProgress().getCompletedLessons();
@@ -1057,13 +1125,30 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar( /* ... AppBar giữ nguyên như cũ ... */
+      appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         title: GestureDetector(
           onTap: () {
             SoundManager.instance.vibrate('light');
-            //_showCourseSelection(context); // Bật lại nếu bạn muốn dùng Popup chọn khóa học
+            CourseSelectionHelper.showCoursePopup(context, _currentCourse, (selectedCourse) {
+                setState(() {
+                      _currentCourse = selectedCourse;
+                      // Dựa vào course được chọn để load đúng danh sách bài học và section
+                      if (selectedCourse == 'Sơ cấp 1 - N5') {
+                        _initLessons(); // Hàm cũ của bạn
+                      } else if (selectedCourse == 'Sơ cấp 2 - N4') {
+                        _initN4Lessons(); // Bạn cần tạo hàm này chứa list bài N4
+                      } else if (selectedCourse == 'Trung cấp 1 - N3') {
+                        _initN3Lessons();
+                      } else if (selectedCourse == 'Trung cấp 2 - N2') {
+                        _initN2Lessons();
+                      } else if (selectedCourse == 'Cao cấp - N1') {
+                        _initN1Lessons();
+                      }
+                      _refreshProgress(); // Reset lại tiến độ theo course mới
+                    });
+                  });
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1382,4 +1467,179 @@ class DashedPathPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+class CourseSelectionHelper {
+  static void showCoursePopup(BuildContext context, String currentCourse, Function(String) onSelect) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CourseSelectionPopup(currentCourse: currentCourse, onSelect: onSelect),
+    );
+  }
+}
+
+class CourseSelectionPopup extends StatelessWidget {
+  final String currentCourse;
+  final Function(String) onSelect;
+
+  // Đã sửa: Khai báo constructor bắt buộc phải truyền biến vào
+  const CourseSelectionPopup({super.key, required this.currentCourse, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20, right: 12, top: 16, bottom: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Chọn khóa học', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.grey, size: 28),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                children: [
+                  _buildMainJLPTCard(context), // Đã sửa: Truyền context vào đây
+                  const SizedBox(height: 16),
+                  _buildExtraCourseCard(
+                    title: 'Luyện đọc', subtitle: '56 bài', bgColor: const Color(0xFFF3E5F5), iconData: Icons.menu_book_rounded, iconColor: Colors.purple,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildExtraCourseCard(
+                    title: 'Luyện nói', subtitle: '93 bài', bgColor: const Color(0xFFFFEBEE), iconData: Icons.record_voice_over_rounded, iconColor: Colors.redAccent,
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Đã sửa: Hàm này cần nhận context để truyền xuống dưới
+  Widget _buildMainJLPTCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 60, height: 60,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                child: const Icon(Icons.school, size: 36, color: Colors.orange),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('Lộ trình JLPT', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF4CAF50))),
+                    SizedBox(height: 4),
+                    Text('5 cấp độ', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.keyboard_arrow_up, color: Colors.black54),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 12, runSpacing: 12,
+            children: [
+              // Đã sửa: Gọi hàm theo đúng format mới
+              _buildLevelButton(context, 'Sơ cấp 1 - N5'),
+              _buildLevelButton(context, 'Sơ cấp 2 - N4'),
+              _buildLevelButton(context, 'Trung cấp 1 - N3'),
+              _buildLevelButton(context, 'Trung cấp 2 - N2'),
+              _buildLevelButton(context, 'Cao cấp - N1'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLevelButton(BuildContext context, String text) {
+    // Tự động kiểm tra xem nút này có đang là course hiện tại không
+    bool isActive = (text == currentCourse);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double width = (MediaQuery.of(context).size.width - 32 - 32 - 12) / 2;
+        return GestureDetector(
+          onTap: () {
+            onSelect(text);
+            Navigator.pop(context);
+          },
+          child: Container(
+            width: width,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            decoration: BoxDecoration(
+              color: isActive ? const Color(0xFF58CC02) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [if (!isActive) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.bar_chart_rounded, color: isActive ? Colors.white : Colors.grey.shade400, size: 20),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(text, style: TextStyle(fontSize: 14, fontWeight: isActive ? FontWeight.bold : FontWeight.w600, color: isActive ? Colors.white : Colors.black87), maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    );
+  }
+  // Đã sửa: Xóa cái dấu ngoặc nhọn "}" thừa gây lỗi ở đây!
+
+  Widget _buildExtraCourseCard({required String title, required String subtitle, required Color bgColor, required IconData iconData, required Color iconColor}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(20)),
+      child: Row(
+        children: [
+          Container(
+            width: 60, height: 60,
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.6), borderRadius: BorderRadius.circular(16)),
+            child: Icon(iconData, size: 36, color: iconColor),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                const SizedBox(height: 4),
+                Text(subtitle, style: const TextStyle(fontSize: 14, color: Colors.black54)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
