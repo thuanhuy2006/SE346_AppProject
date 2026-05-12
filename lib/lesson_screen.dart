@@ -106,6 +106,7 @@ class _LessonScreenState extends State<LessonScreen>{
       case 'cb1_luyentap3': _activities = _getCb1LuyenTap3Data(); break;
       case 'cb1_luyennoi': _activities = _getCb1LuyenNoiData(); break;
       case 'cb1_luyenviet': _activities = _getCb1LuyenVietData(); break;
+      case 'cb1_ontap': _activities = _getCb1OnTapData(); break;
       case 'cb2_lythuyet': _activities = _getCb2LyThuyetData(); break;
       case 'cb2_luyentap1': _activities = _getCb2LuyenTap1Data(); break;
       case 'cb2_luyentap2': _activities = _getCb2LuyenTap2Data(); break;
@@ -958,6 +959,24 @@ case 'n2_bai1_lythuyet': _activities = _getN2Bai1LyThuyetData(); break;
       },
     ];
   }
+  List<Map<String, dynamic>> _getCb1OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getLuyenTap1Data());
+    data.addAll(_getCb1LuyenTap2Data());
+    data.addAll(_getCb1LuyenTap3Data());
+    List<Map<String, dynamic>> quizzes = data.where((e) => 
+      e['type'] != LessonType.learn && 
+      e['type'] != LessonType.flashCard && 
+      e['type'] != LessonType.vocabListIntro && 
+      e['type'] != LessonType.grammarListIntro && 
+      e['type'] != LessonType.grammarStructure && 
+      e['type'] != LessonType.grammarUsage && 
+      e['type'] != LessonType.grammarExample && 
+      e['type'] != LessonType.vocabSummary).toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
   List<Map<String, dynamic>> _getCb2LyThuyetData() {
     return [
       // ================= PHẦN 1: TỪ VỰNG =================
