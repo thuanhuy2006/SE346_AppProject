@@ -1134,7 +1134,6 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
             CourseSelectionHelper.showCoursePopup(context, _currentCourse, (selectedCourse) {
                 setState(() {
                       _currentCourse = selectedCourse;
-                      // Dựa vào course được chọn để load đúng danh sách bài học và section
                       if (selectedCourse == 'Sơ cấp 1 - N5') {
                         _initLessons(); // Hàm cũ của bạn
                       } else if (selectedCourse == 'Sơ cấp 2 - N4') {
@@ -1159,8 +1158,8 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text("Sơ cấp 1 - N5", style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold)),
+              children: [
+                Text(_currentCourse, style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold)),
                 SizedBox(width: 5),
                 Icon(Icons.arrow_drop_down, color: Colors.black54),
               ],
