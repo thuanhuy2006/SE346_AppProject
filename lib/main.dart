@@ -1265,7 +1265,7 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
     return Stack(
       children: [
         CustomPaint(
-          size: Size(screenWidth, chunkLessons.length * 100.0),
+          size: Size(screenWidth, chunkLessons.length * 120.0),
           painter: DashedPathPainter(
               totalItems: chunkLessons.length,
               startIndex: startZigZagIndex
@@ -1281,7 +1281,7 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
             else if (globalIndex % 4 == 3) alignX = 0.5;
 
             return Container(
-              height: 100,
+              height: 120,
               alignment: Alignment(alignX, 0),
               child: _buildLessonNode(lesson),
             );
@@ -1430,7 +1430,7 @@ class DashedPathPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()..color = Colors.grey.shade300..strokeWidth = 8..style = PaintingStyle.stroke..strokeCap = StrokeCap.round;
     double centerX = size.width / 2;
-    double itemHeight = 100.0;
+    double itemHeight = 120.0;
     Path path = Path();
     Offset start = Offset(centerX, itemHeight / 2);
     if (startIndex % 4 == 1) start = Offset(centerX - (size.width * 0.25), itemHeight / 2);
