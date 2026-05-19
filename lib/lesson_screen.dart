@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'recognition_manager.dart';
 import 'sound_manager.dart';
 import 'user_progress.dart';
 import 'app_settings.dart';
@@ -19674,6 +19675,8 @@ class KanjiDrawView extends StatefulWidget {
 
 class _KanjiDrawViewState extends State<KanjiDrawView> {
   List<Offset?> points = [];
+  bool _showHint = true;
+  bool _isChecking = false;
 
   @override
   void didUpdateWidget(KanjiDrawView oldWidget) {
@@ -19681,8 +19684,221 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
     if (oldWidget.data != widget.data) {
       setState(() {
         points.clear();
+        _showHint = true;
       });
     }
+  }
+
+  // --- HÀM TÍNH KHOẢNG CÁCH LEVENSHTEIN ---
+  int _levenshteinDistance(String s1, String s2) {
+    if (s1.isEmpty) return s2.length;
+    if (s2.isEmpty) return s1.length;
+    List<List<int>> matrix = List.generate(s1.length + 1, (i) => List.filled(s2.length + 1, 0));
+    for (int i = 0; i <= s1.length; i++) matrix[i][0] = i;
+    for (int j = 0; j <= s2.length; j++) matrix[0][j] = j;
+    for (int i = 1; i <= s1.length; i++) {
+      for (int j = 1; j <= s2.length; j++) {
+        int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
+        matrix[i][j] = [
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost
+        ].reduce((a, b) => a < b ? a : b);
+      }
+    }
+    return matrix[s1.length][s2.length];
+  }
+
+  // --- HÀM TÍNH ĐỘ TƯƠNG ĐỒNG (0.0 đến 1.0) ---
+  double _calculateSimilarity(String a, String b) {
+    if (a.isEmpty && b.isEmpty) return 1.0;
+    if (a.isEmpty || b.isEmpty) return 0.0;
+    int distance = _levenshteinDistance(a, b);
+    int maxLength = a.length > b.length ? a.length : b.length;
+    return 1.0 - (distance / maxLength);
+  }
+
+  List<List<Offset>> _convertPointsToStrokes() {
+    List<List<Offset>> strokes = [];
+    List<Offset> currentStroke = [];
+    for (var point in points) {
+      if (point == null) {
+        if (currentStroke.isNotEmpty) {
+          strokes.add(List.from(currentStroke));
+          currentStroke.clear();
+        }
+      } else {
+        currentStroke.add(point);
+      }
+    }
+    if (currentStroke.isNotEmpty) {
+      strokes.add(List.from(currentStroke));
+    }
+    return strokes;
+  }
+
+  void _checkDrawing() async {
+    final strokes = _convertPointsToStrokes();
+    if (strokes.isEmpty) return;
+
+    setState(() => _isChecking = true);
+
+    int totalStrokes = strokes.length;
+    double totalInkLength = 0;
+    for (var stroke in strokes) {
+      for (int i = 0; i < stroke.length - 1; i++) {
+        totalInkLength += (stroke[i] - stroke[i + 1]).distance;
+      }
+    }
+
+    if (totalStrokes > 25 || totalInkLength > 4000) {
+      setState(() => _isChecking = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Vui lòng viết chữ đàng hoàng, không bôi đen màn hình nhé!")),
+      );
+      return;
+    }
+
+    List<String> recognizedChars = await RecognitionManager.instance.recognize(strokes);
+    
+    if (!mounted) return;
+    setState(() => _isChecking = false);
+
+    String targetChar = widget.data['kanji_target'] ?? '';
+    double maxSimilarity = 0.0;
+    String bestMatch = '';
+
+    for (String recognized in recognizedChars) {
+      double sim = _calculateSimilarity(targetChar, recognized);
+      if (sim > maxSimilarity) {
+        maxSimilarity = sim;
+        bestMatch = recognized;
+      }
+    }
+
+    bool isCorrect = maxSimilarity >= 0.75;
+
+    if (isCorrect) {
+      SoundManager.instance.vibrate('heavy');
+      SoundManager.instance.speakJapanese("Seikai");
+      _showFeedbackBottomSheet(true, () {
+        widget.onNext();
+      });
+    } else {
+      SoundManager.instance.vibrate('error');
+      _showFeedbackBottomSheet(false, () {
+        setState(() => points.clear());
+      });
+    }
+  }
+
+  void _showFeedbackBottomSheet(bool isCorrect, VoidCallback onContinue) {
+    Color typeColor = isCorrect
+        ? const Color(0xFF58CC02)
+        : const Color(0xFFFF4B4B);
+    Color bgColor = isCorrect
+        ? const Color(0xFFD7FFB8)
+        : const Color(0xFFFFDFE0);
+    String title = isCorrect ? "Đúng rồi!" : "Sai rồi";
+    String msg = isCorrect ? "Tuyệt vời! Tiếp tục nào." : "Cố gắng lên nhé!";
+    String imageAsset = isCorrect
+        ? 'assets/images/dog_happy.png'
+        : 'assets/images/dog_sad.png';
+
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.1),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: 20 + MediaQuery.of(context).padding.bottom,
+          ),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Image.asset(
+                    imageAsset,
+                    width: 80,
+                    height: 80,
+                    errorBuilder: (_, __, ___) => Icon(
+                      isCorrect ? Icons.emoji_emotions : Icons.mood_bad,
+                      size: 80,
+                      color: typeColor,
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: typeColor,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          msg,
+                          style: TextStyle(
+                            color: isCorrect ? typeColor : Colors.black54,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    onContinue();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: typeColor,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "TIẾP TỤC",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -19750,16 +19966,17 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
                   color: Colors.grey.shade200,
                 ),
               ),
-              Center(
-                child: Text(
-                  widget.data['kanji_target'],
-                  style: TextStyle(
-                    fontSize: 220,
-                    color: Colors.grey.shade200,
-                    height: 1.1,
+              if (_showHint)
+                Center(
+                  child: Text(
+                    widget.data['kanji_target'],
+                    style: TextStyle(
+                      fontSize: 220,
+                      color: Colors.grey.shade200,
+                      height: 1.1,
+                    ),
                   ),
                 ),
-              ),
               GestureDetector(
                 onPanStart: (details) {
                   setState(() {
@@ -19786,15 +20003,21 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                shape: BoxShape.circle,
+            GestureDetector(
+              onTap: () => setState(() => _showHint = !_showHint),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _showHint ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.green,
+                ),
               ),
-              child: const Icon(Icons.visibility_off, color: Colors.green),
             ),
-            const SizedBox(width: 20),
+            const SizedBox(width: 40),
             GestureDetector(
               onTap: () => setState(() => points.clear()),
               child: Container(
@@ -19810,30 +20033,6 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
                 ),
               ),
             ),
-            const SizedBox(width: 20),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.visibility, color: Colors.green),
-            ),
-            const SizedBox(width: 20),
-            GestureDetector(
-              onTap: widget.onNext,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.keyboard_double_arrow_right,
-                  color: Colors.black54,
-                ),
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -19842,7 +20041,7 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
           width: double.infinity,
           height: 50,
           child: ElevatedButton(
-            onPressed: widget.onNext,
+            onPressed: points.isEmpty || _isChecking ? null : _checkDrawing,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF58CC02),
               elevation: 0,
@@ -19850,14 +20049,20 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-            child: const Text(
-              "Tiếp tục",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: _isChecking
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                  )
+                : const Text(
+                    "Kiểm tra",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ),
       ],

@@ -49,9 +49,58 @@ class _HiraganaPracticeScreenState extends State<HiraganaPracticeScreen> {
     });
   }
 
+  // --- HÀM TÍNH KHOẢNG CÁCH LEVENSHTEIN ---
+  int _levenshteinDistance(String s1, String s2) {
+    if (s1.isEmpty) return s2.length;
+    if (s2.isEmpty) return s1.length;
+
+    List<List<int>> matrix = List.generate(s1.length + 1, (i) => List.filled(s2.length + 1, 0));
+
+    for (int i = 0; i <= s1.length; i++) matrix[i][0] = i;
+    for (int j = 0; j <= s2.length; j++) matrix[0][j] = j;
+
+    for (int i = 1; i <= s1.length; i++) {
+      for (int j = 1; j <= s2.length; j++) {
+        int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
+        matrix[i][j] = [
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost
+        ].reduce((a, b) => a < b ? a : b);
+      }
+    }
+    return matrix[s1.length][s2.length];
+  }
+
+  // --- HÀM TÍNH ĐỘ TƯƠNG ĐỒNG (0.0 đến 1.0) ---
+  double _calculateSimilarity(String a, String b) {
+    if (a.isEmpty && b.isEmpty) return 1.0;
+    if (a.isEmpty || b.isEmpty) return 0.0;
+    int distance = _levenshteinDistance(a, b);
+    int maxLength = a.length > b.length ? a.length : b.length;
+    return 1.0 - (distance / maxLength);
+  }
+
   // Chấm điểm viết
   void _checkWriting() async {
     if (_userStrokes.isEmpty) return;
+
+    // --- BỘ LỌC CHỐNG GIAN LẬN (Anti-cheat) ---
+    int totalStrokes = _userStrokes.length;
+    double totalInkLength = 0;
+    for (var stroke in _userStrokes) {
+      for (int i = 0; i < stroke.length - 1; i++) {
+        totalInkLength += (stroke[i] - stroke[i + 1]).distance;
+      }
+    }
+
+    // Nếu vẽ quá nhiều nét (ví dụ > 15) hoặc vẽ quá dài (bôi đen màn hình)
+    if (totalStrokes > 15 || totalInkLength > 4000) {
+      _showFeedbackBottomSheet(false, () {
+        setState(() => _userStrokes = []); // Xóa bảng
+      });
+      return;
+    }
 
     // Hiển thị vòng chờ loading trong lúc AI chấm điểm
     showDialog(
@@ -66,15 +115,31 @@ class _HiraganaPracticeScreenState extends State<HiraganaPracticeScreen> {
     );
     Navigator.pop(context); // Tắt loading
 
-    bool isCorrect = recognizedChars.contains(widget.charData['kana']);
+    String targetChar = widget.charData['kana'] ?? '';
+    double maxSimilarity = 0.0;
+    String bestMatch = '';
+
+    for (String recognized in recognizedChars) {
+      double sim = _calculateSimilarity(targetChar, recognized);
+      if (sim > maxSimilarity) {
+        maxSimilarity = sim;
+        bestMatch = recognized;
+      }
+    }
+
+    bool isCorrect = maxSimilarity >= 0.75;
 
     if (isCorrect) {
-      _showResultDialog(true, "Tuyệt vời! Giờ hãy xem từ vựng.");
+      SoundManager.instance.vibrate('heavy');
+      SoundManager.instance.speakJapanese("Seikai");
+      _showFeedbackBottomSheet(true, () {
+        setState(() => _currentStage = PracticeStage.video);
+      });
     } else {
-      _showResultDialog(
-        false,
-        "Chưa đúng lắm. AI nhận diện ra: ${recognizedChars.isNotEmpty ? recognizedChars.take(3).join(', ') : 'Không rõ'}. Thử lại nhé!",
-      );
+      SoundManager.instance.vibrate('error');
+      _showFeedbackBottomSheet(false, () {
+        setState(() => _userStrokes = []); // Xóa bảng
+      });
     }
   }
 
@@ -87,61 +152,123 @@ class _HiraganaPracticeScreenState extends State<HiraganaPracticeScreen> {
     if (isCorrect) {
       SoundManager.instance.vibrate('heavy');
       SoundManager.instance.speakJapanese("Seikai"); // Đúng rồi
-      // Hiện dialog chúc mừng hoàn thành
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          title: const Text(
-            "HOÀN THÀNH!",
-            style: TextStyle(color: Colors.green),
-          ),
-          content: const Text("Bạn đã chinh phục chữ cái này!"),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                Navigator.pop(context, true); // Thoát về tháp
-              },
-              child: const Text("Về Tháp"),
-            ),
-          ],
-        ),
-      );
+      _showFeedbackBottomSheet(true, () {
+        Navigator.pop(context, true); // Thoát về tháp
+      });
     } else {
       SoundManager.instance.vibrate('error');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Sai rồi! Thử lại đi.")));
-      Future.delayed(const Duration(seconds: 1), () {
+      _showFeedbackBottomSheet(false, () {
         setState(() => _quizAnswered = false); // Cho chọn lại
       });
     }
   }
 
-  void _showResultDialog(bool isSuccess, String msg) {
-    showDialog(
+  void _showFeedbackBottomSheet(bool isCorrect, VoidCallback onContinue) {
+    Color typeColor = isCorrect
+        ? const Color(0xFF58CC02)
+        : const Color(0xFFFF4B4B);
+    Color bgColor = isCorrect
+        ? const Color(0xFFD7FFB8)
+        : const Color(0xFFFFDFE0);
+    String title = isCorrect ? "Đúng rồi!" : "Sai rồi";
+    String msg = isCorrect ? "Tuyệt vời! Tiếp tục nào." : "Cố gắng lên nhé!";
+    String imageAsset = isCorrect
+        ? 'assets/images/dog_happy.png'
+        : 'assets/images/dog_sad.png';
+
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: Text(isSuccess ? "ĐÚNG RỒI" : "SAI RỒI"),
-        content: Text(msg),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              if (isSuccess) {
-                setState(
-                  () => _currentStage = PracticeStage.video,
-                ); // Chuyển sang Video
-              } else {
-                setState(() => _userStrokes = []); // Xóa bảng
-              }
-            },
-            child: const Text("Tiếp tục"),
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.1),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: 20 + MediaQuery.of(context).padding.bottom,
           ),
-        ],
-      ),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Image.asset(
+                    imageAsset,
+                    width: 80,
+                    height: 80,
+                    errorBuilder: (_, __, ___) => Icon(
+                      isCorrect ? Icons.emoji_emotions : Icons.mood_bad,
+                      size: 80,
+                      color: typeColor,
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: typeColor,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          msg,
+                          style: TextStyle(
+                            color: isCorrect ? typeColor : Colors.black54,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    onContinue();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: typeColor,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "TIẾP TỤC",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
