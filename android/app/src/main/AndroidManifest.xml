@@ -13,7 +13,7 @@
     </queries>
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
-        android:label="kanji_summoner"
+        android:label="JapaGo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
