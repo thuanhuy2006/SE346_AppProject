@@ -10,7 +10,11 @@ import 'achievements_screen.dart';
 import 'user_progress.dart';
 import 'settings_screen.dart';
 import 'tips_screen.dart';
-import 'alphabet_practice_list_screen.dart';
+
+const Color kPrimaryBlue = Color(0xFF3366FF);
+const Color kAccentCyan = Color(0xFF56CCF2);
+const Color kSoftBackground = Color(0xFFF4F8FF);
+const Color kSurfaceWhite = Color(0xFFFFFFFF);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,31 +32,77 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Kanji Summoner',
       theme: ThemeData(
+        useMaterial3: true,
         brightness: Brightness.light,
-        primaryColor: const Color(0xFF58CC02),
-        scaffoldBackgroundColor: Colors.white,
+        primaryColor: kPrimaryBlue,
+        scaffoldBackgroundColor: kSoftBackground,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF58CC02),
-          primary: const Color(0xFF58CC02),
-          secondary: const Color(0xFF1CB0F6),
-          surface: Colors.white,
+          seedColor: kPrimaryBlue,
+          primary: kPrimaryBlue,
+          secondary: kAccentCyan,
+          background: kSoftBackground,
+          surface: kSurfaceWhite,
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
+          backgroundColor: kSoftBackground,
           foregroundColor: Colors.black87,
           elevation: 0,
-          centerTitle: true,
+          centerTitle: false,
           titleTextStyle: TextStyle(
-              color: Colors.black87, fontSize: 22, fontWeight: FontWeight.bold),
+            color: Colors.black87,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+          iconTheme: IconThemeData(color: kPrimaryBlue),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(color: kPrimaryBlue, width: 1.5),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
+          hintStyle: TextStyle(color: Colors.grey[500]),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF58CC02),
+            backgroundColor: kPrimaryBlue,
             foregroundColor: Colors.white,
-            elevation: 5,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           ),
+        ),
+        cardTheme: CardThemeData(
+          color: kSurfaceWhite,
+          elevation: 4,
+          shadowColor: Colors.black12,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: kPrimaryBlue,
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+          elevation: 12,
+          selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+          type: BottomNavigationBarType.fixed,
         ),
       ),
       home: const MainScreen(),
@@ -82,51 +132,61 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.grey.shade300, width: 1)),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            AlphabetScreen.readingSessionId++;
-            try { SoundManager.instance.stop(); } catch(e) {}
-            setState(() => _currentIndex = index);
-            SoundManager.instance.vibrate('light');
-          },
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF58CC02),
-          unselectedItemColor: Colors.grey,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.school),
-              activeIcon: Icon(Icons.school, size: 30),
-              label: "Học tập",
-            ),
-            BottomNavigationBarItem(
-              icon: Text(
-                "あ",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: _currentIndex == 1 ? const Color(0xFF58CC02) : Colors.grey,
-                ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 18,
+                offset: Offset(0, 6),
               ),
-              label: "Chữ cái",
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              activeIcon: Icon(Icons.person, size: 30),
-              label: "Tôi",
-            ),
-          ],
+            ],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              AlphabetScreen.readingSessionId++;
+              try {
+                SoundManager.instance.stop();
+              } catch (e) {}
+              setState(() => _currentIndex = index);
+              SoundManager.instance.vibrate('light');
+            },
+            backgroundColor: Colors.white,
+            selectedItemColor: kPrimaryBlue,
+            unselectedItemColor: Colors.grey.shade500,
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            elevation: 0,
+            items: [
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.school),
+                activeIcon: Icon(Icons.school, size: 30),
+                label: "Học tập",
+              ),
+              BottomNavigationBarItem(
+                icon: Text(
+                  "あ",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: _currentIndex == 1 ? kPrimaryBlue : Colors.grey,
+                  ),
+                ),
+                label: "Chữ cái",
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                activeIcon: Icon(Icons.person, size: 30),
+                label: "Tôi",
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -146,29 +206,54 @@ class AlphabetScreen extends StatelessWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: kSoftBackground,
         appBar: AppBar(
-          title: const Text("Bảng Chữ Cái"),
+          backgroundColor: kSoftBackground,
           elevation: 0,
-          bottom: const TabBar(
-            labelColor: Color(0xFF58CC02),
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Color(0xFF58CC02),
-            indicatorWeight: 3,
-            labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            tabs: [
-              Tab(text: "GOJŪON"),
-              Tab(text: "HỮU THANH"),
-              Tab(text: "YŌON"),
-            ],
+          title: const Text("Bảng Chữ Cái"),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(70),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 18,
+                    offset: Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: const TabBar(
+                labelColor: kPrimaryBlue,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: kPrimaryBlue,
+                indicatorWeight: 4,
+                labelStyle: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                tabs: [
+                  Tab(text: "GOJŪON"),
+                  Tab(text: "HỮU THANH"),
+                  Tab(text: "YŌON"),
+                ],
+              ),
+            ),
           ),
         ),
-        body: const TabBarView(
-          children: [
-            JapaneseGrid(type: GridType.gojuon),
-            JapaneseGrid(type: GridType.dakuon),
-            JapaneseGrid(type: GridType.yoon),
-          ],
+        body: Container(
+          color: kSoftBackground,
+          child: const TabBarView(
+            children: [
+              JapaneseGrid(type: GridType.gojuon),
+              JapaneseGrid(type: GridType.dakuon),
+              JapaneseGrid(type: GridType.yoon),
+            ],
+          ),
         ),
       ),
     );
@@ -186,44 +271,183 @@ class JapaneseGrid extends StatefulWidget {
 }
 
 class _JapaneseGridState extends State<JapaneseGrid> {
-
   List<List<Map<String, String>>> _getData() {
     switch (widget.type) {
       case GridType.gojuon:
         return [
-          [{'h': 'あ', 'k': 'ア', 'r': 'a'}, {'h': 'い', 'k': 'イ', 'r': 'i'}, {'h': 'う', 'k': 'ウ', 'r': 'u'}, {'h': 'え', 'k': 'エ', 'r': 'e'}, {'h': 'お', 'k': 'オ', 'r': 'o'}],
-          [{'h': 'か', 'k': 'カ', 'r': 'ka'}, {'h': 'き', 'k': 'キ', 'r': 'ki'}, {'h': 'く', 'k': 'ク', 'r': 'ku'}, {'h': 'け', 'k': 'ケ', 'r': 'ke'}, {'h': 'こ', 'k': 'コ', 'r': 'ko'}],
-          [{'h': 'さ', 'k': 'サ', 'r': 'sa'}, {'h': 'し', 'k': 'シ', 'r': 'shi'}, {'h': 'す', 'k': 'ス', 'r': 'su'}, {'h': 'せ', 'k': 'セ', 'r': 'se'}, {'h': 'そ', 'k': 'ソ', 'r': 'so'}],
-          [{'h': 'た', 'k': 'タ', 'r': 'ta'}, {'h': 'ち', 'k': 'チ', 'r': 'chi'}, {'h': 'つ', 'k': 'ツ', 'r': 'tsu'}, {'h': 'て', 'k': 'テ', 'r': 'te'}, {'h': 'と', 'k': 'ト', 'r': 'to'}],
-          [{'h': 'な', 'k': 'ナ', 'r': 'na'}, {'h': 'に', 'k': 'ニ', 'r': 'ni'}, {'h': 'ぬ', 'k': 'ヌ', 'r': 'nu'}, {'h': 'ね', 'k': 'ネ', 'r': 'ne'}, {'h': 'の', 'k': 'ノ', 'r': 'no'}],
-          [{'h': 'は', 'k': 'ハ', 'r': 'ha'}, {'h': 'ひ', 'k': 'ヒ', 'r': 'hi'}, {'h': 'ふ', 'k': 'フ', 'r': 'fu'}, {'h': 'へ', 'k': 'ヘ', 'r': 'he'}, {'h': 'ほ', 'k': 'ホ', 'r': 'ho'}],
-          [{'h': 'ま', 'k': 'マ', 'r': 'ma'}, {'h': 'み', 'k': 'ミ', 'r': 'mi'}, {'h': 'む', 'k': 'ム', 'r': 'mu'}, {'h': 'め', 'k': 'メ', 'r': 'me'}, {'h': 'も', 'k': 'モ', 'r': 'mo'}],
-          [{'h': 'や', 'k': 'ヤ', 'r': 'ya'}, {'h': '', 'k': '', 'r': ''}, {'h': 'ゆ', 'k': 'ユ', 'r': 'yu'}, {'h': '', 'k': '', 'r': ''}, {'h': 'よ', 'k': 'ヨ', 'r': 'yo'}],
-          [{'h': 'ら', 'k': 'ラ', 'r': 'ra'}, {'h': 'り', 'k': 'リ', 'r': 'ri'}, {'h': 'る', 'k': 'ル', 'r': 'ru'}, {'h': 'れ', 'k': 'レ', 'r': 're'}, {'h': 'ろ', 'k': 'ロ', 'r': 'ro'}],
-          [{'h': 'わ', 'k': 'ワ', 'r': 'wa'}, {'h': '', 'k': '', 'r': ''}, {'h': '', 'k': '', 'r': ''}, {'h': '', 'k': '', 'r': ''}, {'h': 'を', 'k': 'ヲ', 'r': 'wo'}],
-          [{'h': 'ん', 'k': 'ン', 'r': 'n'}, {'h': '', 'k': '', 'r': ''}, {'h': '', 'k': '', 'r': ''}, {'h': '', 'k': '', 'r': ''}, {'h': '', 'k': '', 'r': ''}],
+          [
+            {'h': 'あ', 'k': 'ア', 'r': 'a'},
+            {'h': 'い', 'k': 'イ', 'r': 'i'},
+            {'h': 'う', 'k': 'ウ', 'r': 'u'},
+            {'h': 'え', 'k': 'エ', 'r': 'e'},
+            {'h': 'お', 'k': 'オ', 'r': 'o'},
+          ],
+          [
+            {'h': 'か', 'k': 'カ', 'r': 'ka'},
+            {'h': 'き', 'k': 'キ', 'r': 'ki'},
+            {'h': 'く', 'k': 'ク', 'r': 'ku'},
+            {'h': 'け', 'k': 'ケ', 'r': 'ke'},
+            {'h': 'こ', 'k': 'コ', 'r': 'ko'},
+          ],
+          [
+            {'h': 'さ', 'k': 'サ', 'r': 'sa'},
+            {'h': 'し', 'k': 'シ', 'r': 'shi'},
+            {'h': 'す', 'k': 'ス', 'r': 'su'},
+            {'h': 'せ', 'k': 'セ', 'r': 'se'},
+            {'h': 'そ', 'k': 'ソ', 'r': 'so'},
+          ],
+          [
+            {'h': 'た', 'k': 'タ', 'r': 'ta'},
+            {'h': 'ち', 'k': 'チ', 'r': 'chi'},
+            {'h': 'つ', 'k': 'ツ', 'r': 'tsu'},
+            {'h': 'て', 'k': 'テ', 'r': 'te'},
+            {'h': 'と', 'k': 'ト', 'r': 'to'},
+          ],
+          [
+            {'h': 'な', 'k': 'ナ', 'r': 'na'},
+            {'h': 'に', 'k': 'ニ', 'r': 'ni'},
+            {'h': 'ぬ', 'k': 'ヌ', 'r': 'nu'},
+            {'h': 'ね', 'k': 'ネ', 'r': 'ne'},
+            {'h': 'の', 'k': 'ノ', 'r': 'no'},
+          ],
+          [
+            {'h': 'は', 'k': 'ハ', 'r': 'ha'},
+            {'h': 'ひ', 'k': 'ヒ', 'r': 'hi'},
+            {'h': 'ふ', 'k': 'フ', 'r': 'fu'},
+            {'h': 'へ', 'k': 'ヘ', 'r': 'he'},
+            {'h': 'ほ', 'k': 'ホ', 'r': 'ho'},
+          ],
+          [
+            {'h': 'ま', 'k': 'マ', 'r': 'ma'},
+            {'h': 'み', 'k': 'ミ', 'r': 'mi'},
+            {'h': 'む', 'k': 'ム', 'r': 'mu'},
+            {'h': 'め', 'k': 'メ', 'r': 'me'},
+            {'h': 'も', 'k': 'モ', 'r': 'mo'},
+          ],
+          [
+            {'h': 'や', 'k': 'ヤ', 'r': 'ya'},
+            {'h': '', 'k': '', 'r': ''},
+            {'h': 'ゆ', 'k': 'ユ', 'r': 'yu'},
+            {'h': '', 'k': '', 'r': ''},
+            {'h': 'よ', 'k': 'ヨ', 'r': 'yo'},
+          ],
+          [
+            {'h': 'ら', 'k': 'ラ', 'r': 'ra'},
+            {'h': 'り', 'k': 'リ', 'r': 'ri'},
+            {'h': 'る', 'k': 'ル', 'r': 'ru'},
+            {'h': 'れ', 'k': 'レ', 'r': 're'},
+            {'h': 'ろ', 'k': 'ロ', 'r': 'ro'},
+          ],
+          [
+            {'h': 'わ', 'k': 'ワ', 'r': 'wa'},
+            {'h': '', 'k': '', 'r': ''},
+            {'h': '', 'k': '', 'r': ''},
+            {'h': '', 'k': '', 'r': ''},
+            {'h': 'を', 'k': 'ヲ', 'r': 'wo'},
+          ],
+          [
+            {'h': 'ん', 'k': 'ン', 'r': 'n'},
+            {'h': '', 'k': '', 'r': ''},
+            {'h': '', 'k': '', 'r': ''},
+            {'h': '', 'k': '', 'r': ''},
+            {'h': '', 'k': '', 'r': ''},
+          ],
         ];
       case GridType.dakuon:
         return [
-          [{'h': 'が', 'k': 'ガ', 'r': 'ga'}, {'h': 'ぎ', 'k': 'ギ', 'r': 'gi'}, {'h': 'ぐ', 'k': 'グ', 'r': 'gu'}, {'h': 'げ', 'k': 'ゲ', 'r': 'ge'}, {'h': 'ご', 'k': 'ゴ', 'r': 'go'}],
-          [{'h': 'ざ', 'k': 'ザ', 'r': 'za'}, {'h': 'じ', 'k': 'ジ', 'r': 'ji'}, {'h': 'ず', 'k': 'ズ', 'r': 'zu'}, {'h': 'ぜ', 'k': 'ゼ', 'r': 'ze'}, {'h': 'ぞ', 'k': 'ゾ', 'r': 'zo'}],
-          [{'h': 'だ', 'k': 'ダ', 'r': 'da'}, {'h': 'ぢ', 'k': 'ヂ', 'r': 'ji'}, {'h': 'づ', 'k': 'ヅ', 'r': 'zu'}, {'h': 'で', 'k': 'デ', 'r': 'de'}, {'h': 'ど', 'k': 'ド', 'r': 'do'}],
-          [{'h': 'ば', 'k': 'バ', 'r': 'ba'}, {'h': 'び', 'k': 'ビ', 'r': 'bi'}, {'h': 'ぶ', 'k': 'ブ', 'r': 'bu'}, {'h': 'べ', 'k': 'ベ', 'r': 'be'}, {'h': 'ぼ', 'k': 'ボ', 'r': 'bo'}],
-          [{'h': 'ぱ', 'k': 'パ', 'r': 'pa'}, {'h': 'ぴ', 'k': 'ピ', 'r': 'pi'}, {'h': 'ぷ', 'k': 'プ', 'r': 'pu'}, {'h': 'ぺ', 'k': 'ペ', 'r': 'pe'}, {'h': 'ぽ', 'k': 'ポ', 'r': 'po'}],
+          [
+            {'h': 'が', 'k': 'ガ', 'r': 'ga'},
+            {'h': 'ぎ', 'k': 'ギ', 'r': 'gi'},
+            {'h': 'ぐ', 'k': 'グ', 'r': 'gu'},
+            {'h': 'げ', 'k': 'ゲ', 'r': 'ge'},
+            {'h': 'ご', 'k': 'ゴ', 'r': 'go'},
+          ],
+          [
+            {'h': 'ざ', 'k': 'ザ', 'r': 'za'},
+            {'h': 'じ', 'k': 'ジ', 'r': 'ji'},
+            {'h': 'ず', 'k': 'ズ', 'r': 'zu'},
+            {'h': 'ぜ', 'k': 'ゼ', 'r': 'ze'},
+            {'h': 'ぞ', 'k': 'ゾ', 'r': 'zo'},
+          ],
+          [
+            {'h': 'だ', 'k': 'ダ', 'r': 'da'},
+            {'h': 'ぢ', 'k': 'ヂ', 'r': 'ji'},
+            {'h': 'づ', 'k': 'ヅ', 'r': 'zu'},
+            {'h': 'で', 'k': 'デ', 'r': 'de'},
+            {'h': 'ど', 'k': 'ド', 'r': 'do'},
+          ],
+          [
+            {'h': 'ば', 'k': 'バ', 'r': 'ba'},
+            {'h': 'び', 'k': 'ビ', 'r': 'bi'},
+            {'h': 'ぶ', 'k': 'ブ', 'r': 'bu'},
+            {'h': 'べ', 'k': 'ベ', 'r': 'be'},
+            {'h': 'ぼ', 'k': 'ボ', 'r': 'bo'},
+          ],
+          [
+            {'h': 'ぱ', 'k': 'パ', 'r': 'pa'},
+            {'h': 'ぴ', 'k': 'ピ', 'r': 'pi'},
+            {'h': 'ぷ', 'k': 'プ', 'r': 'pu'},
+            {'h': 'ぺ', 'k': 'ペ', 'r': 'pe'},
+            {'h': 'ぽ', 'k': 'ポ', 'r': 'po'},
+          ],
         ];
       case GridType.yoon:
         return [
-          [{'h': 'きゃ', 'k': 'キャ', 'r': 'kya'}, {'h': 'きゅ', 'k': 'キュ', 'r': 'kyu'}, {'h': 'きょ', 'k': 'キョ', 'r': 'kyo'}],
-          [{'h': 'しゃ', 'k': 'シャ', 'r': 'sha'}, {'h': 'しゅ', 'k': 'シュ', 'r': 'shu'}, {'h': 'しょ', 'k': 'ショ', 'r': 'sho'}],
-          [{'h': 'ちゃ', 'k': 'チャ', 'r': 'cha'}, {'h': 'ちゅ', 'k': 'チュ', 'r': 'chu'}, {'h': 'ちょ', 'k': 'チョ', 'r': 'cho'}],
-          [{'h': 'にゃ', 'k': 'ニャ', 'r': 'nya'}, {'h': 'にゅ', 'k': 'ニュ', 'r': 'nyu'}, {'h': 'にょ', 'k': 'ニョ', 'r': 'nyo'}],
-          [{'h': 'ひゃ', 'k': 'ヒャ', 'r': 'hya'}, {'h': 'ひゅ', 'k': 'ヒュ', 'r': 'hyu'}, {'h': 'ひょ', 'k': 'ヒョ', 'r': 'hyo'}],
-          [{'h': 'みゃ', 'k': 'ミャ', 'r': 'mya'}, {'h': 'みゅ', 'k': 'ミュ', 'r': 'myu'}, {'h': 'みょ', 'k': 'ミョ', 'r': 'myo'}],
-          [{'h': 'りゃ', 'k': 'リャ', 'r': 'rya'}, {'h': 'りゅ', 'k': 'リュ', 'r': 'ryu'}, {'h': 'りょ', 'k': 'リョ', 'r': 'ryo'}],
-          [{'h': 'ぎゃ', 'k': 'ギャ', 'r': 'gya'}, {'h': 'ぎゅ', 'k': 'ギュ', 'r': 'gyu'}, {'h': 'ぎょ', 'k': 'ギョ', 'r': 'gyo'}],
-          [{'h': 'じゃ', 'k': 'ジャ', 'r': 'ja'}, {'h': 'じゅ', 'k': 'ジュ', 'r': 'ju'}, {'h': 'じょ', 'k': 'ジョ', 'r': 'jo'}],
-          [{'h': 'びゃ', 'k': 'ビャ', 'r': 'bya'}, {'h': 'びゅ', 'k': 'ビュ', 'r': 'byu'}, {'h': 'びょ', 'k': 'ビョ', 'r': 'byo'}],
-          [{'h': 'ぴゃ', 'k': 'ピャ', 'r': 'pya'}, {'h': 'ぴゅ', 'k': 'ピュ', 'r': 'pyu'}, {'h': 'ぴょ', 'k': 'ピョ', 'r': 'pyo'}],
+          [
+            {'h': 'きゃ', 'k': 'キャ', 'r': 'kya'},
+            {'h': 'きゅ', 'k': 'キュ', 'r': 'kyu'},
+            {'h': 'きょ', 'k': 'キョ', 'r': 'kyo'},
+          ],
+          [
+            {'h': 'しゃ', 'k': 'シャ', 'r': 'sha'},
+            {'h': 'しゅ', 'k': 'シュ', 'r': 'shu'},
+            {'h': 'しょ', 'k': 'ショ', 'r': 'sho'},
+          ],
+          [
+            {'h': 'ちゃ', 'k': 'チャ', 'r': 'cha'},
+            {'h': 'ちゅ', 'k': 'チュ', 'r': 'chu'},
+            {'h': 'ちょ', 'k': 'チョ', 'r': 'cho'},
+          ],
+          [
+            {'h': 'にゃ', 'k': 'ニャ', 'r': 'nya'},
+            {'h': 'にゅ', 'k': 'ニュ', 'r': 'nyu'},
+            {'h': 'にょ', 'k': 'ニョ', 'r': 'nyo'},
+          ],
+          [
+            {'h': 'ひゃ', 'k': 'ヒャ', 'r': 'hya'},
+            {'h': 'ひゅ', 'k': 'ヒュ', 'r': 'hyu'},
+            {'h': 'ひょ', 'k': 'ヒョ', 'r': 'hyo'},
+          ],
+          [
+            {'h': 'みゃ', 'k': 'ミャ', 'r': 'mya'},
+            {'h': 'みゅ', 'k': 'ミュ', 'r': 'myu'},
+            {'h': 'みょ', 'k': 'ミョ', 'r': 'myo'},
+          ],
+          [
+            {'h': 'りゃ', 'k': 'リャ', 'r': 'rya'},
+            {'h': 'りゅ', 'k': 'リュ', 'r': 'ryu'},
+            {'h': 'りょ', 'k': 'リョ', 'r': 'ryo'},
+          ],
+          [
+            {'h': 'ぎゃ', 'k': 'ギャ', 'r': 'gya'},
+            {'h': 'ぎゅ', 'k': 'ギュ', 'r': 'gyu'},
+            {'h': 'ぎょ', 'k': 'ギョ', 'r': 'gyo'},
+          ],
+          [
+            {'h': 'じゃ', 'k': 'ジャ', 'r': 'ja'},
+            {'h': 'じゅ', 'k': 'ジュ', 'r': 'ju'},
+            {'h': 'じょ', 'k': 'ジョ', 'r': 'jo'},
+          ],
+          [
+            {'h': 'びゃ', 'k': 'ビャ', 'r': 'bya'},
+            {'h': 'びゅ', 'k': 'ビュ', 'r': 'byu'},
+            {'h': 'びょ', 'k': 'ビョ', 'r': 'byo'},
+          ],
+          [
+            {'h': 'ぴゃ', 'k': 'ピャ', 'r': 'pya'},
+            {'h': 'ぴゅ', 'k': 'ピュ', 'r': 'pyu'},
+            {'h': 'ぴょ', 'k': 'ピョ', 'r': 'pyo'},
+          ],
         ];
     }
   }
@@ -233,7 +457,9 @@ class _JapaneseGridState extends State<JapaneseGrid> {
     AlphabetScreen.readingSessionId++; // Đánh dấu bắt đầu 1 lệnh đọc mới
     int mySessionId = AlphabetScreen.readingSessionId;
 
-    try { SoundManager.instance.stop(); } catch(e) {} // Cắt đứt âm thanh hiện tại
+    try {
+      SoundManager.instance.stop();
+    } catch (e) {} // Cắt đứt âm thanh hiện tại
 
     for (String char in chars) {
       if (mySessionId != AlphabetScreen.readingSessionId || !mounted) return;
@@ -266,13 +492,18 @@ class _JapaneseGridState extends State<JapaneseGrid> {
                   onTap: () {
                     List<String> colChars = [];
                     for (var row in rows) {
-                      if (colIndex < row.length && row[colIndex]['h']!.isNotEmpty) {
+                      if (colIndex < row.length &&
+                          row[colIndex]['h']!.isNotEmpty) {
                         colChars.add(row[colIndex]['h']!);
                       }
                     }
                     _speakListSlowly(colChars);
                   },
-                  child: const Icon(Icons.arrow_drop_down_circle, color: Color(0xFF58CC02), size: 24),
+                  child: const Icon(
+                    Icons.arrow_drop_down_circle,
+                    color: Color(0xFF58CC02),
+                    size: 24,
+                  ),
                 ),
               );
             }),
@@ -292,33 +523,67 @@ class _JapaneseGridState extends State<JapaneseGrid> {
                     Expanded(
                       child: Row(
                         children: rowChars.map((charData) {
-                          if (charData['h']!.isEmpty) return const Expanded(child: SizedBox());
+                          if (charData['h']!.isEmpty)
+                            return const Expanded(child: SizedBox());
 
                           return Expanded(
                             child: InkWell(
                               onTap: () {
                                 // Ngắt vòng lặp hàng/cột ngay lập tức nếu bấm 1 chữ lẻ
                                 AlphabetScreen.readingSessionId++;
-                                try { SoundManager.instance.stop(); } catch(e) {}
+                                try {
+                                  SoundManager.instance.stop();
+                                } catch (e) {}
 
-                                SoundManager.instance.speakJapanese(charData['h']!);
+                                SoundManager.instance.speakJapanese(
+                                  charData['h']!,
+                                );
                                 SoundManager.instance.vibrate('light');
                               },
                               child: Container(
-                                decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade200)),
+                                margin: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.grey.shade200,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12.withOpacity(0.05),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(charData['h']!, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(charData['k']!, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                                        const SizedBox(width: 4),
-                                        Text(charData['r']!, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                                      ],
-                                    )
+                                    Text(
+                                      charData['h']!,
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      charData['k']!,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      charData['r']!,
+                                      style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: 11,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -329,15 +594,22 @@ class _JapaneseGridState extends State<JapaneseGrid> {
                     ),
                     InkWell(
                       onTap: () {
-                        List<String> rowTexts = rowChars.where((e) => e['h']!.isNotEmpty).map((e) => e['h']!).toList();
+                        List<String> rowTexts = rowChars
+                            .where((e) => e['h']!.isNotEmpty)
+                            .map((e) => e['h']!)
+                            .toList();
                         _speakListSlowly(rowTexts);
                       },
                       child: Container(
                         width: 40,
                         color: Colors.grey[100],
-                        child: const Icon(Icons.play_circle_fill, color: Color(0xFF58CC02), size: 24),
+                        child: const Icon(
+                          Icons.play_circle_fill,
+                          color: Color(0xFF58CC02),
+                          size: 24,
+                        ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               );
@@ -367,7 +639,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     TipsData.sortTips(); // Xếp chuẩn dữ liệu trước
-    previewTips = TipsData.list.take(2).toList(); // Lấy 2 cái đầu tiên giữ cố định
+    previewTips = TipsData.list
+        .take(2)
+        .toList(); // Lấy 2 cái đầu tiên giữ cố định
   }
 
   // Hàm gọi để làm mới lại 2 mẹo bên ngoài khi từ màn hình chi tiết đi ra
@@ -386,7 +660,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final bool isLoggedIn = user != null;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: kSoftBackground,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -429,7 +703,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   TextButton.icon(
                     onPressed: () => FirebaseAuth.instance.signOut(),
                     icon: const Icon(Icons.logout, color: Colors.red),
-                    label: const Text("Đăng xuất", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      "Đăng xuất",
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 const SizedBox(height: 20),
               ],
@@ -444,32 +724,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildHeader(BuildContext context, User? user) {
     bool isLoggedIn = user != null;
-    String displayName = isLoggedIn ? (user.email?.split('@')[0] ?? "Summoner") : "Đăng nhập";
+    String displayName = isLoggedIn
+        ? (user.email?.split('@')[0] ?? "Summoner")
+        : "Đăng nhập";
 
     return GestureDetector(
       onTap: () {
         if (!isLoggedIn) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const AuthScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AuthScreen()),
+          );
         }
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
         decoration: BoxDecoration(
-          color: const Color(0xFF78C850),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF3C78D8), Color(0xFF56CCF2)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 18,
+              offset: Offset(0, 8),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 3),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.8),
+                  width: 3,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    offset: Offset(0, 5),
+                  ),
+                ],
               ),
               child: CircleAvatar(
                 radius: 35,
-                backgroundColor: const Color(0xFFFFF3CD),
-                child: Image.asset('assets/images/dog_happy.png', width: 50, errorBuilder: (_,__,___) => const Icon(Icons.face, size: 40, color: Colors.orange)),
+                backgroundColor: Colors.white,
+                child: Image.asset(
+                  'assets/images/dog_happy.png',
+                  width: 50,
+                  errorBuilder: (_, _, _) =>
+                      const Icon(Icons.face, size: 40, color: Colors.orange),
+                ),
               ),
             ),
             const SizedBox(width: 15),
@@ -477,14 +788,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(displayName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(
+                    displayName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 5),
                   FutureBuilder<int>(
-                      future: UserProgress().getExp(),
-                      builder: (context, snapshot) {
-                        int exp = snapshot.data ?? 0;
-                        return Text("Điểm luyện tập: $exp exp", style: const TextStyle(fontSize: 14, color: Colors.white70));
-                      }
+                    future: UserProgress().getExp(),
+                    builder: (context, snapshot) {
+                      int exp = snapshot.data ?? 0;
+                      return Text(
+                        "Điểm luyện tập: $exp exp",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.flash_on, color: Colors.white, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Giữ nhịp học liên tục 3 ngày',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -497,10 +847,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildGridMenu(BuildContext context) {
     final List<Map<String, dynamic>> menuItems = [
-      {'icon': Icons.trending_up, 'label': 'Tiến độ học', 'color': Colors.amber, 'bg': 0xFFFFF8E1},
-      {'icon': Icons.emoji_events, 'label': 'Danh hiệu', 'color': Colors.orange, 'bg': 0xFFFFF3E0},
-      {'icon': Icons.lightbulb, 'label': 'Mẹo học', 'color': Colors.blue, 'bg': 0xFFE3F2FD},
-      {'icon': Icons.settings, 'label': 'Cài đặt', 'color': Colors.blueGrey, 'bg': 0xFFECEFF1},
+      {
+        'icon': Icons.trending_up,
+        'label': 'Tiến độ học',
+        'color': Colors.amber,
+        'bg': 0xFFFFF8E1,
+      },
+      {
+        'icon': Icons.emoji_events,
+        'label': 'Danh hiệu',
+        'color': Colors.orange,
+        'bg': 0xFFFFF3E0,
+      },
+      {
+        'icon': Icons.lightbulb,
+        'label': 'Mẹo học',
+        'color': Colors.blue,
+        'bg': 0xFFE3F2FD,
+      },
+      {
+        'icon': Icons.settings,
+        'label': 'Cài đặt',
+        'color': Colors.blueGrey,
+        'bg': 0xFFECEFF1,
+      },
     ];
 
     return GridView.builder(
@@ -508,10 +878,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: menuItems.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        childAspectRatio: 0.75,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 10,
+        crossAxisCount: 2,
+        childAspectRatio: 1.35,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
       ),
       itemBuilder: (context, index) {
         final item = menuItems[index];
@@ -522,41 +892,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (_progressChartKey.currentContext != null) {
                 Scrollable.ensureVisible(
                   _progressChartKey.currentContext!,
-                  duration: const Duration(milliseconds: 600), // Thời gian cuộn 0.6s
+                  duration: const Duration(
+                    milliseconds: 600,
+                  ), // Thời gian cuộn 0.6s
                   curve: Curves.easeInOut, // Hiệu ứng cuộn mềm mại
                 );
               }
-            }
-            else if (item['label'] == 'Danh hiệu') {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const AchievementsScreen()));
-            }
-            else if (item['label'] == 'Mẹo học') {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const TipsScreen())).then((_){
+            } else if (item['label'] == 'Danh hiệu') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AchievementsScreen(),
+                ),
+              );
+            } else if (item['label'] == 'Mẹo học') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TipsScreen()),
+              ).then((_) {
                 _refreshTips();
               });
-            }
-            else if (item['label'] == 'Cài đặt') {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
-            }
-            else {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Tính năng ${item['label']} đang phát triển!")));
+            } else if (item['label'] == 'Cài đặt') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Tính năng ${item['label']} đang phát triển!"),
+                ),
+              );
             }
           },
-          child: Column(
-            children: [
-              Container(
-                width: 55, height: 55,
-                decoration: BoxDecoration(color: Color(item['bg']), shape: BoxShape.circle),
-                child: Icon(item['icon'], color: item['color'], size: 28),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                item['label'],
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w500),
-                maxLines: 2, overflow: TextOverflow.ellipsis,
-              ),
-            ],
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12.withOpacity(0.06),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Color(item['bg']),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(item['icon'], color: item['color'], size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    item['label'],
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -566,12 +974,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProgressChart() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: const Color(0xFF78C850), borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [kPrimaryBlue, kAccentCyan],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12.withOpacity(0.12),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Tiến trình luyện tập tuần", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-          const Text("Hôm nay", style: TextStyle(color: Colors.white70, fontSize: 12)),
+          const Text(
+            "Tiến trình luyện tập tuần",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Hôm nay",
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+          ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -585,7 +1018,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _chartBar("T7", 0.6, false),
               _chartBar("CN", 0.6, false),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -595,10 +1028,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       children: [
         Container(
-          width: 12, height: 60, alignment: Alignment.bottomCenter,
+          width: 12,
+          height: 60,
+          alignment: Alignment.bottomCenter,
           child: Container(
-            width: 12, height: 60 * (percent == 0 ? 0.1 : percent),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
+            width: 12,
+            height: 60 * (percent == 0 ? 0.1 : percent),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -609,117 +1048,161 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildRankSection() {
     return FutureBuilder<int>(
-        future: UserProgress().getExp(),
-        builder: (context, snapshot) {
-          int exp = snapshot.data ?? 0;
-          final List<String> ranks = ["Tân binh", "Binh nhất", "Thượng sĩ", "Đại uý", "Đại tá", "Đại tướng"];
-          final List<int> expThresholds = [0, 50, 150, 300, 600, 1000];
+      future: UserProgress().getExp(),
+      builder: (context, snapshot) {
+        int exp = snapshot.data ?? 0;
+        final List<String> ranks = [
+          "Tân binh",
+          "Binh nhất",
+          "Thượng sĩ",
+          "Đại uý",
+          "Đại tá",
+          "Đại tướng",
+        ];
+        final List<int> expThresholds = [0, 50, 150, 300, 600, 1000];
 
-          int currentRankIndex = 0;
-          for (int i = 0; i < expThresholds.length; i++) {
-            if (exp >= expThresholds[i]) {
-              currentRankIndex = i;
-            } else {
-              break;
-            }
-          }
-
-          double progressPercent = 0.0;
-          if (currentRankIndex >= ranks.length - 1) {
-            progressPercent = 1.0;
+        int currentRankIndex = 0;
+        for (int i = 0; i < expThresholds.length; i++) {
+          if (exp >= expThresholds[i]) {
+            currentRankIndex = i;
           } else {
-            int currentLevelExp = expThresholds[currentRankIndex];
-            int nextLevelExp = expThresholds[currentRankIndex + 1];
-            int expEarnedInLevel = exp - currentLevelExp;
-            int expNeededForLevel = nextLevelExp - currentLevelExp;
-
-            double levelFraction = expEarnedInLevel / expNeededForLevel;
-            progressPercent = (currentRankIndex + levelFraction) / (ranks.length - 1);
+            break;
           }
+        }
 
-          return Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 10, offset: const Offset(0, 5))],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Cấp bậc", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-                    Text("$exp EXP", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.amber)),
-                  ],
-                ),
-                const SizedBox(height: 25),
+        double progressPercent = 0.0;
+        if (currentRankIndex >= ranks.length - 1) {
+          progressPercent = 1.0;
+        } else {
+          int currentLevelExp = expThresholds[currentRankIndex];
+          int nextLevelExp = expThresholds[currentRankIndex + 1];
+          int expEarnedInLevel = exp - currentLevelExp;
+          int expNeededForLevel = nextLevelExp - currentLevelExp;
 
-                LayoutBuilder(
-                    builder: (context, constraints) {
-                      double maxWidth = constraints.maxWidth - 20;
-                      double activeWidth = maxWidth * progressPercent;
+          double levelFraction = expEarnedInLevel / expNeededForLevel;
+          progressPercent =
+              (currentRankIndex + levelFraction) / (ranks.length - 1);
+        }
 
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(height: 4, width: double.infinity, margin: const EdgeInsets.symmetric(horizontal: 10), color: Colors.grey.shade200),
-                          Positioned(
-                              left: 10,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 500),
-                                height: 4,
-                                width: activeWidth,
-                                color: const Color(0xFF8BC34A),
-                              )
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: List.generate(ranks.length, (index) {
-                              bool isAchieved = index <= currentRankIndex;
-                              return Container(
-                                width: 20, height: 20,
-                                decoration: BoxDecoration(
-                                  color: isAchieved ? const Color(0xFF8BC34A) : Colors.grey.shade200,
-                                  shape: BoxShape.circle,
-                                  border: isAchieved ? Border.all(color: Colors.amber, width: 3) : null,
-                                ),
-                              );
-                            }),
-                          ),
-                        ],
-                      );
-                    }
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(ranks.length, (index) {
-                    bool isAchieved = index <= currentRankIndex;
-                    return Expanded(
-                      child: Text(
-                        ranks[index],
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: isAchieved ? FontWeight.bold : FontWeight.normal,
-                            color: isAchieved ? Colors.black87 : Colors.grey.shade400
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade200,
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Cấp bậc",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "$exp EXP",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 25),
+
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  double maxWidth = constraints.maxWidth - 20;
+                  double activeWidth = maxWidth * progressPercent;
+
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        height: 4,
+                        width: double.infinity,
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        color: Colors.grey.shade200,
+                      ),
+                      Positioned(
+                        left: 10,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 500),
+                          height: 4,
+                          width: activeWidth,
+                          color: const Color(0xFF8BC34A),
                         ),
                       ),
-                    );
-                  }),
-                )
-              ],
-            ),
-          );
-        }
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: List.generate(ranks.length, (index) {
+                          bool isAchieved = index <= currentRankIndex;
+                          return Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: isAchieved
+                                  ? const Color(0xFF8BC34A)
+                                  : Colors.grey.shade200,
+                              shape: BoxShape.circle,
+                              border: isAchieved
+                                  ? Border.all(color: Colors.amber, width: 3)
+                                  : null,
+                            ),
+                          );
+                        }),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(ranks.length, (index) {
+                  bool isAchieved = index <= currentRankIndex;
+                  return Expanded(
+                    child: Text(
+                      ranks[index],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: isAchieved
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isAchieved
+                            ? Colors.black87
+                            : Colors.grey.shade400,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildAchievementsSection(BuildContext context) {
-    final List<Map<String, dynamic>> previewAchievements = AchievementData.list.take(4).toList();
+    final List<Map<String, dynamic>> previewAchievements = AchievementData.list
+        .take(4)
+        .toList();
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -727,7 +1210,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 10, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade200,
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -735,18 +1224,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Danh hiệu sắp đạt được", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+              const Text(
+                "Danh hiệu sắp đạt được",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AchievementsScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AchievementsScreen(),
+                    ),
+                  );
                 },
-                child: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 18),
-              )
+                child: const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.grey,
+                  size: 18,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 20),
 
-          ...previewAchievements.map((item) => _buildAchievementItem(item)).toList(),
+          ...previewAchievements.map((item) => _buildAchievementItem(item)),
 
           const SizedBox(height: 10),
 
@@ -755,18 +1260,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: 48,
             child: TextButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const AchievementsScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AchievementsScreen(),
+                  ),
+                );
               },
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFFF1F8E9),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
               ),
               child: const Text(
                 "Xem danh sách danh hiệu",
                 style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF58CC02)
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF58CC02),
                 ),
               ),
             ),
@@ -783,8 +1295,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 60, height: 60,
-            decoration: BoxDecoration(color: data['color'], borderRadius: BorderRadius.circular(16)),
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: data['color'],
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Icon(data['icon'], color: Colors.white, size: 30),
           ),
           const SizedBox(width: 15),
@@ -792,9 +1308,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(data['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                Text(
+                  data['title'],
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(data['desc'], style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                Text(
+                  data['desc'],
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                ),
                 const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
@@ -806,10 +1332,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       valueColor: AlwaysStoppedAnimation<Color>(data['color']),
                     ),
                   ),
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -821,7 +1347,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Mẹo học tiếng Nhật", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+          const Text(
+            "Mẹo học tiếng Nhật",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
           const SizedBox(height: 15),
 
           // Vòng lặp vẽ từ biến previewTips đã bị "khóa" ở initState
@@ -832,7 +1365,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
-                boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 5, offset: const Offset(0, 3))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade200,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -840,7 +1379,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Expanded(
                     child: Text(
                       tip['text'],
-                      style: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.5),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Colors.black87,
+                        height: 1.5,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -853,20 +1396,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                     child: Icon(
                       Icons.favorite,
-                      color: tip['isLiked'] ? Colors.redAccent : Colors.pink.shade100,
+                      color: tip['isLiked']
+                          ? Colors.redAccent
+                          : Colors.pink.shade100,
                       size: 28,
                     ),
                   ),
                 ],
               ),
             );
-          }).toList(),
+          }),
 
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const TipsScreen())).then((_) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TipsScreen()),
+                ).then((_) {
                   _refreshTips();
                 });
               },
@@ -905,17 +1453,94 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
   // 1. ĐỊNH NGHĨA CÁC CHẶNG HỌC (CHAPTERS)
   // Sau này muốn thêm Cơ bản 5, 6... bạn chỉ cần thêm 1 dòng vào đây
   final List<Map<String, dynamic>> _sections = [
-    {'id': 'alphabet', 'title': 'Bảng chữ cái', 'subtitle': 'Khởi động', 'icon': Icons.sort_by_alpha, 'color': 0xFF4A89F3, 'bg': 0xFFEDF4FE},
-    {'id': 'basic1', 'title': 'Cơ bản 1', 'subtitle': 'Chào hỏi & Nghề nghiệp', 'icon': Icons.waving_hand, 'color': 0xFFFFA000, 'bg': 0xFFFFF8E1},
-    {'id': 'basic2', 'title': 'Cơ bản 2', 'subtitle': 'Đồ vật & Sở hữu', 'icon': Icons.business_center, 'color': 0xFFE91E63, 'bg': 0xFFFCE4EC},
-    {'id': 'basic3', 'title': 'Cơ bản 3', 'subtitle': 'Địa điểm & Giá tiền', 'icon': Icons.storefront, 'color': 0xFF9C27B0, 'bg': 0xFFF3E5F5},
-    {'id': 'basic4', 'title': 'Cơ bản 4', 'subtitle': 'Thời gian & Sinh hoạt', 'icon': Icons.access_time_filled, 'color': 0xFF00BCD4, 'bg': 0xFFE0F7FA},
-    {'id': 'basic5', 'title': 'Cơ bản 5', 'subtitle': 'Di chuyển & Phương tiện', 'icon': Icons.directions_transit, 'color': 0xFF4CAF50, 'bg': 0xFFE8F5E9},
-    {'id': 'basic6', 'title': 'Cơ bản 6', 'subtitle': 'Ăn uống & Mua sắm', 'icon': Icons.restaurant, 'color': 0xFFFF9800, 'bg': 0xFFFFF3E0},
-    {'id': 'basic7', 'title': 'Cơ bản 7', 'subtitle': 'Cho, Nhận & Công cụ', 'icon': Icons.card_giftcard, 'color': 0xFFF44336, 'bg': 0xFFFFEBEE},
-    {'id': 'basic8', 'title': 'Cơ bản 8', 'subtitle': 'Tính từ (Mô tả)', 'icon': Icons.auto_awesome, 'color': 0xFF3F51B5, 'bg': 0xFFE8EAF6},
-    {'id': 'basic9', 'title': 'Cơ bản 9', 'subtitle': 'Sở thích & Lý do', 'icon': Icons.favorite, 'color': 0xFFE91E63, 'bg': 0xFFFCE4EC},
-    {'id': 'basic10', 'title': 'Cơ bản 10', 'subtitle': 'Sự tồn tại & Vị trí', 'icon': Icons.location_on, 'color': 0xFF009688, 'bg': 0xFFE0F2F1},
+    {
+      'id': 'alphabet',
+      'title': 'Bảng chữ cái',
+      'subtitle': 'Khởi động',
+      'icon': Icons.sort_by_alpha,
+      'color': 0xFF4A89F3,
+      'bg': 0xFFEDF4FE,
+    },
+    {
+      'id': 'basic1',
+      'title': 'Cơ bản 1',
+      'subtitle': 'Chào hỏi & Nghề nghiệp',
+      'icon': Icons.waving_hand,
+      'color': 0xFFFFA000,
+      'bg': 0xFFFFF8E1,
+    },
+    {
+      'id': 'basic2',
+      'title': 'Cơ bản 2',
+      'subtitle': 'Đồ vật & Sở hữu',
+      'icon': Icons.business_center,
+      'color': 0xFFE91E63,
+      'bg': 0xFFFCE4EC,
+    },
+    {
+      'id': 'basic3',
+      'title': 'Cơ bản 3',
+      'subtitle': 'Địa điểm & Giá tiền',
+      'icon': Icons.storefront,
+      'color': 0xFF9C27B0,
+      'bg': 0xFFF3E5F5,
+    },
+    {
+      'id': 'basic4',
+      'title': 'Cơ bản 4',
+      'subtitle': 'Thời gian & Sinh hoạt',
+      'icon': Icons.access_time_filled,
+      'color': 0xFF00BCD4,
+      'bg': 0xFFE0F7FA,
+    },
+    {
+      'id': 'basic5',
+      'title': 'Cơ bản 5',
+      'subtitle': 'Di chuyển & Phương tiện',
+      'icon': Icons.directions_transit,
+      'color': 0xFF4CAF50,
+      'bg': 0xFFE8F5E9,
+    },
+    {
+      'id': 'basic6',
+      'title': 'Cơ bản 6',
+      'subtitle': 'Ăn uống & Mua sắm',
+      'icon': Icons.restaurant,
+      'color': 0xFFFF9800,
+      'bg': 0xFFFFF3E0,
+    },
+    {
+      'id': 'basic7',
+      'title': 'Cơ bản 7',
+      'subtitle': 'Cho, Nhận & Công cụ',
+      'icon': Icons.card_giftcard,
+      'color': 0xFFF44336,
+      'bg': 0xFFFFEBEE,
+    },
+    {
+      'id': 'basic8',
+      'title': 'Cơ bản 8',
+      'subtitle': 'Tính từ (Mô tả)',
+      'icon': Icons.auto_awesome,
+      'color': 0xFF3F51B5,
+      'bg': 0xFFE8EAF6,
+    },
+    {
+      'id': 'basic9',
+      'title': 'Cơ bản 9',
+      'subtitle': 'Sở thích & Lý do',
+      'icon': Icons.favorite,
+      'color': 0xFFE91E63,
+      'bg': 0xFFFCE4EC,
+    },
+    {
+      'id': 'basic10',
+      'title': 'Cơ bản 10',
+      'subtitle': 'Sự tồn tại & Vị trí',
+      'icon': Icons.location_on,
+      'color': 0xFF009688,
+      'bg': 0xFFE0F2F1,
+    },
   ];
 
   // 2. DANH SÁCH TOÀN BỘ BÀI HỌC
@@ -928,7 +1553,11 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
     _refreshProgress();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(100.0, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
+        _scrollController.animateTo(
+          100.0,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
       }
     });
   }
@@ -937,168 +1566,947 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
   void _initLessons() {
     _lessons = [
       // --- CHẶNG 1: BẢNG CHỮ CÁI ---
-      {'id': 1, 'key': 'hang_a', 'title': 'Hàng A (あ)', 'icon': Icons.menu_book, 'status': 1, 'section': 'alphabet'},
-      {'id': 2, 'key': 'hang_ka', 'title': 'Hàng Ka (か)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
-      {'id': 3, 'key': 'hang_sa', 'title': 'Hàng Sa (さ)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
-      {'id': 4, 'key': 'hang_ta', 'title': 'Hàng Ta (た)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
-      {'id': 5, 'key': 'hang_na', 'title': 'Hàng Na (な)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
-      {'id': 6, 'key': 'hang_ha', 'title': 'Hàng Ha (は)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
-      {'id': 7, 'key': 'hang_ma', 'title': 'Hàng Ma (ま)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
-      {'id': 8, 'key': 'hang_ya', 'title': 'Hàng Ya (や)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
-      {'id': 9, 'key': 'hang_ra', 'title': 'Hàng Ra (ら)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
-      {'id': 10, 'key': 'hang_wa', 'title': 'Hàng Wa (わ)', 'icon': Icons.menu_book, 'status': 0, 'section': 'alphabet'},
-      {'id': 11, 'key': 'hang_all', 'title': 'TỔNG HỢP', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'alphabet'},
+      {
+        'id': 1,
+        'key': 'hang_a',
+        'title': 'Hàng A (あ)',
+        'icon': Icons.menu_book,
+        'status': 1,
+        'section': 'alphabet',
+      },
+      {
+        'id': 2,
+        'key': 'hang_ka',
+        'title': 'Hàng Ka (か)',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'alphabet',
+      },
+      {
+        'id': 3,
+        'key': 'hang_sa',
+        'title': 'Hàng Sa (さ)',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'alphabet',
+      },
+      {
+        'id': 4,
+        'key': 'hang_ta',
+        'title': 'Hàng Ta (た)',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'alphabet',
+      },
+      {
+        'id': 5,
+        'key': 'hang_na',
+        'title': 'Hàng Na (な)',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'alphabet',
+      },
+      {
+        'id': 6,
+        'key': 'hang_ha',
+        'title': 'Hàng Ha (は)',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'alphabet',
+      },
+      {
+        'id': 7,
+        'key': 'hang_ma',
+        'title': 'Hàng Ma (ま)',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'alphabet',
+      },
+      {
+        'id': 8,
+        'key': 'hang_ya',
+        'title': 'Hàng Ya (や)',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'alphabet',
+      },
+      {
+        'id': 9,
+        'key': 'hang_ra',
+        'title': 'Hàng Ra (ら)',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'alphabet',
+      },
+      {
+        'id': 10,
+        'key': 'hang_wa',
+        'title': 'Hàng Wa (わ)',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'alphabet',
+      },
+      {
+        'id': 11,
+        'key': 'hang_all',
+        'title': 'TỔNG HỢP',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'alphabet',
+      },
 
       // --- CHẶNG 2: CƠ BẢN 1 ---
-      {'id': 12, 'key': 'cb1_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic1'},
-      {'id': 13, 'key': 'cb1_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic1'},
-      {'id': 14, 'key': 'cb1_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic1'},
-      {'id': 15, 'key': 'cb1_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic1'},
-      {'id': 16, 'key': 'cb1_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic1'},
-      {'id': 17, 'key': 'cb1_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic1'},
-      {'id': 18, 'key': 'cb1_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic1'},
+      {
+        'id': 12,
+        'key': 'cb1_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic1',
+      },
+      {
+        'id': 13,
+        'key': 'cb1_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic1',
+      },
+      {
+        'id': 14,
+        'key': 'cb1_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic1',
+      },
+      {
+        'id': 15,
+        'key': 'cb1_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic1',
+      },
+      {
+        'id': 16,
+        'key': 'cb1_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic1',
+      },
+      {
+        'id': 17,
+        'key': 'cb1_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic1',
+      },
+      {
+        'id': 18,
+        'key': 'cb1_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic1',
+      },
 
       // --- CHẶNG 3: CƠ BẢN 2 ---
-      {'id': 19, 'key': 'cb2_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic2'},
-      {'id': 20, 'key': 'cb2_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic2'},
-      {'id': 21, 'key': 'cb2_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic2'},
-      {'id': 22, 'key': 'cb2_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic2'},
-      {'id': 23, 'key': 'cb2_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic2'},
-      {'id': 24, 'key': 'cb2_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic2'},
-      {'id': 25, 'key': 'cb2_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic2'},
+      {
+        'id': 19,
+        'key': 'cb2_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic2',
+      },
+      {
+        'id': 20,
+        'key': 'cb2_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic2',
+      },
+      {
+        'id': 21,
+        'key': 'cb2_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic2',
+      },
+      {
+        'id': 22,
+        'key': 'cb2_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic2',
+      },
+      {
+        'id': 23,
+        'key': 'cb2_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic2',
+      },
+      {
+        'id': 24,
+        'key': 'cb2_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic2',
+      },
+      {
+        'id': 25,
+        'key': 'cb2_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic2',
+      },
 
       // --- CHẶNG 4: CƠ BẢN 3 ---
-      {'id': 26, 'key': 'cb3_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic3'},
-      {'id': 27, 'key': 'cb3_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic3'},
-      {'id': 28, 'key': 'cb3_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic3'},
-      {'id': 29, 'key': 'cb3_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic3'},
-      {'id': 30, 'key': 'cb3_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic3'},
-      {'id': 31, 'key': 'cb3_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic3'},
-      {'id': 32, 'key': 'cb3_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic3'},
+      {
+        'id': 26,
+        'key': 'cb3_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic3',
+      },
+      {
+        'id': 27,
+        'key': 'cb3_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic3',
+      },
+      {
+        'id': 28,
+        'key': 'cb3_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic3',
+      },
+      {
+        'id': 29,
+        'key': 'cb3_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic3',
+      },
+      {
+        'id': 30,
+        'key': 'cb3_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic3',
+      },
+      {
+        'id': 31,
+        'key': 'cb3_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic3',
+      },
+      {
+        'id': 32,
+        'key': 'cb3_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic3',
+      },
 
       // --- CHẶNG 5: CƠ BẢN 4 ---
-      {'id': 33, 'key': 'cb4_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic4'},
-      {'id': 34, 'key': 'cb4_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic4'},
-      {'id': 35, 'key': 'cb4_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic4'},
-      {'id': 36, 'key': 'cb4_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic4'},
-      {'id': 37, 'key': 'cb4_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic4'},
-      {'id': 38, 'key': 'cb4_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic4'},
-      {'id': 39, 'key': 'cb4_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic4'},
-      {'id': 40, 'key': 'cb5_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic5'},
-      {'id': 41, 'key': 'cb5_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic5'},
-      {'id': 42, 'key': 'cb5_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic5'},
-      {'id': 43, 'key': 'cb5_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic5'},
-      {'id': 44, 'key': 'cb5_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic5'},
-      {'id': 45, 'key': 'cb5_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic5'},
-      {'id': 46, 'key': 'cb5_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic5'},
+      {
+        'id': 33,
+        'key': 'cb4_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic4',
+      },
+      {
+        'id': 34,
+        'key': 'cb4_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic4',
+      },
+      {
+        'id': 35,
+        'key': 'cb4_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic4',
+      },
+      {
+        'id': 36,
+        'key': 'cb4_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic4',
+      },
+      {
+        'id': 37,
+        'key': 'cb4_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic4',
+      },
+      {
+        'id': 38,
+        'key': 'cb4_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic4',
+      },
+      {
+        'id': 39,
+        'key': 'cb4_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic4',
+      },
+      {
+        'id': 40,
+        'key': 'cb5_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic5',
+      },
+      {
+        'id': 41,
+        'key': 'cb5_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic5',
+      },
+      {
+        'id': 42,
+        'key': 'cb5_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic5',
+      },
+      {
+        'id': 43,
+        'key': 'cb5_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic5',
+      },
+      {
+        'id': 44,
+        'key': 'cb5_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic5',
+      },
+      {
+        'id': 45,
+        'key': 'cb5_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic5',
+      },
+      {
+        'id': 46,
+        'key': 'cb5_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic5',
+      },
 
       // --- CHẶNG 7: CƠ BẢN 6 ---
-      {'id': 47, 'key': 'cb6_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic6'},
-      {'id': 48, 'key': 'cb6_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic6'},
-      {'id': 49, 'key': 'cb6_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic6'},
-      {'id': 50, 'key': 'cb6_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic6'},
-      {'id': 51, 'key': 'cb6_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic6'},
-      {'id': 52, 'key': 'cb6_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic6'},
-      {'id': 53, 'key': 'cb6_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic6'},
+      {
+        'id': 47,
+        'key': 'cb6_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic6',
+      },
+      {
+        'id': 48,
+        'key': 'cb6_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic6',
+      },
+      {
+        'id': 49,
+        'key': 'cb6_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic6',
+      },
+      {
+        'id': 50,
+        'key': 'cb6_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic6',
+      },
+      {
+        'id': 51,
+        'key': 'cb6_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic6',
+      },
+      {
+        'id': 52,
+        'key': 'cb6_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic6',
+      },
+      {
+        'id': 53,
+        'key': 'cb6_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic6',
+      },
 
       // --- CHẶNG 8: CƠ BẢN 7 ---
-      {'id': 54, 'key': 'cb7_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic7'},
-      {'id': 55, 'key': 'cb7_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic7'},
-      {'id': 56, 'key': 'cb7_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic7'},
-      {'id': 57, 'key': 'cb7_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic7'},
-      {'id': 58, 'key': 'cb7_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic7'},
-      {'id': 59, 'key': 'cb7_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic7'},
-      {'id': 60, 'key': 'cb7_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic7'},
-      {'id': 61, 'key': 'cb8_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic8'},
-      {'id': 62, 'key': 'cb8_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic8'},
-      {'id': 63, 'key': 'cb8_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic8'},
-      {'id': 64, 'key': 'cb8_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic8'},
-      {'id': 65, 'key': 'cb8_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic8'},
-      {'id': 66, 'key': 'cb8_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic8'},
-      {'id': 67, 'key': 'cb8_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic8'},
-      {'id': 68, 'key': 'cb9_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic9'},
-      {'id': 69, 'key': 'cb9_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic9'},
-      {'id': 70, 'key': 'cb9_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic9'},
-      {'id': 71, 'key': 'cb9_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic9'},
-      {'id': 72, 'key': 'cb9_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic9'},
-      {'id': 73, 'key': 'cb9_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic9'},
-      {'id': 74, 'key': 'cb9_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic9'},
-      {'id': 75, 'key': 'cb10_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': 'basic10'},
-      {'id': 76, 'key': 'cb10_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic10'},
-      {'id': 77, 'key': 'cb10_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic10'},
-      {'id': 78, 'key': 'cb10_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': 'basic10'},
-      {'id': 79, 'key': 'cb10_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': 'basic10'},
-      {'id': 80, 'key': 'cb10_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': 'basic10'},
-      {'id': 81, 'key': 'cb10_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': 'basic10'},
+      {
+        'id': 54,
+        'key': 'cb7_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic7',
+      },
+      {
+        'id': 55,
+        'key': 'cb7_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic7',
+      },
+      {
+        'id': 56,
+        'key': 'cb7_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic7',
+      },
+      {
+        'id': 57,
+        'key': 'cb7_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic7',
+      },
+      {
+        'id': 58,
+        'key': 'cb7_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic7',
+      },
+      {
+        'id': 59,
+        'key': 'cb7_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic7',
+      },
+      {
+        'id': 60,
+        'key': 'cb7_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic7',
+      },
+      {
+        'id': 61,
+        'key': 'cb8_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic8',
+      },
+      {
+        'id': 62,
+        'key': 'cb8_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic8',
+      },
+      {
+        'id': 63,
+        'key': 'cb8_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic8',
+      },
+      {
+        'id': 64,
+        'key': 'cb8_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic8',
+      },
+      {
+        'id': 65,
+        'key': 'cb8_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic8',
+      },
+      {
+        'id': 66,
+        'key': 'cb8_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic8',
+      },
+      {
+        'id': 67,
+        'key': 'cb8_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic8',
+      },
+      {
+        'id': 68,
+        'key': 'cb9_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic9',
+      },
+      {
+        'id': 69,
+        'key': 'cb9_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic9',
+      },
+      {
+        'id': 70,
+        'key': 'cb9_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic9',
+      },
+      {
+        'id': 71,
+        'key': 'cb9_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic9',
+      },
+      {
+        'id': 72,
+        'key': 'cb9_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic9',
+      },
+      {
+        'id': 73,
+        'key': 'cb9_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic9',
+      },
+      {
+        'id': 74,
+        'key': 'cb9_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic9',
+      },
+      {
+        'id': 75,
+        'key': 'cb10_lythuyet',
+        'title': 'Lý thuyết',
+        'icon': Icons.menu_book,
+        'status': 0,
+        'section': 'basic10',
+      },
+      {
+        'id': 76,
+        'key': 'cb10_luyentap1',
+        'title': 'Luyện tập 1',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic10',
+      },
+      {
+        'id': 77,
+        'key': 'cb10_luyentap2',
+        'title': 'Luyện tập 2',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic10',
+      },
+      {
+        'id': 78,
+        'key': 'cb10_luyentap3',
+        'title': 'Luyện tập 3',
+        'icon': Icons.import_contacts,
+        'status': 0,
+        'section': 'basic10',
+      },
+      {
+        'id': 79,
+        'key': 'cb10_luyennoi',
+        'title': 'Luyện nói',
+        'icon': Icons.mic,
+        'status': 0,
+        'section': 'basic10',
+      },
+      {
+        'id': 80,
+        'key': 'cb10_luyenviet',
+        'title': 'Luyện viết',
+        'icon': Icons.edit,
+        'status': 0,
+        'section': 'basic10',
+      },
+      {
+        'id': 81,
+        'key': 'cb10_ontap',
+        'title': 'Ôn tập',
+        'icon': Icons.star,
+        'status': 0,
+        'isBoss': true,
+        'section': 'basic10',
+      },
     ];
   }
+
   void _initN4Lessons() {
-      _lessons = [];
-          int idCounter = 200;
-          for (int i = 1; i <= 10; i++) {
-            String sectionId = 'basic$i';
-            _lessons.addAll([
-              {'id': idCounter++, 'key': 'n4_bai${i}_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n4_bai${i}_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n4_bai${i}_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n4_bai${i}_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n4_bai${i}_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n4_bai${i}_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n4_bai${i}_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': sectionId},
-            ]);
-          }
+    _lessons = [];
+    int idCounter = 200;
+    for (int i = 1; i <= 10; i++) {
+      String sectionId = 'basic$i';
+      _lessons.addAll([
+        {
+          'id': idCounter++,
+          'key': 'n4_bai${i}_lythuyet',
+          'title': 'Lý thuyết',
+          'icon': Icons.menu_book,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n4_bai${i}_luyentap1',
+          'title': 'Luyện tập 1',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n4_bai${i}_luyentap2',
+          'title': 'Luyện tập 2',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n4_bai${i}_luyentap3',
+          'title': 'Luyện tập 3',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n4_bai${i}_luyennoi',
+          'title': 'Luyện nói',
+          'icon': Icons.mic,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n4_bai${i}_luyenviet',
+          'title': 'Luyện viết',
+          'icon': Icons.edit,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n4_bai${i}_ontap',
+          'title': 'Ôn tập',
+          'icon': Icons.star,
+          'status': 0,
+          'isBoss': true,
+          'section': sectionId,
+        },
+      ]);
     }
+  }
 
-    void _initN3Lessons() {
-      _lessons = [];
-          int idCounter = 300; // Đặt ID bắt đầu cho N3
-          for (int i = 1; i <= 10; i++) {
-            String sectionId = 'basic$i';
-            _lessons.addAll([
-              {'id': idCounter++, 'key': 'n3_bai${i}_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n3_bai${i}_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n3_bai${i}_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n3_bai${i}_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n3_bai${i}_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n3_bai${i}_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n3_bai${i}_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': sectionId},
-            ]);
-          }
+  void _initN3Lessons() {
+    _lessons = [];
+    int idCounter = 300; // Đặt ID bắt đầu cho N3
+    for (int i = 1; i <= 10; i++) {
+      String sectionId = 'basic$i';
+      _lessons.addAll([
+        {
+          'id': idCounter++,
+          'key': 'n3_bai${i}_lythuyet',
+          'title': 'Lý thuyết',
+          'icon': Icons.menu_book,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n3_bai${i}_luyentap1',
+          'title': 'Luyện tập 1',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n3_bai${i}_luyentap2',
+          'title': 'Luyện tập 2',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n3_bai${i}_luyentap3',
+          'title': 'Luyện tập 3',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n3_bai${i}_luyennoi',
+          'title': 'Luyện nói',
+          'icon': Icons.mic,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n3_bai${i}_luyenviet',
+          'title': 'Luyện viết',
+          'icon': Icons.edit,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n3_bai${i}_ontap',
+          'title': 'Ôn tập',
+          'icon': Icons.star,
+          'status': 0,
+          'isBoss': true,
+          'section': sectionId,
+        },
+      ]);
     }
+  }
 
-    void _initN2Lessons() {
-      _lessons = [];
-          int idCounter = 400; // Đặt ID bắt đầu cho N2
-          for (int i = 1; i <= 10; i++) {
-            String sectionId = 'basic$i';
-            _lessons.addAll([
-              {'id': idCounter++, 'key': 'n2_bai${i}_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n2_bai${i}_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n2_bai${i}_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n2_bai${i}_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n2_bai${i}_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n2_bai${i}_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n2_bai${i}_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': sectionId},
-            ]);
-          }
+  void _initN2Lessons() {
+    _lessons = [];
+    int idCounter = 400; // Đặt ID bắt đầu cho N2
+    for (int i = 1; i <= 10; i++) {
+      String sectionId = 'basic$i';
+      _lessons.addAll([
+        {
+          'id': idCounter++,
+          'key': 'n2_bai${i}_lythuyet',
+          'title': 'Lý thuyết',
+          'icon': Icons.menu_book,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n2_bai${i}_luyentap1',
+          'title': 'Luyện tập 1',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n2_bai${i}_luyentap2',
+          'title': 'Luyện tập 2',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n2_bai${i}_luyentap3',
+          'title': 'Luyện tập 3',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n2_bai${i}_luyennoi',
+          'title': 'Luyện nói',
+          'icon': Icons.mic,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n2_bai${i}_luyenviet',
+          'title': 'Luyện viết',
+          'icon': Icons.edit,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n2_bai${i}_ontap',
+          'title': 'Ôn tập',
+          'icon': Icons.star,
+          'status': 0,
+          'isBoss': true,
+          'section': sectionId,
+        },
+      ]);
     }
+  }
 
-    void _initN1Lessons() {
-      _lessons = [];
-          int idCounter = 500; // Đặt ID bắt đầu cho N1
-          for (int i = 1; i <= 10; i++) {
-            String sectionId = 'basic$i';
-            _lessons.addAll([
-              {'id': idCounter++, 'key': 'n1_bai${i}_lythuyet', 'title': 'Lý thuyết', 'icon': Icons.menu_book, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n1_bai${i}_luyentap1', 'title': 'Luyện tập 1', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n1_bai${i}_luyentap2', 'title': 'Luyện tập 2', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n1_bai${i}_luyentap3', 'title': 'Luyện tập 3', 'icon': Icons.import_contacts, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n1_bai${i}_luyennoi', 'title': 'Luyện nói', 'icon': Icons.mic, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n1_bai${i}_luyenviet', 'title': 'Luyện viết', 'icon': Icons.edit, 'status': 0, 'section': sectionId},
-              {'id': idCounter++, 'key': 'n1_bai${i}_ontap', 'title': 'Ôn tập', 'icon': Icons.star, 'status': 0, 'isBoss': true, 'section': sectionId},
-            ]);
-          }
+  void _initN1Lessons() {
+    _lessons = [];
+    int idCounter = 500; // Đặt ID bắt đầu cho N1
+    for (int i = 1; i <= 10; i++) {
+      String sectionId = 'basic$i';
+      _lessons.addAll([
+        {
+          'id': idCounter++,
+          'key': 'n1_bai${i}_lythuyet',
+          'title': 'Lý thuyết',
+          'icon': Icons.menu_book,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n1_bai${i}_luyentap1',
+          'title': 'Luyện tập 1',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n1_bai${i}_luyentap2',
+          'title': 'Luyện tập 2',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n1_bai${i}_luyentap3',
+          'title': 'Luyện tập 3',
+          'icon': Icons.import_contacts,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n1_bai${i}_luyennoi',
+          'title': 'Luyện nói',
+          'icon': Icons.mic,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n1_bai${i}_luyenviet',
+          'title': 'Luyện viết',
+          'icon': Icons.edit,
+          'status': 0,
+          'section': sectionId,
+        },
+        {
+          'id': idCounter++,
+          'key': 'n1_bai${i}_ontap',
+          'title': 'Ôn tập',
+          'icon': Icons.star,
+          'status': 0,
+          'isBoss': true,
+          'section': sectionId,
+        },
+      ]);
     }
+  }
 
   Future<void> _refreshProgress() async {
     List<String> completed = await UserProgress().getCompletedLessons();
@@ -1113,8 +2521,8 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
         String key = _lessons[i]['key'];
         if (completed.contains(key)) {
           _lessons[i]['status'] = 2;
-          if (i + 1 < _lessons.length && _lessons[i+1]['status'] != 2) {
-            _lessons[i+1]['status'] = 1;
+          if (i + 1 < _lessons.length && _lessons[i + 1]['status'] != 2) {
+            _lessons[i + 1]['status'] = 1;
           }
         }
       }
@@ -1126,42 +2534,73 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: kSoftBackground,
         elevation: 0,
         title: GestureDetector(
           onTap: () {
             SoundManager.instance.vibrate('light');
-            CourseSelectionHelper.showCoursePopup(context, _currentCourse, (selectedCourse) {
-                setState(() {
-                      _currentCourse = selectedCourse;
-                      if (selectedCourse == 'Sơ cấp 1 - N5') {
-                        _initLessons(); // Hàm cũ của bạn
-                      } else if (selectedCourse == 'Sơ cấp 2 - N4') {
-                        _initN4Lessons(); // Bạn cần tạo hàm này chứa list bài N4
-                      } else if (selectedCourse == 'Trung cấp 1 - N3') {
-                        _initN3Lessons();
-                      } else if (selectedCourse == 'Trung cấp 2 - N2') {
-                        _initN2Lessons();
-                      } else if (selectedCourse == 'Cao cấp - N1') {
-                        _initN1Lessons();
-                      }
-                      _refreshProgress(); // Reset lại tiến độ theo course mới
-                    });
-                  });
+            CourseSelectionHelper.showCoursePopup(context, _currentCourse, (
+              selectedCourse,
+            ) {
+              setState(() {
+                _currentCourse = selectedCourse;
+                if (selectedCourse == 'Sơ cấp 1 - N5') {
+                  _initLessons();
+                } else if (selectedCourse == 'Sơ cấp 2 - N4') {
+                  _initN4Lessons();
+                } else if (selectedCourse == 'Trung cấp 1 - N3') {
+                  _initN3Lessons();
+                } else if (selectedCourse == 'Trung cấp 2 - N2') {
+                  _initN2Lessons();
+                } else if (selectedCourse == 'Cao cấp - N1') {
+                  _initN1Lessons();
+                }
+                _refreshProgress();
+              });
+            });
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey.shade300),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 16,
+                  offset: Offset(0, 6),
+                ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(_currentCourse, style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(width: 5),
-                Icon(Icons.arrow_drop_down, color: Colors.black54),
+                Container(
+                  decoration: BoxDecoration(
+                    color: kPrimaryBlue.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.school, color: kPrimaryBlue, size: 20),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  _currentCourse,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black54,
+                  size: 24,
+                ),
               ],
             ),
           ),
@@ -1193,27 +2632,36 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
                 // Vòng lặp duyệt qua tất cả các Chặng (Sections)
                 for (var section in _sections) {
                   // Lấy các bài học thuộc Section này
-                  final chunkLessons = _lessons.where((l) => l['section'] == section['id']).toList();
+                  final chunkLessons = _lessons
+                      .where((l) => l['section'] == section['id'])
+                      .toList();
                   if (chunkLessons.isEmpty) continue;
 
                   // Tính số bài đã học
-                  int completed = chunkLessons.where((l) => l['status'] == 2).length;
+                  int completed = chunkLessons
+                      .where((l) => l['status'] == 2)
+                      .length;
 
                   // 1. Thêm Khung Tiêu Đề
                   columnChildren.add(
-                      _buildDynamicSectionHeader(
-                        title: section['title'],
-                        subtitle: "${section['subtitle']} • $completed/${chunkLessons.length} bài",
-                        icon: section['icon'],
-                        bgColor: Color(section['bg']),
-                        iconColor: Color(section['color']),
-                      )
+                    _buildDynamicSectionHeader(
+                      title: section['title'],
+                      subtitle:
+                          "${section['subtitle']} • $completed/${chunkLessons.length} bài",
+                      icon: section['icon'],
+                      bgColor: Color(section['bg']),
+                      iconColor: Color(section['color']),
+                    ),
                   );
                   columnChildren.add(const SizedBox(height: 10));
 
                   // 2. Thêm Đường zigzag bài học (Truyền totalNodesSoFar để nét đứt nối mượt mà)
                   columnChildren.add(
-                      _buildRoadMapChunk(constraints.maxWidth, chunkLessons, totalNodesSoFar)
+                    _buildRoadMapChunk(
+                      constraints.maxWidth,
+                      chunkLessons,
+                      totalNodesSoFar,
+                    ),
                   );
                   columnChildren.add(const SizedBox(height: 30));
 
@@ -1230,13 +2678,26 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
   }
 
   // Khung tiêu đề linh hoạt màu sắc cho từng Chặng
-  Widget _buildDynamicSectionHeader({required String title, required String subtitle, required IconData icon, required Color bgColor, required Color iconColor}) {
+  Widget _buildDynamicSectionHeader({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color bgColor,
+    required Color iconColor,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade200,
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1245,30 +2706,58 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF5A6275))),
-                const SizedBox(height: 5),
-                Text(subtitle, style: const TextStyle(fontSize: 14, color: Color(0xFF808B9F), fontWeight: FontWeight.w600)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF4B5563),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
             child: Icon(icon, color: iconColor, size: 28),
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildRoadMapChunk(double screenWidth, List<Map<String, dynamic>> chunkLessons, int startZigZagIndex) {
+  Widget _buildRoadMapChunk(
+    double screenWidth,
+    List<Map<String, dynamic>> chunkLessons,
+    int startZigZagIndex,
+  ) {
     return Stack(
       children: [
         CustomPaint(
           size: Size(screenWidth, chunkLessons.length * 120.0),
           painter: DashedPathPainter(
-              totalItems: chunkLessons.length,
-              startIndex: startZigZagIndex
+            totalItems: chunkLessons.length,
+            startIndex: startZigZagIndex,
           ),
         ),
         Column(
@@ -1277,8 +2766,10 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
             int globalIndex = startZigZagIndex + index;
 
             double alignX = 0;
-            if (globalIndex % 4 == 1) alignX = -0.5;
-            else if (globalIndex % 4 == 3) alignX = 0.5;
+            if (globalIndex % 4 == 1) {
+              alignX = -0.5;
+            } else if (globalIndex % 4 == 3)
+              alignX = 0.5;
 
             return Container(
               height: 120,
@@ -1314,7 +2805,11 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
         GestureDetector(
           onTap: () async {
             if (lesson['status'] == 0) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Hãy hoàn thành bài trước để mở khóa!")));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Hãy hoàn thành bài trước để mở khóa!"),
+                ),
+              );
               return;
             }
 
@@ -1326,7 +2821,10 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => LessonScreen(lessonId: lessonId, lessonTitle: lesson['title'])
+                  builder: (context) => LessonScreen(
+                    lessonId: lessonId,
+                    lessonTitle: lesson['title'],
+                  ),
                 ),
               );
 
@@ -1342,16 +2840,24 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
               color: color,
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(color: shadowColor, offset: const Offset(0, 6), blurRadius: 0),
-                BoxShadow(color: Colors.white.withOpacity(0.2), offset: const Offset(0, -3), blurRadius: 0),
+                BoxShadow(
+                  color: shadowColor,
+                  offset: const Offset(0, 6),
+                  blurRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.2),
+                  offset: const Offset(0, -3),
+                  blurRadius: 0,
+                ),
               ],
             ),
             child: Center(
               child: lesson['status'] == 2
                   ? const Icon(Icons.check, color: Colors.white, size: 35)
                   : (lesson['isBoss'] == true
-                  ? const Icon(Icons.star, color: Colors.white, size: 35)
-                  : Icon(lesson['icon'], color: Colors.white, size: 30)),
+                        ? const Icon(Icons.star, color: Colors.white, size: 35)
+                        : Icon(lesson['icon'], color: Colors.white, size: 30)),
             ),
           ),
         ),
@@ -1359,9 +2865,11 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
         Text(
           lesson['title'],
           style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: lesson['status'] == 0 ? Colors.grey.shade400 : Colors.black54,
-              fontSize: 13
+            fontWeight: FontWeight.bold,
+            color: lesson['status'] == 0
+                ? Colors.grey.shade400
+                : Colors.black54,
+            fontSize: 13,
           ),
         ),
       ],
@@ -1408,12 +2916,8 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
               color: Colors.white,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.style,
-              color: Color(0xFF4A89F3),
-              size: 28,
-            ),
-          )
+            child: const Icon(Icons.style, color: Color(0xFF4A89F3), size: 28),
+          ),
         ],
       ),
     );
@@ -1428,13 +2932,19 @@ class DashedPathPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()..color = Colors.grey.shade300..strokeWidth = 8..style = PaintingStyle.stroke..strokeCap = StrokeCap.round;
+    Paint paint = Paint()
+      ..color = Colors.grey.shade300
+      ..strokeWidth = 8
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
     double centerX = size.width / 2;
     double itemHeight = 120.0;
     Path path = Path();
     Offset start = Offset(centerX, itemHeight / 2);
-    if (startIndex % 4 == 1) start = Offset(centerX - (size.width * 0.25), itemHeight / 2);
-    else if (startIndex % 4 == 3) start = Offset(centerX + (size.width * 0.25), itemHeight / 2);
+    if (startIndex % 4 == 1) {
+      start = Offset(centerX - (size.width * 0.25), itemHeight / 2);
+    } else if (startIndex % 4 == 3)
+      start = Offset(centerX + (size.width * 0.25), itemHeight / 2);
 
     path.moveTo(start.dx, start.dy);
 
@@ -1442,13 +2952,17 @@ class DashedPathPainter extends CustomPainter {
       int globalI = startIndex + i;
 
       double currentX = centerX;
-      if (globalI % 4 == 1) currentX = centerX - (size.width * 0.25);
-      else if (globalI % 4 == 3) currentX = centerX + (size.width * 0.25);
+      if (globalI % 4 == 1) {
+        currentX = centerX - (size.width * 0.25);
+      } else if (globalI % 4 == 3)
+        currentX = centerX + (size.width * 0.25);
       double currentY = (i * itemHeight) + (itemHeight / 2);
 
       double nextX = centerX;
-      if ((globalI + 1) % 4 == 1) nextX = centerX - (size.width * 0.25);
-      else if ((globalI + 1) % 4 == 3) nextX = centerX + (size.width * 0.25);
+      if ((globalI + 1) % 4 == 1) {
+        nextX = centerX - (size.width * 0.25);
+      } else if ((globalI + 1) % 4 == 3)
+        nextX = centerX + (size.width * 0.25);
       double nextY = ((i + 1) * itemHeight) + (itemHeight / 2);
 
       path.quadraticBezierTo(currentX, nextY, nextX, nextY);
@@ -1469,12 +2983,19 @@ class DashedPathPainter extends CustomPainter {
 }
 
 class CourseSelectionHelper {
-  static void showCoursePopup(BuildContext context, String currentCourse, Function(String) onSelect) {
+  static void showCoursePopup(
+    BuildContext context,
+    String currentCourse,
+    Function(String) onSelect,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => CourseSelectionPopup(currentCourse: currentCourse, onSelect: onSelect),
+      builder: (context) => CourseSelectionPopup(
+        currentCourse: currentCourse,
+        onSelect: onSelect,
+      ),
     );
   }
 }
@@ -1484,7 +3005,11 @@ class CourseSelectionPopup extends StatelessWidget {
   final Function(String) onSelect;
 
   // Đã sửa: Khai báo constructor bắt buộc phải truyền biến vào
-  const CourseSelectionPopup({super.key, required this.currentCourse, required this.onSelect});
+  const CourseSelectionPopup({
+    super.key,
+    required this.currentCourse,
+    required this.onSelect,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1497,11 +3022,23 @@ class CourseSelectionPopup extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 20, right: 12, top: 16, bottom: 8),
+            padding: const EdgeInsets.only(
+              left: 20,
+              right: 12,
+              top: 16,
+              bottom: 8,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Chọn khóa học', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+                const Text(
+                  'Chọn khóa học',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.grey, size: 28),
                   onPressed: () => Navigator.pop(context),
@@ -1517,11 +3054,19 @@ class CourseSelectionPopup extends StatelessWidget {
                   _buildMainJLPTCard(context), // Đã sửa: Truyền context vào đây
                   const SizedBox(height: 16),
                   _buildExtraCourseCard(
-                    title: 'Luyện đọc', subtitle: '56 bài', bgColor: const Color(0xFFF3E5F5), iconData: Icons.menu_book_rounded, iconColor: Colors.purple,
+                    title: 'Luyện đọc',
+                    subtitle: '56 bài',
+                    bgColor: const Color(0xFFF3E5F5),
+                    iconData: Icons.menu_book_rounded,
+                    iconColor: Colors.purple,
                   ),
                   const SizedBox(height: 16),
                   _buildExtraCourseCard(
-                    title: 'Luyện nói', subtitle: '93 bài', bgColor: const Color(0xFFFFEBEE), iconData: Icons.record_voice_over_rounded, iconColor: Colors.redAccent,
+                    title: 'Luyện nói',
+                    subtitle: '93 bài',
+                    bgColor: const Color(0xFFFFEBEE),
+                    iconData: Icons.record_voice_over_rounded,
+                    iconColor: Colors.redAccent,
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -1537,14 +3082,21 @@ class CourseSelectionPopup extends StatelessWidget {
   Widget _buildMainJLPTCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Column(
         children: [
           Row(
             children: [
               Container(
-                width: 60, height: 60,
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: const Icon(Icons.school, size: 36, color: Colors.orange),
               ),
               const SizedBox(width: 16),
@@ -1552,9 +3104,19 @@ class CourseSelectionPopup extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Text('Lộ trình JLPT', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF4CAF50))),
+                    Text(
+                      'Lộ trình JLPT',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF4CAF50),
+                      ),
+                    ),
                     SizedBox(height: 4),
-                    Text('5 cấp độ', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                    Text(
+                      '5 cấp độ',
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
                   ],
                 ),
               ),
@@ -1563,7 +3125,8 @@ class CourseSelectionPopup extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Wrap(
-            spacing: 12, runSpacing: 12,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               // Đã sửa: Gọi hàm theo đúng format mới
               _buildLevelButton(context, 'Sơ cấp 1 - N5'),
@@ -1596,34 +3159,67 @@ class CourseSelectionPopup extends StatelessWidget {
             decoration: BoxDecoration(
               color: isActive ? const Color(0xFF58CC02) : Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [if (!isActive) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))],
+              boxShadow: [
+                if (!isActive)
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.bar_chart_rounded, color: isActive ? Colors.white : Colors.grey.shade400, size: 20),
+                Icon(
+                  Icons.bar_chart_rounded,
+                  color: isActive ? Colors.white : Colors.grey.shade400,
+                  size: 20,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: Text(text, style: TextStyle(fontSize: 14, fontWeight: isActive ? FontWeight.bold : FontWeight.w600, color: isActive ? Colors.white : Colors.black87), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                      color: isActive ? Colors.white : Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
           ),
         );
-      }
+      },
     );
   }
   // Đã sửa: Xóa cái dấu ngoặc nhọn "}" thừa gây lỗi ở đây!
 
-  Widget _buildExtraCourseCard({required String title, required String subtitle, required Color bgColor, required IconData iconData, required Color iconColor}) {
+  Widget _buildExtraCourseCard({
+    required String title,
+    required String subtitle,
+    required Color bgColor,
+    required IconData iconData,
+    required Color iconColor,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Row(
         children: [
           Container(
-            width: 60, height: 60,
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.6), borderRadius: BorderRadius.circular(16)),
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Icon(iconData, size: 36, color: iconColor),
           ),
           const SizedBox(width: 16),
@@ -1631,9 +3227,19 @@ class CourseSelectionPopup extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(fontSize: 14, color: Colors.black54)),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
               ],
             ),
           ),

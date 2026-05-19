@@ -40,7 +40,10 @@ class _AuthScreenState extends State<AuthScreen> {
     } on FirebaseAuthException catch (e) {
       SoundManager.instance.vibrate('error');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? "Lỗi xác thực"), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(e.message ?? "Lỗi xác thực"),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -50,7 +53,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF4F8FF),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Center(
@@ -58,62 +61,128 @@ class _AuthScreenState extends State<AuthScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/images/dog_happy.png', height: 120, errorBuilder: (_,__,___)=> Icon(Icons.pets, size: 100, color: Color(0xFF58CC02))),
-                const SizedBox(height: 20),
-                Text(
-                  _isLogin ? "Đăng nhập" : "Tạo tài khoản",
-                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF58CC02)),
-                ),
-                const SizedBox(height: 30),
-
-                // Input Email
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: "Email",
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    prefixIcon: const Icon(Icons.email),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 28,
+                    horizontal: 24,
                   ),
-                ),
-                const SizedBox(height: 15),
-
-                // Input Password
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: "Mật khẩu",
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    prefixIcon: const Icon(Icons.lock),
-                  ),
-                ),
-                const SizedBox(height: 25),
-
-                // Nút Submit
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF58CC02),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3366FF), Color(0xFF56CCF2)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(_isLogin ? "VÀO HỌC NGAY" : "ĐĂNG KÝ", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 18,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/dog_happy.png',
+                        height: 110,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.pets,
+                          size: 100,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        _isLogin ? "Đăng nhập" : "Tạo tài khoản",
+                        style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _isLogin
+                            ? "Chào mừng trở lại!"
+                            : "Bắt đầu hành trình mới.",
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 28),
 
-                // Nút chuyển đổi Login/Register
-                TextButton(
-                  onPressed: () => setState(() => _isLogin = !_isLogin),
-                  child: Text(
-                    _isLogin ? "Chưa có tài khoản? Đăng ký" : "Đã có tài khoản? Đăng nhập",
-                    style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 18,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
                   ),
-                )
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: "Email",
+                          prefixIcon: const Icon(Icons.email),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: "Mật khẩu",
+                          prefixIcon: const Icon(Icons.lock),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _submit,
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  _isLogin ? "VÀO HỌC NGAY" : "ĐĂNG KÝ",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      TextButton(
+                        onPressed: () => setState(() => _isLogin = !_isLogin),
+                        child: Text(
+                          _isLogin
+                              ? "Chưa có tài khoản? Đăng ký"
+                              : "Đã có tài khoản? Đăng nhập",
+                          style: const TextStyle(
+                            color: Color(0xFF3366FF),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

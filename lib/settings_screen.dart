@@ -147,7 +147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onChanged: (val) {
                             setState(() => isReminderOn = val);
                           },
-                          activeColor: Colors.white,
+                          activeThumbColor: Colors.white,
                           activeTrackColor: Colors.amber,
                         )
                       ],

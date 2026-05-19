@@ -56,8 +56,12 @@ class _HiraganaPracticeScreenState extends State<HiraganaPracticeScreen> {
 
     List<List<int>> matrix = List.generate(s1.length + 1, (i) => List.filled(s2.length + 1, 0));
 
-    for (int i = 0; i <= s1.length; i++) matrix[i][0] = i;
-    for (int j = 0; j <= s2.length; j++) matrix[0][j] = j;
+    for (int i = 0; i <= s1.length; i++) {
+      matrix[i][0] = i;
+    }
+    for (int j = 0; j <= s2.length; j++) {
+      matrix[0][j] = j;
+    }
 
     for (int i = 1; i <= s1.length; i++) {
       for (int j = 1; j <= s2.length; j++) {
@@ -207,7 +211,7 @@ class _HiraganaPracticeScreenState extends State<HiraganaPracticeScreen> {
                     imageAsset,
                     width: 80,
                     height: 80,
-                    errorBuilder: (_, __, ___) => Icon(
+                    errorBuilder: (_, _, _) => Icon(
                       isCorrect ? Icons.emoji_emotions : Icons.mood_bad,
                       size: 80,
                       color: typeColor,
@@ -503,8 +507,9 @@ class StrokePainter extends CustomPainter {
     for (var stroke in strokes) {
       if (stroke.isEmpty) continue;
       Path path = Path()..moveTo(stroke.first.dx, stroke.first.dy);
-      for (int i = 1; i < stroke.length; i++)
+      for (int i = 1; i < stroke.length; i++) {
         path.lineTo(stroke[i].dx, stroke[i].dy);
+      }
       canvas.drawPath(path, paint);
     }
   }

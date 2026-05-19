@@ -3,7 +3,6 @@ import 'recognition_manager.dart';
 import 'sound_manager.dart';
 import 'user_progress.dart';
 import 'app_settings.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 enum LessonType {
@@ -47,7 +46,7 @@ class _LessonScreenState extends State<LessonScreen> {
   int _correctAnswers = 0;
   int _totalQuizCount = 0;
 
-  Set<String> _wrongAnswers = {};
+  final Set<String> _wrongAnswers = {};
 
   @override
   void initState() {
@@ -18319,7 +18318,7 @@ class _LessonScreenState extends State<LessonScreen> {
                     imageAsset,
                     width: 80,
                     height: 80,
-                    errorBuilder: (_, __, ___) => Icon(
+                    errorBuilder: (_, _, _) => Icon(
                       isCorrect ? Icons.emoji_emotions : Icons.mood_bad,
                       size: 80,
                       color: typeColor,
@@ -18405,8 +18404,9 @@ class _LessonScreenState extends State<LessonScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_activities.isEmpty)
+    if (_activities.isEmpty) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final activity = _activities[_currentIndex];
 
     return Scaffold(
@@ -18734,7 +18734,7 @@ class _LessonScreenState extends State<LessonScreen> {
             child: Image.asset(
               data['gif'] ?? '',
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 50),
+              errorBuilder: (_, _, _) => const Icon(Icons.image, size: 50),
             ),
           ),
         ),
@@ -18853,7 +18853,7 @@ class _LessonScreenState extends State<LessonScreen> {
                             opt['img'],
                             fit: BoxFit.cover,
                             width: double.infinity,
-                            errorBuilder: (_, __, ___) => Container(
+                            errorBuilder: (_, _, _) => Container(
                               color: Colors.grey.shade100,
                               child: const Icon(
                                 Icons.image,
@@ -19332,7 +19332,7 @@ class GrammarExampleView extends StatelessWidget {
               data['img'],
               fit: BoxFit.cover,
               width: double.infinity,
-              errorBuilder: (_, __, ___) => Container(
+              errorBuilder: (_, _, _) => Container(
                 color: Colors.grey.shade200,
                 child: const Icon(Icons.image, size: 50),
               ),
@@ -19694,8 +19694,12 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
     if (s1.isEmpty) return s2.length;
     if (s2.isEmpty) return s1.length;
     List<List<int>> matrix = List.generate(s1.length + 1, (i) => List.filled(s2.length + 1, 0));
-    for (int i = 0; i <= s1.length; i++) matrix[i][0] = i;
-    for (int j = 0; j <= s2.length; j++) matrix[0][j] = j;
+    for (int i = 0; i <= s1.length; i++) {
+      matrix[i][0] = i;
+    }
+    for (int j = 0; j <= s2.length; j++) {
+      matrix[0][j] = j;
+    }
     for (int i = 1; i <= s1.length; i++) {
       for (int j = 1; j <= s2.length; j++) {
         int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
@@ -19836,7 +19840,7 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
                     imageAsset,
                     width: 80,
                     height: 80,
-                    errorBuilder: (_, __, ___) => Icon(
+                    errorBuilder: (_, _, _) => Icon(
                       isCorrect ? Icons.emoji_emotions : Icons.mood_bad,
                       size: 80,
                       color: typeColor,
@@ -20284,7 +20288,7 @@ class LessonCompletionScreen extends StatelessWidget {
               Image.asset(
                 'assets/images/dog_happy.png',
                 height: 200,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorBuilder: (_, _, _) => const Icon(
                   Icons.emoji_events,
                   size: 150,
                   color: Colors.amber,
@@ -20667,7 +20671,7 @@ class _FlashCardViewState extends State<FlashCardView> {
                 widget.data['example_img'],
                 fit: BoxFit.cover,
                 width: double.infinity,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   color: Colors.white54,
                   child: const Icon(Icons.image, size: 50, color: Colors.grey),
                 ),
@@ -21842,8 +21846,12 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
       s1.length + 1,
       (i) => List.filled(s2.length + 1, 0),
     );
-    for (int i = 0; i <= s1.length; i++) dp[i][0] = i;
-    for (int j = 0; j <= s2.length; j++) dp[0][j] = j;
+    for (int i = 0; i <= s1.length; i++) {
+      dp[i][0] = i;
+    }
+    for (int j = 0; j <= s2.length; j++) {
+      dp[0][j] = j;
+    }
 
     for (int i = 1; i <= s1.length; i++) {
       for (int j = 1; j <= s2.length; j++) {
