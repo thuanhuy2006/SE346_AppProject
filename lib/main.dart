@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'sound_manager.dart';
 import 'recognition_manager.dart';
 import 'dart:ui' as ui;
@@ -517,7 +518,7 @@ class _JapaneseGridState extends State<JapaneseGrid> {
             itemBuilder: (context, rowIndex) {
               final rowChars = rows[rowIndex];
               return SizedBox(
-                height: 80,
+                height: 110,
                 child: Row(
                   children: [
                     Expanded(
@@ -2608,15 +2609,10 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
       ),
       body: Stack(
         children: [
-          // Nền lặp lại
+          // Nền xanh nhẹ có hoạ tiết thân thiện
           Positioned.fill(
-            child: Opacity(
-              opacity: 0.05,
-              child: Image.network(
-                "https://i.pinimg.com/originals/e8/6e/13/e86e135165d4bb31e5927c3e566fa199.png",
-                repeat: ImageRepeat.repeat,
-                errorBuilder: (context, error, stackTrace) => const SizedBox(),
-              ),
+            child: CustomPaint(
+              painter: GreenPatternPainter(),
             ),
           ),
 
@@ -2673,6 +2669,47 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          List<String> completed = await UserProgress().getCompletedLessons();
+          List<String> reviewableKeys = completed.where((k) => k.contains('_luyentap') || k.contains('_ontap')).toList();
+          
+          if (!context.mounted) return;
+          if (reviewableKeys.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Chưa có bài nào để ôn tập! Hãy học thêm nhé.")),
+            );
+            return;
+          }
+          
+          String randomKey = reviewableKeys[Random().nextInt(reviewableKeys.length)];
+          String lessonTitle = _lessons.firstWhere(
+            (l) => l['key'] == randomKey, 
+            orElse: () => {'title': 'Ôn tập nhanh'}
+          )['title'];
+
+          SoundManager.instance.vibrate('light');
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LessonScreen(
+                lessonId: randomKey,
+                lessonTitle: 'Ôn tập: $lessonTitle',
+              ),
+            ),
+          );
+          if (result == true && context.mounted) {
+            _refreshProgress();
+          }
+        },
+        icon: const Icon(Icons.flash_on, color: Colors.white),
+        label: const Text(
+          "Ôn tập nhanh",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: Colors.orange,
+        elevation: 6,
       ),
     );
   }
@@ -3247,4 +3284,33 @@ class CourseSelectionPopup extends StatelessWidget {
       ),
     );
   }
+}
+
+class GreenPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Vẽ nền xanh nhạt toàn màn hình
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = const Color(0xFFF4FAF4),
+    );
+
+    // Vẽ hoạ tiết chấm bi thân thiện
+    final paint = Paint()
+      ..color = const Color(0xFFE2F0E2)
+      ..style = PaintingStyle.fill;
+    
+    double spacing = 40.0;
+    double radius = 4.0;
+    
+    for (double y = 0; y < size.height; y += spacing) {
+      for (double x = 0; x < size.width; x += spacing) {
+        double offsetX = ((y / spacing).floor() % 2 == 0) ? 0 : spacing / 2;
+        canvas.drawCircle(Offset(x + offsetX, y), radius, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
