@@ -51,7 +51,18 @@ class DatabaseHelper {
       )
     ''');
 
-    print("DB Created with 3 Tables!");
+    // 4. Bảng Bookmarks (Sổ tay từ vựng)
+    await db.execute('''
+      CREATE TABLE bookmarks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        jp_word TEXT NOT NULL,
+        romaji TEXT,
+        meaning TEXT NOT NULL,
+        type TEXT DEFAULT 'vocabulary'
+      )
+    ''');
+
+    print("DB Created with 4 Tables!");
   }
 
   // --- HÀM TRIỆU HỒI (INSERT DATA) ---
@@ -159,5 +170,48 @@ class DatabaseHelper {
     var result = await db.rawQuery('SELECT COUNT(*) FROM vocabulary WHERE is_mastered = 1');
     int? count = Sqflite.firstIntValue(result);
     return count ?? 0;
+  }
+
+  // --- HÀM BOOKMARK (SỔ TAY TỪ VỰNG) ---
+  Future<void> addBookmark(String jpWord, String romaji, String meaning, {String type = 'vocabulary'}) async {
+    final db = await instance.database;
+    // Kiểm tra xem đã có chưa
+    final existing = await db.query(
+      'bookmarks',
+      where: 'jp_word = ?',
+      whereArgs: [jpWord],
+    );
+    if (existing.isEmpty) {
+      await db.insert('bookmarks', {
+        'jp_word': jpWord,
+        'romaji': romaji,
+        'meaning': meaning,
+        'type': type,
+      });
+    }
+  }
+
+  Future<void> removeBookmark(String jpWord) async {
+    final db = await instance.database;
+    await db.delete(
+      'bookmarks',
+      where: 'jp_word = ?',
+      whereArgs: [jpWord],
+    );
+  }
+
+  Future<bool> isBookmarked(String jpWord) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'bookmarks',
+      where: 'jp_word = ?',
+      whereArgs: [jpWord],
+    );
+    return result.isNotEmpty;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllBookmarks() async {
+    final db = await instance.database;
+    return await db.query('bookmarks', orderBy: 'id DESC');
   }
 }
