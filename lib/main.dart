@@ -13,6 +13,7 @@ import 'database_helper.dart';
 import 'leaderboard_screen.dart';
 import 'settings_screen.dart';
 import 'tips_screen.dart';
+import 'vocabulary_notebook_screen.dart';
 
 const Color kPrimaryBlue = Color(0xFF3366FF);
 const Color kAccentCyan = Color(0xFF56CCF2);
@@ -2651,6 +2652,18 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
       appBar: AppBar(
         backgroundColor: kSoftBackground,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu_book, color: kPrimaryBlue),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const VocabularyNotebookScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
         title: GestureDetector(
           onTap: () {
             SoundManager.instance.vibrate('light');

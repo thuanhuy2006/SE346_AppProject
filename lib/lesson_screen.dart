@@ -4,6 +4,7 @@ import 'sound_manager.dart';
 import 'user_progress.dart';
 import 'app_settings.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'database_helper.dart';
 
 enum LessonType {
   learn,
@@ -1575,6 +1576,14 @@ class _LessonScreenState extends State<LessonScreen> {
         'audio_text': '私は父です',
         'words': ['私', '父', 'は', 'です'],
         'answer': '私 は 父 です', // Các thẻ được nối với nhau bằng dấu cách
+      },
+      // Dịch từ tiếng Việt sang tiếng Nhật
+      {
+        'type': LessonType.sentenceBuilder,
+        'vn': 'Tôi là bố.',
+        'audio_text': '私は父です',
+        'words': ['私', '父', 'は', 'です', '母', '息子'],
+        'answer': '私 は 父 です',
       },
       {
         'type': LessonType.kanjiDraw,
@@ -19456,14 +19465,19 @@ class _SentenceBuilderViewState extends State<SentenceBuilderView> {
 
   @override
   Widget build(BuildContext context) {
+    bool isReverse = widget.data.containsKey('vn') && widget.data['vn'] != null && widget.data['vn'].toString().isNotEmpty;
     // Kiểm tra xem có phải dạng ẩn chữ chỉ hiện audio không
     bool isAudioOnly =
-        widget.data['jp'] == null || widget.data['jp'].toString().isEmpty;
+        !isReverse && (widget.data['jp'] == null || widget.data['jp'].toString().isEmpty);
+
+    String titleText = isReverse
+        ? "Dịch câu này sang tiếng Nhật"
+        : (isAudioOnly ? "Nghe và ghép từ thành câu" : "Nghe và dịch câu sau");
 
     return Column(
       children: [
         Text(
-          isAudioOnly ? "Nghe và ghép từ thành câu" : "Nghe và dịch câu sau",
+          titleText,
           style: const TextStyle(
             fontSize: 16,
             color: Colors.grey,
@@ -19472,7 +19486,18 @@ class _SentenceBuilderViewState extends State<SentenceBuilderView> {
         ),
         const SizedBox(height: 20),
 
-        if (!isAudioOnly) ...[
+        if (isReverse) ...[
+          Text(
+            widget.data['vn'],
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 20),
+        ] else if (!isAudioOnly) ...[
           Text(
             widget.data['jp'],
             style: const TextStyle(
@@ -20946,6 +20971,40 @@ class VocabSummaryView extends StatefulWidget {
 
 class _VocabSummaryViewState extends State<VocabSummaryView> {
   int _selectedTab = 1; // 0: Cần ôn tập, 1: Đã nắm vững
+  Set<String> _bookmarkedWords = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBookmarks();
+  }
+
+  Future<void> _loadBookmarks() async {
+    final bookmarks = await DatabaseHelper.instance.getAllBookmarks();
+    setState(() {
+      _bookmarkedWords = bookmarks.map((b) => b['jp_word'] as String).toSet();
+    });
+  }
+
+  Future<void> _toggleBookmark(dynamic w) async {
+    String wordToSave = w['kanji'] != null && w['kanji'].toString().isNotEmpty ? w['kanji'] : w['romaji'];
+    if (_bookmarkedWords.contains(wordToSave)) {
+      await DatabaseHelper.instance.removeBookmark(wordToSave);
+      setState(() {
+        _bookmarkedWords.remove(wordToSave);
+      });
+    } else {
+      await DatabaseHelper.instance.addBookmark(
+        wordToSave,
+        w['romaji'] ?? '',
+        w['meaning'] ?? '',
+        type: 'vocabulary',
+      );
+      setState(() {
+        _bookmarkedWords.add(wordToSave);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21100,10 +21159,14 @@ class _VocabSummaryViewState extends State<VocabSummaryView> {
                           color: Colors.black54,
                         ),
                       ),
-                      trailing: const Icon(
-                        Icons.arrow_forward_ios,
-                        size: 16,
-                        color: Colors.grey,
+                      trailing: IconButton(
+                        icon: Icon(
+                          _bookmarkedWords.contains(w['kanji'] != null && w['kanji'].toString().isNotEmpty ? w['kanji'] : w['romaji'])
+                              ? Icons.bookmark
+                              : Icons.bookmark_border,
+                          color: Colors.amber,
+                        ),
+                        onPressed: () => _toggleBookmark(w),
                       ),
                       onTap: () => SoundManager.instance.speakJapanese(
                         w['kanji'] != '' ? w['kanji'] : w['romaji'],
