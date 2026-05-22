@@ -1,4 +1,4 @@
-# kanji_summoner
+# JapaGo
 
 Learning Japanese
 

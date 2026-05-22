@@ -1,8 +1,8 @@
-# Kanji Summoner
+# JapaGo
 
 ## 📖 Giới thiệu
 
-**Kanji Summoner** là một ứng dụng di động hỗ trợ học tiếng Nhật (từ bảng chữ cái đến trình độ sơ cấp N5) được thiết kế theo phong cách Gamification (Game hóa), giúp người dùng duy trì động lực học tập mỗi ngày.
+**JapaGo** là một ứng dụng di động hỗ trợ học tiếng Nhật (từ bảng chữ cái đến trình độ sơ cấp N5) được thiết kế theo phong cách Gamification (Game hóa), giúp người dùng duy trì động lực học tập mỗi ngày.
 
 ## ✨ Tính năng nổi bật
 
