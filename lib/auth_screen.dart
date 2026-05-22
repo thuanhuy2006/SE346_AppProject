@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'sound_manager.dart';
+import 'user_progress.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -25,6 +26,7 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+        await UserProgress().syncFromFirebase(); // Đồng bộ tiến trình từ Firebase
         SoundManager.instance.speakJapanese("Omedetou"); // Âm thanh vui
       } else {
         // Đăng ký
@@ -32,6 +34,7 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+        await UserProgress().syncFromFirebase(); // Đồng bộ tiến trình từ Firebase
         SoundManager.instance.speakJapanese("Omedetou");
       }
       if (mounted) {

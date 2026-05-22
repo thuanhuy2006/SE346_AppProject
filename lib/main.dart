@@ -9,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'auth_screen.dart';
 import 'achievements_screen.dart';
 import 'user_progress.dart';
+import 'database_helper.dart';
+import 'leaderboard_screen.dart';
 import 'settings_screen.dart';
 import 'tips_screen.dart';
 
@@ -21,6 +23,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await RecognitionManager.instance.checkAndDownloadModel();
+
+  // Đồng bộ tiến độ từ Firebase khi khởi động (nếu đã đăng nhập)
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    try {
+      await UserProgress().syncFromFirebase().timeout(const Duration(seconds: 3));
+    } catch (e) {
+      print("Không thể đồng bộ nhanh tiến độ khi khởi động: $e");
+    }
+  }
+
   runApp(const MyApp());
 }
 
@@ -123,73 +136,121 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  final ValueNotifier<int> _activeTabNotifier = ValueNotifier<int>(0);
 
-  final List<Widget> _screens = [
-    const SummonerHomePage(),
+  late final List<Widget> _screens = [
+    SummonerHomePage(activeTabNotifier: _activeTabNotifier),
     const AlphabetScreen(),
-    const ProfileScreen(),
+    LeaderboardScreen(activeTabNotifier: _activeTabNotifier),
+    ProfileScreen(activeTabNotifier: _activeTabNotifier),
   ];
 
   @override
+  void dispose() {
+    _activeTabNotifier.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 18,
-                offset: Offset(0, 6),
-              ),
-            ],
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        final User? user = snapshot.data;
+        final String userKey = user != null ? user.uid : 'guest';
+
+        return Scaffold(
+          body: IndexedStack(
+            key: ValueKey(userKey),
+            index: _currentIndex,
+            children: _screens,
           ),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              AlphabetScreen.readingSessionId++;
-              try {
-                SoundManager.instance.stop();
-              } catch (e) {}
-              setState(() => _currentIndex = index);
-              SoundManager.instance.vibrate('light');
-            },
-            backgroundColor: Colors.white,
-            selectedItemColor: kPrimaryBlue,
-            unselectedItemColor: Colors.grey.shade500,
-            showUnselectedLabels: true,
-            type: BottomNavigationBarType.fixed,
-            elevation: 0,
-            items: [
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.school),
-                activeIcon: Icon(Icons.school, size: 30),
-                label: "Học tập",
-              ),
-              BottomNavigationBarItem(
-                icon: Text(
-                  "あ",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: _currentIndex == 1 ? kPrimaryBlue : Colors.grey,
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 18,
+                    offset: Offset(0, 6),
                   ),
-                ),
-                label: "Chữ cái",
+                ],
               ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                activeIcon: Icon(Icons.person, size: 30),
-                label: "Tôi",
+              child: BottomNavigationBar(
+                currentIndex: _currentIndex,
+                onTap: (index) {
+                  AlphabetScreen.readingSessionId++;
+                  try {
+                    SoundManager.instance.stop();
+                  } catch (e) {}
+                  setState(() => _currentIndex = index);
+                  _activeTabNotifier.value = index;
+                  SoundManager.instance.vibrate('light');
+                },
+                backgroundColor: Colors.white,
+                selectedItemColor: kPrimaryBlue,
+                unselectedItemColor: Colors.grey.shade500,
+                showUnselectedLabels: true,
+                type: BottomNavigationBarType.fixed,
+                elevation: 0,
+                items: [
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.school),
+                    activeIcon: Icon(Icons.school, size: 30),
+                    label: "Học tập",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Center(
+                        child: Text(
+                          "あ",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade500,
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                    activeIcon: const SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: Center(
+                        child: Text(
+                          "あ",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: kPrimaryBlue,
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                    label: "Chữ cái",
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.emoji_events),
+                    activeIcon: Icon(Icons.emoji_events, size: 30),
+                    label: "Xếp hạng",
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    activeIcon: Icon(Icons.person, size: 30),
+                    label: "Tôi",
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -626,7 +687,8 @@ class _JapaneseGridState extends State<JapaneseGrid> {
 // 3. MÀN HÌNH "TÔI" (PROFILE DASHBOARD)
 // ==========================================================
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final ValueNotifier<int> activeTabNotifier;
+  const ProfileScreen({super.key, required this.activeTabNotifier});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -643,6 +705,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     previewTips = TipsData.list
         .take(2)
         .toList(); // Lấy 2 cái đầu tiên giữ cố định
+    widget.activeTabNotifier.addListener(_handleTabChange);
+  }
+
+  @override
+  void dispose() {
+    widget.activeTabNotifier.removeListener(_handleTabChange);
+    super.dispose();
+  }
+
+  void _handleTabChange() {
+    if (widget.activeTabNotifier.value == 3) {
+      if (mounted) {
+        setState(() {});
+      }
+    }
   }
 
   // Hàm gọi để làm mới lại 2 mẹo bên ngoài khi từ màn hình chi tiết đi ra
@@ -1201,91 +1278,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAchievementsSection(BuildContext context) {
-    final List<Map<String, dynamic>> previewAchievements = AchievementData.list
-        .take(4)
-        .toList();
+    return FutureBuilder<List<dynamic>>(
+      future: Future.wait([
+        UserProgress().getExp(),
+        UserProgress().getCompletedLessons(),
+        DatabaseHelper.instance.getMasteredCount(),
+      ]),
+      builder: (context, snapshot) {
+        List<Map<String, dynamic>> previewAchievements;
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          previewAchievements = AchievementData.list.take(4).toList();
+        } else if (snapshot.hasError) {
+          previewAchievements = AchievementData.list.take(4).toList();
+        } else {
+          final results = snapshot.data ?? [0, <String>[], 0];
+          final int exp = results[0] as int;
+          final List<String> completedLessons = results[1] as List<String>;
+          final int masteredCount = results[2] as int;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Danh hiệu sắp đạt được",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+          previewAchievements = AchievementData.getCalculatedList(
+            exp: exp,
+            completedLessons: completedLessons,
+            masteredCount: masteredCount,
+          ).take(4).toList();
+        }
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade200,
+                blurRadius: 10,
+                offset: const Offset(0, 5),
               ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AchievementsScreen(),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Danh hiệu sắp đạt được",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
-                  );
-                },
-                child: const Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey,
-                  size: 18,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AchievementsScreen(),
+                        ),
+                      );
+                    },
+                    child: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.grey,
+                      size: 18,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              ...previewAchievements.map((item) => _buildAchievementItem(item)),
+
+              const SizedBox(height: 10),
+
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AchievementsScreen(),
+                      ),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFFF1F8E9),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: const Text(
+                    "Xem danh sách danh hiệu",
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF58CC02),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          ...previewAchievements.map((item) => _buildAchievementItem(item)),
-
-          const SizedBox(height: 10),
-
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AchievementsScreen(),
-                  ),
-                );
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFF1F8E9),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              child: const Text(
-                "Xem danh sách danh hiệu",
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF58CC02),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1441,7 +1541,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 // 4. MÀN HÌNH HỌC TẬP (ROADMAP STYLE)
 // ==========================================================
 class SummonerHomePage extends StatefulWidget {
-  const SummonerHomePage({super.key});
+  final ValueNotifier<int> activeTabNotifier;
+  const SummonerHomePage({super.key, required this.activeTabNotifier});
 
   @override
   State<SummonerHomePage> createState() => _SummonerHomePageState();
@@ -1552,6 +1653,7 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
     super.initState();
     _initLessons(); // Khởi tạo dữ liệu
     _refreshProgress();
+    widget.activeTabNotifier.addListener(_handleTabChange);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -1561,6 +1663,18 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
         );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    widget.activeTabNotifier.removeListener(_handleTabChange);
+    super.dispose();
+  }
+
+  void _handleTabChange() {
+    if (widget.activeTabNotifier.value == 0) {
+      _refreshProgress();
+    }
   }
 
   // Khai báo tập trung toàn bộ bài học tại đây

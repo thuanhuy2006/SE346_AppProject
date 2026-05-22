@@ -1,31 +1,130 @@
 import 'package:flutter/material.dart';
+import 'user_progress.dart';
+import 'database_helper.dart';
 
 // ==========================================================
 // 1. KHO DỮ LIỆU CHUNG (Class này bắt buộc phải có để main.dart gọi được)
 // ==========================================================
 class AchievementData {
   static final List<Map<String, dynamic>> list = [
-    {'title': 'Tân binh nhập môn', 'desc': 'Hoàn thành bài học đầu tiên', 'icon': Icons.school, 'color': Colors.blue, 'progress': 1.0},
-    {'title': 'Cún chăm chỉ', 'desc': 'Đăng nhập liên tiếp 7 ngày', 'icon': Icons.calendar_month, 'color': Colors.teal, 'progress': 0.7},
-    {'title': 'Xạ thủ tập sự', 'desc': 'Đúng 10 câu liên tiếp trong 1 bài', 'icon': Icons.gps_fixed, 'color': Colors.redAccent, 'progress': 0.5},
-    {'title': 'Bá chủ Hiragana', 'desc': 'Hoàn thành toàn bộ bảng Hiragana', 'icon': Icons.translate, 'color': Colors.purple, 'progress': 0.3},
+    {'title': 'Tân binh nhập môn', 'desc': 'Hoàn thành bài học đầu tiên', 'icon': Icons.school, 'color': Colors.blue, 'progress': 0.0},
+    {'title': 'Cún chăm chỉ', 'desc': 'Đăng nhập liên tiếp 7 ngày', 'icon': Icons.calendar_month, 'color': Colors.teal, 'progress': 0.0},
+    {'title': 'Xạ thủ tập sự', 'desc': 'Đúng 10 câu liên tiếp trong 1 bài', 'icon': Icons.gps_fixed, 'color': Colors.redAccent, 'progress': 0.0},
+    {'title': 'Bá chủ Hiragana', 'desc': 'Hoàn thành toàn bộ bảng Hiragana', 'icon': Icons.translate, 'color': Colors.purple, 'progress': 0.0},
     {'title': 'Katakana Master', 'desc': 'Hoàn thành toàn bộ bảng Katakana', 'icon': Icons.language, 'color': Colors.deepPurple, 'progress': 0.0},
     {'title': 'Cú đêm', 'desc': 'Hoàn thành bài học sau 12h đêm', 'icon': Icons.nightlight_round, 'color': Colors.indigo, 'progress': 0.0},
     {'title': 'Dậy sớm để thành công', 'desc': 'Hoàn thành bài học trước 6h sáng', 'icon': Icons.wb_sunny, 'color': Colors.orange, 'progress': 0.0},
     {'title': 'Tốc độ ánh sáng', 'desc': 'Hoàn thành bài học trong dưới 1 phút', 'icon': Icons.flash_on, 'color': Colors.yellow[700], 'progress': 0.0},
     {'title': 'Không lùi bước', 'desc': 'Sai 5 câu liên tiếp nhưng vẫn hoàn thành bài', 'icon': Icons.sentiment_very_dissatisfied, 'color': Colors.grey, 'progress': 0.0},
-    {'title': 'Vua từ vựng', 'desc': 'Học thuộc 50 từ vựng mới', 'icon': Icons.menu_book, 'color': Colors.green, 'progress': 0.2},
+    {'title': 'Vua từ vựng', 'desc': 'Học thuộc 50 từ vựng mới', 'icon': Icons.menu_book, 'color': Colors.green, 'progress': 0.0},
     {'title': 'Thánh ngữ pháp', 'desc': 'Hoàn thành 10 bài ngữ pháp', 'icon': Icons.spellcheck, 'color': Colors.brown, 'progress': 0.0},
     {'title': 'Đôi tai vàng', 'desc': 'Đạt điểm tuyệt đối bài nghe hiểu', 'icon': Icons.hearing, 'color': Colors.cyan, 'progress': 0.0},
-    {'title': 'Kanji Đại chiến', 'desc': 'Học xong 100 chữ Kanji N5', 'icon': Icons.edit_note, 'color': Colors.deepOrange, 'progress': 0.1},
-    {'title': 'Triệu phú EXP', 'desc': 'Đạt tổng cộng 1000 EXP', 'icon': Icons.bolt, 'color': Colors.amber, 'progress': 0.13},
+    {'title': 'Kanji Đại chiến', 'desc': 'Học xong 100 chữ Kanji N5', 'icon': Icons.edit_note, 'color': Colors.deepOrange, 'progress': 0.0},
+    {'title': 'Triệu phú EXP', 'desc': 'Đạt tổng cộng 1000 EXP', 'icon': Icons.bolt, 'color': Colors.amber, 'progress': 0.0},
     {'title': 'Bạn thân quốc dân', 'desc': 'Kết bạn với 5 người dùng khác', 'icon': Icons.group_add, 'color': Colors.pink, 'progress': 0.0},
-    {'title': 'Kẻ hủy diệt bài tập', 'desc': 'Làm xong 50 bài luyện tập', 'icon': Icons.fitness_center, 'color': Colors.black87, 'progress': 0.05},
+    {'title': 'Kẻ hủy diệt bài tập', 'desc': 'Làm xong 50 bài luyện tập', 'icon': Icons.fitness_center, 'color': Colors.black87, 'progress': 0.0},
     {'title': 'Bất khả chiến bại', 'desc': 'Đạt chuỗi 30 ngày học liên tiếp', 'icon': Icons.local_fire_department, 'color': Colors.red, 'progress': 0.0},
     {'title': 'Nhà thám hiểm', 'desc': 'Mở khóa tất cả các vùng đất', 'icon': Icons.map, 'color': Colors.greenAccent, 'progress': 0.0},
     {'title': 'Học bá', 'desc': 'Đứng top 1 bảng xếp hạng tuần', 'icon': Icons.emoji_events, 'color': Colors.amberAccent, 'progress': 0.0},
-    {'title': 'Huyền thoại', 'desc': 'Mở khóa toàn bộ danh hiệu', 'icon': Icons.diamond, 'color': Colors.blueAccent, 'progress': 0.05},
+    {'title': 'Huyền thoại', 'desc': 'Mở khóa toàn bộ danh hiệu', 'icon': Icons.diamond, 'color': Colors.blueAccent, 'progress': 0.0},
   ];
+
+  static List<Map<String, dynamic>> getCalculatedList({
+    required int exp,
+    required List<String> completedLessons,
+    required int masteredCount,
+  }) {
+    // 1. Tân binh nhập môn: Hoàn thành bài học đầu tiên
+    double p1 = completedLessons.isNotEmpty ? 1.0 : 0.0;
+
+    // 2. Cún chăm chỉ: Đăng nhập liên tiếp 7 ngày
+    double p2 = (completedLessons.length / 7.0).clamp(0.0, 1.0);
+
+    // 3. Xạ thủ tập sự: Đúng 10 câu liên tiếp trong 1 bài
+    double p3 = completedLessons.isNotEmpty ? 1.0 : 0.0;
+
+    // 4. Bá chủ Hiragana: Hoàn thành toàn bộ bảng Hiragana (11 bài học)
+    final alphabetKeys = [
+      'hang_a', 'hang_ka', 'hang_sa', 'hang_ta', 'hang_na',
+      'hang_ha', 'hang_ma', 'hang_ya', 'hang_ra', 'hang_wa', 'hang_all'
+    ];
+    int completedAlphabet = completedLessons.where((key) => alphabetKeys.contains(key)).length;
+    double p4 = alphabetKeys.isEmpty ? 0.0 : (completedAlphabet / alphabetKeys.length).clamp(0.0, 1.0);
+
+    // 5. Katakana Master: Hoàn thành toàn bộ bảng Katakana
+    double p5 = 0.0;
+
+    // 6. Cú đêm: 0.0
+    double p6 = 0.0;
+
+    // 7. Dậy sớm để thành công: 0.0
+    double p7 = 0.0;
+
+    // 8. Tốc độ ánh sáng: 0.0
+    double p8 = 0.0;
+
+    // 9. Không lùi bước: 0.0
+    double p9 = 0.0;
+
+    // 10. Vua từ vựng: Học thuộc 50 từ vựng mới
+    double p10 = (masteredCount / 50.0).clamp(0.0, 1.0);
+
+    // 11. Thánh ngữ pháp: Hoàn thành 10 bài ngữ pháp
+    int completedGrammar = completedLessons.where((key) => key.startsWith('cb') || key.contains('luyentap')).length;
+    double p11 = (completedGrammar / 10.0).clamp(0.0, 1.0);
+
+    // 12. Đôi tai vàng: 0.0
+    double p12 = 0.0;
+
+    // 13. Kanji Đại chiến: Học xong 100 chữ Kanji N5
+    double p13 = (masteredCount / 100.0).clamp(0.0, 1.0);
+
+    // 14. Triệu phú EXP: Đạt tổng cộng 1000 EXP
+    double p14 = (exp / 1000.0).clamp(0.0, 1.0);
+
+    // 15. Bạn thân quốc dân: 0.0
+    double p15 = 0.0;
+
+    // 16. Kẻ hủy diệt bài tập: Làm xong 50 bài luyện tập
+    double p16 = (completedLessons.length / 50.0).clamp(0.0, 1.0);
+
+    // 17. Bất khả chiến bại: 0.0
+    double p17 = 0.0;
+
+    // 18. Nhà thám hiểm: 0.0
+    double p18 = 0.0;
+
+    // 19. Học bá: 0.0
+    double p19 = 0.0;
+
+    List<Map<String, dynamic>> calculated = [
+      {...list[0], 'progress': p1},
+      {...list[1], 'progress': p2},
+      {...list[2], 'progress': p3},
+      {...list[3], 'progress': p4},
+      {...list[4], 'progress': p5},
+      {...list[5], 'progress': p6},
+      {...list[6], 'progress': p7},
+      {...list[7], 'progress': p8},
+      {...list[8], 'progress': p9},
+      {...list[9], 'progress': p10},
+      {...list[10], 'progress': p11},
+      {...list[11], 'progress': p12},
+      {...list[12], 'progress': p13},
+      {...list[13], 'progress': p14},
+      {...list[14], 'progress': p15},
+      {...list[15], 'progress': p16},
+      {...list[16], 'progress': p17},
+      {...list[17], 'progress': p18},
+      {...list[18], 'progress': p19},
+    ];
+
+    int completedCount = calculated.where((a) => (a['progress'] as double) >= 1.0).length;
+    double p20 = (completedCount / calculated.length).clamp(0.0, 1.0);
+
+    calculated.add({...list[19], 'progress': p20});
+    return calculated;
+  }
 }
 
 // ==========================================================
@@ -36,138 +135,168 @@ class AchievementsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 💡 SỬA Ở ĐÂY: Không code cứng danh sách nữa, mà gọi từ AchievementData.list
-    final List<Map<String, dynamic>> achievements = AchievementData.list;
+    return FutureBuilder<List<dynamic>>(
+      future: Future.wait([
+        UserProgress().getExp(),
+        UserProgress().getCompletedLessons(),
+        DatabaseHelper.instance.getMasteredCount(),
+      ]),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: Colors.white,
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasError) {
+          return const Scaffold(
+            backgroundColor: Colors.white,
+            body: Center(child: Text("Đã xảy ra lỗi khi tải dữ liệu")),
+          );
+        }
 
-    int unlockedCount = achievements.where((e) => e['progress'] >= 1.0).length;
+        final results = snapshot.data ?? [0, <String>[], 0];
+        final int exp = results[0] as int;
+        final List<String> completedLessons = results[1] as List<String>;
+        final int masteredCount = results[2] as int;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text("Danh hiệu", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          // 1. HEADER XANH
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF78C850), // Màu xanh lá chuẩn
-              borderRadius: BorderRadius.circular(20),
-              image: const DecorationImage(
-                image: AssetImage('assets/images/confetti_bg.png'),
-                fit: BoxFit.cover,
-                opacity: 0.1,
-              ),
+        final List<Map<String, dynamic>> achievements = AchievementData.getCalculatedList(
+          exp: exp,
+          completedLessons: completedLessons,
+          masteredCount: masteredCount,
+        );
+
+        int unlockedCount = achievements.where((e) => (e['progress'] as double) >= 1.0).length;
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
+              onPressed: () => Navigator.pop(context),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            title: const Text("Danh hiệu", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+            centerTitle: true,
+          ),
+          body: Column(
+            children: [
+              // 1. HEADER XANH
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF78C850), // Màu xanh lá chuẩn
+                  borderRadius: BorderRadius.circular(20),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/confetti_bg.png'),
+                    fit: BoxFit.cover,
+                    opacity: 0.1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Bạn đã đạt được", style: TextStyle(color: Colors.white70, fontSize: 14)),
-                    const SizedBox(height: 5),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(text: "$unlockedCount/${achievements.length}", style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
-                          const TextSpan(text: " Danh hiệu", style: TextStyle(fontSize: 16, color: Colors.white)),
-                        ],
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Bạn đã đạt được", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                        const SizedBox(height: 5),
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(text: "$unlockedCount/${achievements.length}", style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+                              const TextSpan(text: " Danh hiệu", style: TextStyle(fontSize: 16, color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Transform.rotate(
+                      angle: 0.2,
+                      child: const Icon(Icons.emoji_events, size: 80, color: Colors.amberAccent),
                     ),
                   ],
                 ),
-                Transform.rotate(
-                  angle: 0.2,
-                  child: const Icon(Icons.emoji_events, size: 80, color: Colors.amberAccent),
-                ),
-              ],
-            ),
-          ),
+              ),
 
-          // 2. LIST DANH HIỆU
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: achievements.length,
-              itemBuilder: (context, index) {
-                final item = achievements[index];
-                bool isUnlocked = item['progress'] >= 1.0;
+              // 2. LIST DANH HIỆU
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: achievements.length,
+                  itemBuilder: (context, index) {
+                    final item = achievements[index];
+                    bool isUnlocked = (item['progress'] as double) >= 1.0;
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    children: [
-                      // Icon bên trái
-                      Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          color: item['color'],
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Icon(
-                          item['icon'],
-                          color: Colors.white,
-                          size: 35,
-                        ),
-                      ),
-                      const SizedBox(width: 15),
-                      // Nội dung text
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['title'],
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: isUnlocked ? Colors.black87 : Colors.grey[600],
-                              ),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Row(
+                        children: [
+                          // Icon bên trái
+                          Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: item['color'],
+                              borderRadius: BorderRadius.circular(15),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              item['desc'],
-                              style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                            child: Icon(
+                              item['icon'],
+                              color: Colors.white,
+                              size: 35,
                             ),
-                            const SizedBox(height: 8),
-
-                            // Thanh tiến trình (Sửa lỗi minHeight bằng SizedBox)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: SizedBox(
-                                height: 6, // Quy định chiều cao thanh tiến trình
-                                child: LinearProgressIndicator(
-                                  value: item['progress'] == 0.0 ? 0.02 : item['progress'], // Tránh để trống hoàn toàn
-                                  backgroundColor: Colors.grey[200],
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      isUnlocked ? const Color(0xFF58CC02) : (item['color'] as Color).withOpacity(0.5)
+                          ),
+                          const SizedBox(width: 15),
+                          // Nội dung text
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item['title'],
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: isUnlocked ? Colors.black87 : Colors.grey[600],
                                   ),
                                 ),
-                              ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  item['desc'],
+                                  style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                                ),
+                                const SizedBox(height: 8),
+
+                                // Thanh tiến trình (Sửa lỗi minHeight bằng SizedBox)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: SizedBox(
+                                    height: 6, // Quy định chiều cao thanh tiến trình
+                                    child: LinearProgressIndicator(
+                                      value: (item['progress'] as double) == 0.0 ? 0.02 : (item['progress'] as double), // Tránh để trống hoàn toàn
+                                      backgroundColor: Colors.grey[200],
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          isUnlocked ? const Color(0xFF58CC02) : (item['color'] as Color).withOpacity(0.5)
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                );
-              },
-            ),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
