@@ -174,4 +174,25 @@ class UserProgress {
       }
     }
   }
+
+  // 7. Cập nhật tên hiển thị của người dùng
+  Future<void> updateDisplayName(String newName) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Cập nhật trên Firebase Auth
+      await user.updateDisplayName(newName);
+      await user.reload(); // Làm mới thông tin user cache local
+      
+      // Đồng bộ tên lên Firestore
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'name': newName,
+          'lastUpdated': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        print("Đã cập nhật tên hiển thị lên Firestore: $newName");
+      } catch (e) {
+        print("Lỗi đồng bộ tên lên Firestore: $e");
+      }
+    }
+  }
 }

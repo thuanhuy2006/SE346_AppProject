@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'user_progress.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -48,6 +49,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             _buildSectionContainer(
               children: [
+                _buildActionRow(
+                  "Đổi tên hiển thị",
+                  onTap: () => _showChangeNameDialog(context),
+                ),
+                const Divider(height: 1, color: Colors.grey),
                 _buildActionRow(
                   "Nhắc nhở học tập",
                   onTap: () => _showReminderDialog(context),
@@ -231,6 +237,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // --- POPUP ĐỔI TÊN HIỂN THỊ ---
+  void _showChangeNameDialog(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Vui lòng đăng nhập để đổi tên hiển thị!")),
+      );
+      return;
+    }
+
+    final controller = TextEditingController(
+      text: user.displayName ?? user.email?.split('@')[0] ?? "",
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            "Đổi tên hiển thị",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: TextField(
+            controller: controller,
+            maxLength: 20,
+            decoration: const InputDecoration(
+              hintText: "Nhập tên hiển thị mới",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("Hủy", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newName = controller.text.trim();
+                if (newName.isNotEmpty) {
+                  try {
+                    await UserProgress().updateDisplayName(newName);
+                    if (ctx.mounted) {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Đã cập nhật tên hiển thị!"),
+                        ),
+                      );
+                    }
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  } catch (e) {
+                    if (ctx.mounted) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        SnackBar(
+                          content: Text("Lỗi: $e"),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF78C850),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: const Text(
+                "Cập nhật",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
