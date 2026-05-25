@@ -3,7 +3,7 @@ import 'database_helper.dart';
 import 'sound_manager.dart';
 
 class VocabularyNotebookScreen extends StatefulWidget {
-  const VocabularyNotebookScreen({super.key});
+  const VocabularyNotebookScreen({Key? key}) : super(key: key);
 
   @override
   State<VocabularyNotebookScreen> createState() => _VocabularyNotebookScreenState();
