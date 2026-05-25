@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'sound_manager.dart';
-import 'user_progress.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -18,60 +17,33 @@ class _AuthScreenState extends State<AuthScreen> {
 
   // Hàm xử lý Authentication
   Future<void> _submit() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng nhập đầy đủ email và mật khẩu")),
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
     try {
       if (_isLogin) {
         // Đăng nhập
         await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email,
-          password: password,
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
+        SoundManager.instance.speakJapanese("Omedetou"); // Âm thanh vui
       } else {
         // Đăng ký
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
+        SoundManager.instance.speakJapanese("Omedetou");
       }
-
-      // Đồng bộ dữ liệu từ Firebase về máy sau khi đăng nhập thành công
-      await UserProgress().syncFromFirebase();
-
-      SoundManager.instance.speakJapanese("Omedetou");
-
       if (mounted) {
-        // Quay lại màn hình trước đó (Màn hình Profile)
-        Navigator.of(context).pop();
+        Navigator.pop(context);
       }
     } on FirebaseAuthException catch (e) {
       SoundManager.instance.vibrate('error');
-      String message = "Lỗi xác thực";
-      if (e.code == 'user-not-found') message = "Không tìm thấy người dùng";
-      else if (e.code == 'wrong-password') message = "Sai mật khẩu";
-      else if (e.code == 'email-already-in-use') message = "Email đã được sử dụng";
-      else if (e.code == 'invalid-email') message = "Email không hợp lệ";
-      else if (e.code == 'weak-password') message = "Mật khẩu quá yếu";
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.message ?? message),
+          content: Text(e.message ?? "Lỗi xác thực"),
           backgroundColor: Colors.red,
         ),
-      );
-    } catch (e) {
-      print("Lỗi không xác định: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Đã có lỗi xảy ra: $e"), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
