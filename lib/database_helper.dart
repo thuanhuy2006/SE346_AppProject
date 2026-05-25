@@ -18,13 +18,23 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 2, onCreate: _createDB, onUpgrade: _onUpgrade);
+    return await openDatabase(path, version: 3, onCreate: _createDB, onUpgrade: _onUpgrade);
   }
 
   // Xử lý nâng cấp DB khi thêm cột mới
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE vocabulary ADD COLUMN image_path TEXT');
+    }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE bookmarks (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          jp_word TEXT NOT NULL,
+          romaji TEXT,
+          meaning TEXT NOT NULL
+        )
+      ''');
     }
   }
 
@@ -45,7 +55,7 @@ class DatabaseHelper {
         reading TEXT NOT NULL,
         meaning TEXT NOT NULL,
         level TEXT NOT NULL,
-        image_path TEXT, -- Cột mới để lưu đường dẫn ảnh phân cấp
+        image_path TEXT,
         is_mastered INTEGER DEFAULT 0
       )
     ''');
@@ -67,6 +77,15 @@ class DatabaseHelper {
         ease_factor REAL DEFAULT 2.5
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE bookmarks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        jp_word TEXT NOT NULL,
+        romaji TEXT,
+        meaning TEXT NOT NULL
+      )
+    ''');
   }
 
   // --- HÀM NẠP DỮ LIỆU THẬT VỚI ĐƯỜNG DẪN ẢNH PHÂN CẤP ---
@@ -79,7 +98,7 @@ class DatabaseHelper {
         'reading': 'Neko', 
         'meaning': 'Con mèo', 
         'level': 'N5',
-        'image_path': 'assets/images/N5/example_neko.png' // Ảnh nằm trong folder N5
+        'image_path': 'assets/images/N5/example_neko.png'
       },
       {
         'word': '車', 
@@ -105,7 +124,7 @@ class DatabaseHelper {
         'reading': 'Umi', 
         'meaning': 'Biển', 
         'level': 'N4',
-        'image_path': 'assets/images/N4/example_umi.png' // Ảnh nằm trong folder N4
+        'image_path': 'assets/images/N4/example_umi.png'
       },
     ];
 
@@ -139,6 +158,35 @@ class DatabaseHelper {
         'next_review_date': nextDate,
         'interval': result['interval'],
         'ease_factor': result['easeFactor']
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<int> getMasteredCount() async {
+    final db = await instance.database;
+    final result = await db.rawQuery('SELECT COUNT(*) FROM vocabulary WHERE is_mastered = 1');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllBookmarks() async {
+    final db = await instance.database;
+    return await db.query('bookmarks');
+  }
+
+  Future<void> removeBookmark(String jpWord) async {
+    final db = await instance.database;
+    await db.delete('bookmarks', where: 'jp_word = ?', whereArgs: [jpWord]);
+  }
+
+  Future<void> addBookmark(String jpWord, String romaji, String meaning) async {
+    final db = await instance.database;
+    await db.insert(
+      'bookmarks',
+      {
+        'jp_word': jpWord,
+        'romaji': romaji,
+        'meaning': meaning,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
