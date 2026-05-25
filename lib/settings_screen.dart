@@ -17,7 +17,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5), // Nền xám nhạt
       appBar: AppBar(
-        backgroundColor: const Color(0xFF78C850), // Xanh lá header
+        backgroundColor: const Color(0xFF3366FF), // Xanh dương header
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
@@ -90,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF78C850))),
+          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF3366FF))),
         ],
       ),
     );
@@ -104,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF78C850))), // Chữ xanh
+            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF3366FF))), // Chữ xanh
             const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
           ],
         ),
@@ -127,7 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF78C850), // Màu nền xanh lá
+                  color: const Color(0xFF3366FF), // Màu nền xanh dương
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
@@ -191,7 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                         ),
-                        child: const Text("Lưu", style: TextStyle(color: Color(0xFF78C850), fontWeight: FontWeight.bold, fontSize: 16)),
+                        child: const Text("Lưu", style: TextStyle(color: Color(0xFF3366FF), fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),
 
@@ -308,7 +308,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF78C850),
+                backgroundColor: const Color(0xFF3366FF),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),

@@ -792,7 +792,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF78C850),
+                backgroundColor: kPrimaryBlue,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -1025,7 +1025,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final List<Map<String, dynamic>> menuItems = [
       {
         'icon': Icons.trending_up,
-        'label': 'Tiến độ học',
+        'label': 'Tiến độ',
         'color': Colors.amber,
         'bg': 0xFFFFF8E1,
       },
@@ -1049,101 +1049,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: menuItems.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.35,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12.withOpacity(0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      itemBuilder: (context, index) {
-        final item = menuItems[index];
-        return GestureDetector(
-          onTap: () {
-            // 3. Thêm tính năng cuộn xuống Biểu đồ tiến độ
-            if (item['label'] == 'Tiến độ học') {
-              if (_progressChartKey.currentContext != null) {
-                Scrollable.ensureVisible(
-                  _progressChartKey.currentContext!,
-                  duration: const Duration(
-                    milliseconds: 600,
-                  ), // Thời gian cuộn 0.6s
-                  curve: Curves.easeInOut, // Hiệu ứng cuộn mềm mại
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: menuItems.map((item) {
+          return GestureDetector(
+            onTap: () {
+              if (item['label'] == 'Tiến độ') {
+                if (_progressChartKey.currentContext != null) {
+                  Scrollable.ensureVisible(
+                    _progressChartKey.currentContext!,
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              } else if (item['label'] == 'Danh hiệu') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AchievementsScreen()),
+                );
+              } else if (item['label'] == 'Mẹo học') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TipsScreen()),
+                ).then((_) => _refreshTips());
+              } else if (item['label'] == 'Cài đặt') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
                 );
               }
-            } else if (item['label'] == 'Danh hiệu') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AchievementsScreen(),
-                ),
-              );
-            } else if (item['label'] == 'Mẹo học') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TipsScreen()),
-              ).then((_) {
-                _refreshTips();
-              });
-            } else if (item['label'] == 'Cài đặt') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Tính năng ${item['label']} đang phát triển!"),
-                ),
-              );
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12.withOpacity(0.06),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 46,
-                  height: 46,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
                     color: Color(item['bg']),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(item['icon'], color: item['color'], size: 24),
+                  child: Icon(item['icon'], color: item['color'], size: 26),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    item['label'],
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 8),
+                Text(
+                  item['label'],
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-          ),
-        );
-      },
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -1320,7 +1294,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           duration: const Duration(milliseconds: 500),
                           height: 4,
                           width: activeWidth,
-                          color: const Color(0xFF8BC34A),
+                          color: kPrimaryBlue,
                         ),
                       ),
                       Row(
@@ -1332,7 +1306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: 20,
                             decoration: BoxDecoration(
                               color: isAchieved
-                                  ? const Color(0xFF8BC34A)
+                                  ? kPrimaryBlue
                                   : Colors.grey.shade200,
                               shape: BoxShape.circle,
                               border: isAchieved
@@ -1465,7 +1439,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     );
                   },
                   style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFFF1F8E9),
+                    backgroundColor: const Color(0xFFE3F2FD),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -1475,7 +1449,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF58CC02),
+                      color: kPrimaryBlue,
                     ),
                   ),
                 ),
@@ -1622,9 +1596,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF66BB6A),
+                  color: kPrimaryBlue,
                   decoration: TextDecoration.underline,
-                  decorationColor: Color(0xFF66BB6A),
+                  decorationColor: kPrimaryBlue,
                 ),
               ),
             ),
