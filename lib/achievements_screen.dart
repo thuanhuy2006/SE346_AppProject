@@ -188,7 +188,7 @@ class AchievementsScreen extends StatelessWidget {
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF78C850), // Màu xanh lá chuẩn
+                  color: const Color(0xFF3366FF), // Màu xanh dương chuẩn
                   borderRadius: BorderRadius.circular(20),
                   image: const DecorationImage(
                     image: AssetImage('assets/images/confetti_bg.png'),
@@ -279,7 +279,7 @@ class AchievementsScreen extends StatelessWidget {
                                       value: (item['progress'] as double) == 0.0 ? 0.02 : (item['progress'] as double), // Tránh để trống hoàn toàn
                                       backgroundColor: Colors.grey[200],
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                          isUnlocked ? const Color(0xFF58CC02) : (item['color'] as Color).withOpacity(0.5)
+                                          isUnlocked ? const Color(0xFF3366FF) : (item['color'] as Color).withOpacity(0.5)
                                       ),
                                     ),
                                   ),
