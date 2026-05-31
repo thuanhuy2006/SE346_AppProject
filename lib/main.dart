@@ -16,6 +16,7 @@ import 'tips_screen.dart';
 import 'vocabulary_notebook_screen.dart';
 import 'reading_practice_screen.dart';
 import 'listening_practice_screen.dart';
+import 'forum_screen.dart';
 
 const Color kPrimaryBlue = Color(0xFF3366FF);
 const Color kAccentCyan = Color(0xFF56CCF2);
@@ -144,6 +145,7 @@ class _MainScreenState extends State<MainScreen> {
   late final List<Widget> _screens = [
     SummonerHomePage(activeTabNotifier: _activeTabNotifier),
     const AlphabetScreen(),
+    const ForumScreen(),
     LeaderboardScreen(activeTabNotifier: _activeTabNotifier),
     ProfileScreen(activeTabNotifier: _activeTabNotifier),
   ];
@@ -237,6 +239,11 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
                     label: "Chữ cái",
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.forum),
+                    activeIcon: Icon(Icons.forum, size: 30),
+                    label: "Diễn đàn",
                   ),
                   const BottomNavigationBarItem(
                     icon: Icon(Icons.emoji_events),
