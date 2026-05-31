@@ -14,6 +14,7 @@ import 'leaderboard_screen.dart';
 import 'settings_screen.dart';
 import 'tips_screen.dart';
 import 'vocabulary_notebook_screen.dart';
+import 'reading_practice_screen.dart';
 
 const Color kPrimaryBlue = Color(0xFF3366FF);
 const Color kAccentCyan = Color(0xFF56CCF2);
@@ -3286,14 +3287,22 @@ class CourseSelectionPopup extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 children: [
-                  _buildMainJLPTCard(context), // Đã sửa: Truyền context vào đây
+                  _buildMainJLPTCard(context),
                   const SizedBox(height: 16),
-                  _buildExtraCourseCard(
-                    title: 'Luyện đọc',
-                    subtitle: '56 bài',
-                    bgColor: const Color(0xFFF3E5F5),
-                    iconData: Icons.menu_book_rounded,
-                    iconColor: Colors.purple,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ReadingPracticeScreen()),
+                      );
+                    },
+                    child: _buildExtraCourseCard(
+                      title: 'Luyện đọc',
+                      subtitle: '25 bài',
+                      bgColor: const Color(0xFFF3E5F5),
+                      iconData: Icons.menu_book_rounded,
+                      iconColor: Colors.purple,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   _buildExtraCourseCard(
