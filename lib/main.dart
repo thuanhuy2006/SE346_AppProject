@@ -15,6 +15,7 @@ import 'settings_screen.dart';
 import 'tips_screen.dart';
 import 'vocabulary_notebook_screen.dart';
 import 'reading_practice_screen.dart';
+import 'listening_practice_screen.dart';
 
 const Color kPrimaryBlue = Color(0xFF3366FF);
 const Color kAccentCyan = Color(0xFF56CCF2);
@@ -3305,12 +3306,20 @@ class CourseSelectionPopup extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildExtraCourseCard(
-                    title: 'Luyện nói',
-                    subtitle: '93 bài',
-                    bgColor: const Color(0xFFFFEBEE),
-                    iconData: Icons.record_voice_over_rounded,
-                    iconColor: Colors.redAccent,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ListeningPracticeScreen()),
+                      );
+                    },
+                    child: _buildExtraCourseCard(
+                      title: 'Luyện nghe',
+                      subtitle: '48 bài',
+                      bgColor: const Color(0xFFFFEBEE),
+                      iconData: Icons.headphones_rounded,
+                      iconColor: Colors.redAccent,
+                    ),
                   ),
                   const SizedBox(height: 32),
                 ],

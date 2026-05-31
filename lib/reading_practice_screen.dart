@@ -89,11 +89,14 @@ class LevelReadingList extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(20),
             onTap: () {
-              if (level == "N5" && index == 0) {
+              if (level == "N5" && (index == 0 || index == 1)) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ReadingDetailScreen(title: lesson['title']!),
+                    builder: (context) => ReadingDetailScreen(
+                      title: lesson['title']!,
+                      lessonIndex: index + 1,
+                    ),
                   ),
                 );
               } else {
