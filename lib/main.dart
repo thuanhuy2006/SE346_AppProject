@@ -1,15 +1,16 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 import 'dart:math';
-import 'sound_manager.dart';
-import 'recognition_manager.dart';
 import 'dart:ui' as ui;
-import 'lesson_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'auth_screen.dart';
-import 'achievements_screen.dart';
-import 'user_progress.dart';
+import 'sound_manager.dart';
+import 'recognition_manager.dart';
 import 'database_helper.dart';
+import 'user_progress.dart';
+import 'lesson_screen.dart';
+import 'achievements_screen.dart';
 import 'leaderboard_screen.dart';
 import 'settings_screen.dart';
 import 'tips_screen.dart';
@@ -17,6 +18,10 @@ import 'vocabulary_notebook_screen.dart';
 import 'reading_practice_screen.dart';
 import 'listening_practice_screen.dart';
 import 'forum_screen.dart';
+import 'package:cloudinary_url_gen/cloudinary.dart';
+import 'package:cloudinary_flutter/cloudinary_context.dart';
+import 'package:cloudinary_flutter/image/cld_image.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 const Color kPrimaryBlue = Color(0xFF3366FF);
 const Color kAccentCyan = Color(0xFF56CCF2);
@@ -25,10 +30,11 @@ const Color kSurfaceWhite = Color(0xFFFFFFFF);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp();
   await RecognitionManager.instance.checkAndDownloadModel();
 
-  // Đồng bộ tiến độ từ Firebase khi khởi động (nếu đã đăng nhập)
+  CloudinaryContext.cloudinary = Cloudinary.fromCloudName(cloudName: dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? "",);
   final user = FirebaseAuth.instance.currentUser;
   if (user != null) {
     try {
@@ -39,6 +45,26 @@ void main() async {
   }
 
   runApp(const MyApp());
+}
+
+// Màn hình hiển thị ảnh Cloudinary của bạn
+class ImageDisplayScreen extends StatelessWidget {
+  const ImageDisplayScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Cloudinary Image")),
+      body: Center(
+        child: CldImageWidget(
+          publicId: "sample", // Tên ID ảnh trên Cloudinary của bạn
+          width: 300,
+          height: 300,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -58,7 +84,7 @@ class MyApp extends StatelessWidget {
           seedColor: kPrimaryBlue,
           primary: kPrimaryBlue,
           secondary: kAccentCyan,
-          background: kSoftBackground,
+          // Đã sửa: Cập nhật đúng chuẩn Material 3 thay vì dùng thuộc tính cũ lỗi thời
           surface: kSurfaceWhite,
         ),
         appBarTheme: const AppBarTheme(
@@ -148,6 +174,7 @@ class _MainScreenState extends State<MainScreen> {
     const ForumScreen(),
     LeaderboardScreen(activeTabNotifier: _activeTabNotifier),
     ProfileScreen(activeTabNotifier: _activeTabNotifier),
+    const ImageDisplayScreen(),
   ];
 
   @override

@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Chặn các file chứa biến môi trường cấu hình ứng dụng
+.env
