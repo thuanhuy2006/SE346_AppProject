@@ -46,3 +46,4 @@ app.*.map.json
 
 # Chặn các file chứa biến môi trường cấu hình ứng dụng
 .env
+android/app/google-services.json
