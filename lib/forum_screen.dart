@@ -10,6 +10,16 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 // ==========================================================
+// HÀM LẤY CHỮ CÁI ĐẦU TIÊN CỦA TÊN ĐỂ LÀM AVATAR AN TOÀN
+// ==========================================================
+String _getAvatarInitial(String? name) {
+  if (name == null || name.trim().isEmpty) {
+    return "?";
+  }
+  return name.trim()[0].toUpperCase();
+}
+
+// ==========================================================
 // HÀM UPLOAD TOÀN CỤC (GLOBAL FUNCTION) ĐỂ CẢ 2 SCREEN ĐỀU DÙNG ĐƯỢC
 // ==========================================================
 Future<String?> _uploadImage(File file) async {
@@ -169,7 +179,7 @@ class _ForumScreenState extends State<ForumScreen> {
                         width: 120,
                         height: 45,
                         child: ElevatedButton(
-                          onPressed: _isUploading ? null : _submitPost,
+                          onPressed: _isUploading ? null : () => _submitPost(setModalState),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: kPrimaryBlue,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -190,19 +200,46 @@ class _ForumScreenState extends State<ForumScreen> {
     );
   }
 
-  Future<void> _submitPost() async {
+  Future<void> _submitPost(StateSetter setModalState) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     final content = _postController.text.trim();
     if (content.isEmpty && _imageFile == null) return;
 
+    setModalState(() => _isUploading = true);
     setState(() => _isUploading = true);
     try {
       String? uploadedUrl;
       if (_imageFile != null) uploadedUrl = await _uploadImage(_imageFile!);
+
+      String authorName = "Người dùng";
+      try {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (doc.exists && doc.data() != null) {
+          final name = doc.data()!['name'] as String?;
+          if (name != null && name.trim().isNotEmpty) {
+            authorName = name.trim();
+          }
+        }
+      } catch (e) {
+        print("Lỗi lấy tên người dùng từ Firestore: $e");
+      }
+
+      if (authorName == "Người dùng" || authorName.isEmpty) {
+        final authName = user.displayName;
+        if (authName != null && authName.trim().isNotEmpty) {
+          authorName = authName.trim();
+        } else {
+          final email = user.email;
+          if (email != null && email.trim().isNotEmpty) {
+            authorName = email.split('@')[0];
+          }
+        }
+      }
+
       await FirebaseFirestore.instance.collection('forum_posts').add({
         'authorId': user.uid,
-        'authorName': user.displayName ?? user.email?.split('@')[0] ?? "Người dùng",
+        'authorName': authorName,
         'content': content,
         'imageUrl': uploadedUrl,
         'timestamp': FieldValue.serverTimestamp(),
@@ -217,7 +254,10 @@ class _ForumScreenState extends State<ForumScreen> {
     } catch (e) {
       print("Lỗi đăng bài: $e");
     } finally {
-      if (mounted) setState(() => _isUploading = false);
+      if (mounted) {
+        setModalState(() => _isUploading = false);
+        setState(() => _isUploading = false);
+      }
     }
   }
 
@@ -246,8 +286,8 @@ class _ForumScreenState extends State<ForumScreen> {
   }
 
   Widget _buildPostCard(String postId, Map<String, dynamic> post) {
-    final DateTime? date = (post['timestamp'] as Timestamp?)?.toDate();
-    final String formattedDate = date != null ? DateFormat('HH:mm dd/MM/yyyy').format(date) : "...";
+    final DateTime date = (post['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now();
+    final String formattedDate = DateFormat('HH:mm dd/MM/yyyy').format(date);
     final user = FirebaseAuth.instance.currentUser;
     final List likes = post['likes'] ?? [];
     final bool isLiked = user != null && likes.contains(user.uid);
@@ -261,9 +301,28 @@ class _ForumScreenState extends State<ForumScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(backgroundColor: kPrimaryBlue.withOpacity(0.1), child: Text(post['authorName'][0].toUpperCase(), style: const TextStyle(color: kPrimaryBlue, fontWeight: FontWeight.bold))),
+              CircleAvatar(
+                backgroundColor: kPrimaryBlue.withOpacity(0.1), 
+                child: Text(
+                  _getAvatarInitial(post['authorName']), 
+                  style: const TextStyle(color: kPrimaryBlue, fontWeight: FontWeight.bold)
+                )
+              ),
               const SizedBox(width: 12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(post['authorName'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), Text(formattedDate, style: const TextStyle(color: Colors.grey, fontSize: 12))])),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start, 
+                  children: [
+                    Text(
+                      (post['authorName'] != null && post['authorName'].toString().trim().isNotEmpty) 
+                          ? post['authorName'] 
+                          : "Người dùng", 
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                    ), 
+                    Text(formattedDate, style: const TextStyle(color: Colors.grey, fontSize: 12))
+                  ]
+                )
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -364,9 +423,35 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       if (_commentImageFile != null) {
         url = await _uploadImage(_commentImageFile!);
       }
+
+      String authorName = "Người dùng";
+      try {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (doc.exists && doc.data() != null) {
+          final name = doc.data()!['name'] as String?;
+          if (name != null && name.trim().isNotEmpty) {
+            authorName = name.trim();
+          }
+        }
+      } catch (e) {
+        print("Lỗi lấy tên bình luận từ Firestore: $e");
+      }
+
+      if (authorName == "Người dùng" || authorName.isEmpty) {
+        final authName = user.displayName;
+        if (authName != null && authName.trim().isNotEmpty) {
+          authorName = authName.trim();
+        } else {
+          final email = user.email;
+          if (email != null && email.trim().isNotEmpty) {
+            authorName = email.split('@')[0];
+          }
+        }
+      }
+
       await FirebaseFirestore.instance.collection('forum_posts').doc(widget.postId).collection('comments').add({
         'authorId': user.uid,
-        'authorName': user.displayName ?? user.email?.split('@')[0] ?? "Người dùng",
+        'authorName': authorName,
         'content': content,
         'imageUrl': url,
         'parentId': _replyToCommentId,
@@ -395,7 +480,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(children: [CircleAvatar(child: Text(widget.post['authorName'][0].toUpperCase())), const SizedBox(width: 12), Text(widget.post['authorName'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18))]),
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              child: Text(_getAvatarInitial(widget.post['authorName']))
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              (widget.post['authorName'] != null && widget.post['authorName'].toString().trim().isNotEmpty)
+                                  ? widget.post['authorName']
+                                  : "Người dùng",
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
+                            )
+                          ]
+                        ),
                         const SizedBox(height: 12),
                         Text(widget.post['content'], style: const TextStyle(fontSize: 16)),
 
@@ -471,7 +569,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(radius: isReply ? 14 : 18, child: Text(comment['authorName'][0].toUpperCase())),
+          CircleAvatar(
+            radius: isReply ? 14 : 18, 
+            child: Text(_getAvatarInitial(comment['authorName']))
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -483,7 +584,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(children: [Text(comment['authorName'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), if (comment['replyToName'] != null) ...[const Icon(Icons.arrow_right, size: 16, color: Colors.grey), Text(comment['replyToName'], style: const TextStyle(color: kPrimaryBlue, fontSize: 12, fontWeight: FontWeight.bold))]]),
+                      Row(
+                        children: [
+                          Text(
+                            (comment['authorName'] != null && comment['authorName'].toString().trim().isNotEmpty)
+                                ? comment['authorName']
+                                : "Người dùng", 
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)
+                          ), 
+                          if (comment['replyToName'] != null) ...[
+                            const Icon(Icons.arrow_right, size: 16, color: Colors.grey), 
+                            Text(comment['replyToName'], style: const TextStyle(color: kPrimaryBlue, fontSize: 12, fontWeight: FontWeight.bold))
+                          ]
+                        ]
+                      ),
                       const SizedBox(height: 4),
                       Text(comment['content'] ?? ""),
 
