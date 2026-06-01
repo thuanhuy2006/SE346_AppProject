@@ -2,11 +2,50 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'main.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+// ==========================================================
+// HÀM UPLOAD TOÀN CỤC (GLOBAL FUNCTION) ĐỂ CẢ 2 SCREEN ĐỀU DÙNG ĐƯỢC
+// ==========================================================
+Future<String?> _uploadImage(File file) async {
+  try {
+    final String cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? "";
+    final String uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'] ?? "";
+
+    if (cloudName.isEmpty || uploadPreset.isEmpty) {
+      print("Lỗi: Chưa cấu hình Cloudinary trong file .env");
+      return null;
+    }
+
+    final uri = Uri.parse("https://api.cloudinary.com/v1_1/$cloudName/image/upload");
+    final request = http.MultipartRequest("POST", uri);
+
+    request.files.add(await http.MultipartFile.fromPath('file', file.path));
+    request.fields['upload_preset'] = uploadPreset;
+
+    final response = await request.send();
+    if (response.statusCode == 200) {
+      final responseData = await response.stream.bytesToString();
+      final jsonResponse = jsonDecode(responseData);
+      return jsonResponse['secure_url'] as String;
+    } else {
+      print("Cloudinary Upload thất bại với mã lỗi: ${response.statusCode}");
+      return null;
+    }
+  } catch (e) {
+    print("Lỗi kết nối khi upload ảnh lên Cloudinary: $e");
+    return null;
+  }
+}
+
+// ==========================================================
+// MÀN HÌNH DIỄN ĐÀN (DANH SÁCH BÀI VIẾT)
+// ==========================================================
 class ForumScreen extends StatefulWidget {
   const ForumScreen({super.key});
 
@@ -151,18 +190,6 @@ class _ForumScreenState extends State<ForumScreen> {
     );
   }
 
-  Future<String?> _uploadImage(File file, String folder) async {
-    try {
-      final fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      final ref = FirebaseStorage.instance.ref().child(folder).child(fileName);
-      final uploadTask = await ref.putFile(file);
-      return await uploadTask.ref.getDownloadURL();
-    } catch (e) {
-      print("Lỗi upload ảnh: $e");
-      return null;
-    }
-  }
-
   Future<void> _submitPost() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -172,7 +199,7 @@ class _ForumScreenState extends State<ForumScreen> {
     setState(() => _isUploading = true);
     try {
       String? uploadedUrl;
-      if (_imageFile != null) uploadedUrl = await _uploadImage(_imageFile!, 'forum_posts');
+      if (_imageFile != null) uploadedUrl = await _uploadImage(_imageFile!);
       await FirebaseFirestore.instance.collection('forum_posts').add({
         'authorId': user.uid,
         'authorName': user.displayName ?? user.email?.split('@')[0] ?? "Người dùng",
@@ -241,7 +268,23 @@ class _ForumScreenState extends State<ForumScreen> {
           ),
           const SizedBox(height: 12),
           Text(post['content'], style: const TextStyle(fontSize: 15, height: 1.5)),
-          if (post['imageUrl'] != null) Padding(padding: const EdgeInsets.only(top: 12), child: ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(post['imageUrl'], width: double.infinity, fit: BoxFit.cover))),
+
+          // ĐÃ SỬA: Bẫy điều kiện hiển thị ảnh bài viết an toàn hơn
+          if (post['imageUrl'] != null && post['imageUrl'].toString().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  post['imageUrl'],
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                )
+              )
+            ),
+
           const SizedBox(height: 16),
           const Divider(),
           Row(
@@ -272,6 +315,9 @@ class _ForumScreenState extends State<ForumScreen> {
   }
 }
 
+// ==========================================================
+// MÀN HÌNH CHI TIẾT BÀI VIẾT & BÌNH LUẬN
+// ==========================================================
 class PostDetailScreen extends StatefulWidget {
   final String postId;
   final Map<String, dynamic> post;
@@ -314,11 +360,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     setState(() => _isUploading = true);
     try {
       String? url;
+      // ĐÃ SỬA: Gọi trực tiếp hàm _uploadImage toàn cục lên Cloudinary
       if (_commentImageFile != null) {
-        final fileName = DateTime.now().millisecondsSinceEpoch.toString();
-        final ref = FirebaseStorage.instance.ref().child('comment_images').child(fileName);
-        await ref.putFile(_commentImageFile!);
-        url = await ref.getDownloadURL();
+        url = await _uploadImage(_commentImageFile!);
       }
       await FirebaseFirestore.instance.collection('forum_posts').doc(widget.postId).collection('comments').add({
         'authorId': user.uid,
@@ -354,7 +398,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         Row(children: [CircleAvatar(child: Text(widget.post['authorName'][0].toUpperCase())), const SizedBox(width: 12), Text(widget.post['authorName'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18))]),
                         const SizedBox(height: 12),
                         Text(widget.post['content'], style: const TextStyle(fontSize: 16)),
-                        if (widget.post['imageUrl'] != null) Padding(padding: const EdgeInsets.only(top: 12), child: ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(widget.post['imageUrl']))),
+
+                        // ĐÃ SỬA: Kiểm tra an toàn cho ảnh bài viết gốc trong view chi tiết
+                        if (widget.post['imageUrl'] != null && widget.post['imageUrl'].toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                widget.post['imageUrl'],
+                                width: double.infinity,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                              )
+                            )
+                          ),
+
                         const SizedBox(height: 16),
                         const Divider(),
                         const Text("Tất cả bình luận", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
@@ -427,7 +486,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       Row(children: [Text(comment['authorName'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), if (comment['replyToName'] != null) ...[const Icon(Icons.arrow_right, size: 16, color: Colors.grey), Text(comment['replyToName'], style: const TextStyle(color: kPrimaryBlue, fontSize: 12, fontWeight: FontWeight.bold))]]),
                       const SizedBox(height: 4),
                       Text(comment['content'] ?? ""),
-                      if (comment['imageUrl'] != null) Padding(padding: const EdgeInsets.only(top: 8), child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network(comment['imageUrl']))),
+
+                      // ĐÃ SỬA: Kiểm tra an toàn cho ảnh nằm trong bình luận
+                      if (comment['imageUrl'] != null && comment['imageUrl'].toString().isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              comment['imageUrl'],
+                              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                            )
+                          )
+                        ),
                     ],
                   ),
                 ),
