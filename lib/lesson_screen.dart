@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'recognition_manager.dart';
 import 'sound_manager.dart';
 import 'user_progress.dart';
@@ -53,6 +54,7 @@ class _LessonScreenState extends State<LessonScreen> {
   void initState() {
     super.initState();
     _loadLessonData();
+    _fetchFirestoreLessonData();
     bool isAudioDisabled =
         LessonScreen.audioDisabledUntil != null &&
         DateTime.now().isBefore(LessonScreen.audioDisabledUntil!);
@@ -77,6 +79,62 @@ class _LessonScreenState extends State<LessonScreen> {
         .length;
 
     _playCurrentAudio();
+  }
+
+  Future<void> _fetchFirestoreLessonData() async {
+    try {
+      final docId = widget.lessonId;
+      final snapshot = await FirebaseFirestore.instance
+          .collection('jlpt_lessons')
+          .doc(docId)
+          .collection('activities')
+          .orderBy('order')
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final List<Map<String, dynamic>> tempActivities = [];
+        for (var doc in snapshot.docs) {
+          final data = doc.data();
+          final typeStr = data['type'] ?? 'vocabListIntro';
+          LessonType typeEnum = LessonType.vocabListIntro;
+          
+          for (var t in LessonType.values) {
+            if (t.toString().split('.').last == typeStr) {
+              typeEnum = t;
+              break;
+            }
+          }
+
+          final Map<String, dynamic> act = {
+            'type': typeEnum,
+            ...data,
+          };
+          tempActivities.add(act);
+        }
+
+        if (mounted) {
+          setState(() {
+            _activities = tempActivities;
+            _totalQuizCount = _activities
+                .where(
+                  (e) =>
+                      e['type'] == LessonType.quiz ||
+                      e['type'] == LessonType.matching ||
+                      e['type'] == LessonType.imageQuiz ||
+                      e['type'] == LessonType.sentenceBuilder ||
+                      e['type'] == LessonType.listening ||
+                      e['type'] == LessonType.vocabQuiz,
+                )
+                .length;
+            _currentIndex = 0;
+            _progress = 0;
+          });
+          _playCurrentAudio();
+        }
+      }
+    } catch (e) {
+      print("Lỗi tải bài học từ Firestore: $e");
+    }
   }
 
   void _playCurrentAudio() async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_progress.dart';
 
 class ReadingDetailScreen extends StatefulWidget {
@@ -17,10 +18,59 @@ class _ReadingDetailScreenState extends State<ReadingDetailScreen> {
 
   late List<Map<String, dynamic>> _lessonData;
 
+  bool _isLoadingFirestore = false;
+
   @override
   void initState() {
     super.initState();
     _loadData();
+    _fetchFirestoreReadingData();
+  }
+
+  Future<void> _fetchFirestoreReadingData() async {
+    setState(() => _isLoadingFirestore = true);
+    try {
+      final String readDocId = "reading_lesson_${widget.title.replaceAll(' ', '_')}";
+      final snapshot = await FirebaseFirestore.instance
+          .collection('reading_lessons')
+          .doc(readDocId)
+          .collection('parts')
+          .orderBy('partOrder')
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final List<Map<String, dynamic>> tempParts = [];
+        for (var doc in snapshot.docs) {
+          final data = doc.data();
+          if (data['type'] == 'instruction') {
+            tempParts.add({
+              'type': 'instruction',
+              'text': data['text'] ?? '',
+            });
+          } else {
+            tempParts.add({
+              'type': 'question',
+              'id': data['id'] ?? 1,
+              'passage': data['passage'] ?? '',
+              'question': data['question'] ?? '',
+              'options': List<String>.from(data['options'] ?? []),
+              'correct': data['correct'] ?? 'A',
+              'explanation': data['explanation'] ?? '',
+            });
+          }
+        }
+
+        setState(() {
+          _lessonData = tempParts;
+        });
+      }
+    } catch (e) {
+      print("Lỗi tải bài đọc từ Firestore: $e");
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingFirestore = false);
+      }
+    }
   }
 
   void _loadData() {
@@ -197,6 +247,11 @@ class _ReadingDetailScreenState extends State<ReadingDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingFirestore) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF3366FF))),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(

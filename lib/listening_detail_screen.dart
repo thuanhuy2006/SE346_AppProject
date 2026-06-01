@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_progress.dart';
 
 class ListeningDetailScreen extends StatefulWidget {
@@ -199,15 +200,76 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
     }
   ];
 
+  bool _isLoadingFirestore = false;
+  String _activeAudioAsset = "";
+
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset(widget.audioAsset)
-      ..initialize().then((_) {
+    _activeAudioAsset = widget.audioAsset;
+    _initializeListeningLesson();
+  }
+
+  Future<void> _initializeListeningLesson() async {
+    setState(() => _isLoadingFirestore = true);
+    try {
+      final String listenDocId = "listening_lesson_${widget.title.replaceAll(' ', '_')}";
+      final lessonDoc = await FirebaseFirestore.instance.collection('listening_lessons').doc(listenDocId).get();
+      if (lessonDoc.exists) {
+        final lessonData = lessonDoc.data();
+        if (lessonData != null && lessonData['audioAsset'] != null && lessonData['audioAsset'].toString().isNotEmpty) {
+          _activeAudioAsset = lessonData['audioAsset'];
+        }
+      }
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('listening_lessons')
+          .doc(listenDocId)
+          .collection('questions')
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final List<Map<String, dynamic>> tempQuestions = [];
+        for (var doc in snapshot.docs) {
+          final data = doc.data();
+          tempQuestions.add({
+            'id': data['id'] ?? 1,
+            'q_image': data['q_image'] != null && data['q_image'].toString().isNotEmpty ? data['q_image'] : null,
+            'options': List<String>.from(data['options'] ?? []),
+            'correct': data['correct'] ?? 'A',
+            'explanation': data['explanation'] ?? '',
+          });
+        }
+        
+        tempQuestions.sort((a, b) => (a['id'] as int).compareTo(b['id'] as int));
+        
+        setState(() {
+          _questions.clear();
+          _questions.addAll(tempQuestions);
+        });
+      }
+    } catch (e) {
+      print("Lỗi tải câu hỏi nghe từ Firestore: $e");
+    }
+
+    final isNetwork = _activeAudioAsset.startsWith('http') || _activeAudioAsset.startsWith('https');
+    _controller = isNetwork
+        ? VideoPlayerController.networkUrl(Uri.parse(_activeAudioAsset))
+        : VideoPlayerController.asset(_activeAudioAsset);
+
+    _controller.initialize().then((_) {
+      if (mounted) {
         setState(() {
           _isInitialized = true;
+          _isLoadingFirestore = false;
         });
-      });
+      }
+    }).catchError((e) {
+      print("Lỗi khởi tạo audio player: $e");
+      if (mounted) {
+        setState(() => _isLoadingFirestore = false);
+      }
+    });
   }
 
   @override
@@ -233,6 +295,11 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingFirestore) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: Color(0xFFFF5252))),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
@@ -428,15 +495,25 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
         if (q['q_image'] != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Image.asset(
-              q['q_image'],
-              errorBuilder: (c, e, s) => Container(
-                height: 150,
-                width: double.infinity,
-                color: Colors.grey[200],
-                child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-              ),
-            ),
+            child: q['q_image'].toString().startsWith('http')
+                ? Image.network(
+                    q['q_image'],
+                    errorBuilder: (c, e, s) => Container(
+                      height: 150,
+                      width: double.infinity,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                    ),
+                  )
+                : Image.asset(
+                    q['q_image'],
+                    errorBuilder: (c, e, s) => Container(
+                      height: 150,
+                      width: double.infinity,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                    ),
+                  ),
           ),
         const SizedBox(height: 12),
         ...(q['options'] as List).map((opt) => _buildOption(q['id'], opt, q['correct'])),

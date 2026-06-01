@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_progress.dart';
+import 'admin_panel_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -62,6 +64,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildActionRow(
                   "Làm mới tiến độ học",
                   onTap: () => _showResetConfirmDialog(context),
+                ),
+                const Divider(height: 1, color: Colors.grey),
+                _buildActionRow(
+                  "Hệ thống quản trị (Admin)",
+                  onTap: () => _handleAdminAccess(context),
                 ),
               ],
             ),
@@ -321,6 +328,82 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         );
       },
+    );
+  }
+
+  void _handleAdminAccess(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (doc.exists && doc.data()?['role'] == 'admin') {
+          _navigateToAdminPanel();
+          return;
+        }
+      } catch (e) {
+        print("Lỗi kiểm tra quyền Admin: $e");
+      }
+    }
+    _showAdminPasscodeDialog();
+  }
+
+  void _navigateToAdminPanel() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AdminPanelScreen(),
+      ),
+    );
+  }
+
+  void _showAdminPasscodeDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Xác thực quản trị viên", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Vui lòng nhập mật mã quản trị viên hoặc sử dụng tài khoản Admin để truy cập:"),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                hintText: "Mật mã (Passcode)",
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Hủy", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.trim() == "1357") {
+                Navigator.pop(ctx);
+                _navigateToAdminPanel();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Mật mã không đúng!"), backgroundColor: Colors.red),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3366FF),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            ),
+            child: const Text("Xác minh", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 }

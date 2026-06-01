@@ -25,6 +25,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   int _selectedTab = 0;
   bool _isSaving = false;
 
+  // --- TRẠNG THÁI EDIT ĐỘNG ---
+  String? _editingJlptActivityId;
+  String? _editingJlptLessonId;
+  String? _editingJlptOldImageUrl;
+
+  String? _editingListenQuestionId;
+  String? _editingListenLessonId;
+  String? _editingListenOldImageUrl;
+  String? _editingListenOldAudioUrl;
+
+  String? _editingReadPartId;
+  String? _editingReadLessonId;
+
   @override
   void initState() {
     super.initState();
@@ -68,7 +81,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           http.MultipartFile.fromBytes(
             'file',
             bytes,
-            length: length,
             filename: xFile.name,
           ),
         );
@@ -94,6 +106,141 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  // ==========================================================
+  // XÓA DỮ LIỆU ĐĂNG KÝ TRÊN MÁY CHỦ (CONFIRMS & DELETIONS)
+  // ==========================================================
+  void _confirmDeleteLesson(String collectionPath, String lessonId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Xác nhận xóa bài học"),
+        content: const Text("Bạn có chắc chắn muốn xóa bài học này cùng tất cả nội dung bên trong không?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Hủy", style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              setState(() => _isSaving = true);
+              try {
+                final mainRef = FirebaseFirestore.instance.collection(collectionPath).doc(lessonId);
+                String subColl = "";
+                if (collectionPath == 'jlpt_lessons') {
+                  subColl = 'activities';
+                } else if (collectionPath == 'listening_lessons') {
+                  subColl = 'questions';
+                } else if (collectionPath == 'reading_lessons') {
+                  subColl = 'parts';
+                }
+                
+                final subSnapshot = await mainRef.collection(subColl).get();
+                for (var doc in subSnapshot.docs) {
+                  await doc.reference.delete();
+                }
+                await mainRef.delete();
+                _showSnackBar("Đã xóa bài học thành công!");
+              } catch (e) {
+                _showSnackBar("Lỗi khi xóa bài học: $e");
+              } finally {
+                setState(() => _isSaving = false);
+              }
+            },
+            child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteActivity(String lessonId, String actId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Xác nhận xóa"),
+        content: const Text("Bạn có chắc chắn muốn xóa Activity này không?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Hủy", style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await FirebaseFirestore.instance
+                    .collection('jlpt_lessons')
+                    .doc(lessonId)
+                    .collection('activities')
+                    .doc(actId)
+                    .delete();
+                _showSnackBar("Đã xóa Activity thành công!");
+              } catch (e) {
+                _showSnackBar("Lỗi khi xóa: $e");
+              }
+            },
+            child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteQuestion(String lessonId, String qDocId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Xác nhận xóa"),
+        content: const Text("Bạn có chắc chắn muốn xóa câu hỏi này không?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Hủy", style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await FirebaseFirestore.instance
+                    .collection('listening_lessons')
+                    .doc(lessonId)
+                    .collection('questions')
+                    .doc(qDocId)
+                    .delete();
+                _showSnackBar("Đã xóa câu hỏi thành công!");
+              } catch (e) {
+                _showSnackBar("Lỗi khi xóa: $e");
+              }
+            },
+            child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeletePart(String lessonId, String pDocId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Xác nhận xóa"),
+        content: const Text("Bạn có chắc chắn muốn xóa phân đoạn đọc này không?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Hủy", style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await FirebaseFirestore.instance
+                    .collection('reading_lessons')
+                    .doc(lessonId)
+                    .collection('parts')
+                    .doc(pDocId)
+                    .delete();
+                _showSnackBar("Đã xóa phân đoạn thành công!");
+              } catch (e) {
+                _showSnackBar("Lỗi khi xóa: $e");
+              }
+            },
+            child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   // ==========================================================
@@ -150,6 +297,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         if (uploadedUrl != null) {
           imageUrl = uploadedUrl;
         }
+      } else if (_editingJlptActivityId != null) {
+        imageUrl = _editingJlptOldImageUrl ?? "";
       }
 
       final String lessonDocId = "${_jlptLevel.toLowerCase()}_lesson_${_jlptLessonIdController.text.trim()}";
@@ -195,14 +344,29 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       }
 
       // 3. Đẩy vào sub-collection 'activities' của bài học đó
-      await FirebaseFirestore.instance
-          .collection('jlpt_lessons')
-          .doc(lessonDocId)
-          .collection('activities')
-          .add(activityData);
+      if (_editingJlptActivityId != null) {
+        await FirebaseFirestore.instance
+            .collection('jlpt_lessons')
+            .doc(_editingJlptLessonId)
+            .collection('activities')
+            .doc(_editingJlptActivityId)
+            .set(activityData, SetOptions(merge: true));
+        _showSnackBar("Đã cập nhật khung bài học JLPT thành công!");
+      } else {
+        await FirebaseFirestore.instance
+            .collection('jlpt_lessons')
+            .doc(lessonDocId)
+            .collection('activities')
+            .add(activityData);
+        _showSnackBar("Đã lưu khung bài học JLPT thành công!");
+      }
 
-      _showSnackBar("Đã lưu khung bài học JLPT thành công!");
       _resetJlptFields();
+      setState(() {
+        _editingJlptActivityId = null;
+        _editingJlptLessonId = null;
+        _editingJlptOldImageUrl = null;
+      });
     } catch (e) {
       _showSnackBar("Lỗi ghi Firestore: $e");
     } finally {
@@ -242,8 +406,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
   Future<void> _pickListenAudio() async {
     final ImagePicker picker = ImagePicker();
-    // Khuyên dùng pickVideo vì trên Web định dạng file âm thanh .mp3/.m4a
-    // đôi khi được phân loại chung làm phương tiện truyền thông trực quan hoặc chọn tự do
     final XFile? audio = await picker.pickVideo(source: ImageSource.gallery);
     if (audio != null) {
       setState(() {
@@ -282,17 +444,21 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       if (_listenSelectedAudioXFile != null) {
         final upAudio = await _uploadToCloudinary(_listenSelectedAudioXFile!);
         if (upAudio != null) audioUrl = upAudio;
+      } else if (_editingListenLessonId != null) {
+        audioUrl = _editingListenOldAudioUrl ?? "";
       }
+
       if (_listenSelectedImageXFile != null) {
         final upImg = await _uploadToCloudinary(_listenSelectedImageXFile!);
         if (upImg != null) questionImageUrl = upImg;
+      } else if (_editingListenQuestionId != null) {
+        questionImageUrl = _editingListenOldImageUrl ?? "";
       }
 
       final String listenDocId = "listening_lesson_${_listenLessonTitleIdController.text.trim().replaceAll(' ', '_')}";
       final int orderIndex = int.tryParse(_listenOrderController.text.trim()) ?? 0;
       final int qId = int.tryParse(_listenQuestionIdController.text.trim()) ?? 1;
 
-      // Phân tách mảng các đáp án bằng dấu phẩy
       List<String> optionsList = _listenOptionsController.text
           .split(',')
           .map((e) => e.trim())
@@ -312,15 +478,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
       await FirebaseFirestore.instance
           .collection('listening_lessons')
-          .doc(listenDocId)
+          .doc(_editingListenLessonId ?? listenDocId)
           .set(mainLessonData, SetOptions(merge: true));
 
-      // 2. Đẩy danh sách câu hỏi trắc nghiệm đính kèm hình ảnh vào sub-collection 'questions'
+      // 2. Đẩy danh sách câu hỏi
+      final String activeLessonId = _editingListenLessonId ?? listenDocId;
+      final String activeQuestionId = _editingListenQuestionId ?? "question_$qId";
+
       await FirebaseFirestore.instance
           .collection('listening_lessons')
-          .doc(listenDocId)
+          .doc(activeLessonId)
           .collection('questions')
-          .doc("question_$qId")
+          .doc(activeQuestionId)
           .set({
         'id': qId,
         'q_image': questionImageUrl,
@@ -329,8 +498,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         'explanation': _listenExplainController.text.trim(),
       });
 
-      _showSnackBar("Đã lưu câu hỏi luyện nghe thành công!");
+      _showSnackBar(_editingListenQuestionId != null ? "Đã cập nhật câu hỏi luyện nghe!" : "Đã lưu câu hỏi luyện nghe thành công!");
       _resetListeningFields();
+      setState(() {
+        _editingListenQuestionId = null;
+        _editingListenLessonId = null;
+        _editingListenOldImageUrl = null;
+        _editingListenOldAudioUrl = null;
+      });
     } catch (e) {
       _showSnackBar("Lỗi ghi bài nghe: $e");
     } finally {
@@ -345,6 +520,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     _listenExplainController.clear();
     setState(() {
       _listenSelectedImageXFile = null;
+      _listenSelectedAudioXFile = null;
       _listenWebImageBytes = null;
     });
   }
@@ -364,7 +540,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   final _readQuestionController = TextEditingController();
   final _readCorrectController = TextEditingController();
   final _readExplainController = TextEditingController();
-  final _readOptionsController = TextEditingController(); // Phân tách mảng bằng dấu phẩy
+  final _readOptionsController = TextEditingController();
 
   Future<void> _submitReading() async {
     if (!_readFormKey.currentState!.validate()) return;
@@ -376,14 +552,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       final int partOrder = int.tryParse(_readPartOrderController.text.trim()) ?? 1;
 
       // 1. Khởi tạo bài đọc chính
-      await FirebaseFirestore.instance.collection('reading_lessons').doc(readDocId).set({
-        'id': readDocId,
+      await FirebaseFirestore.instance.collection('reading_lessons').doc(_editingReadLessonId ?? readDocId).set({
+        'id': _editingReadLessonId ?? readDocId,
         'title': _readLessonTitleIdController.text.trim(),
         'order': mainOrder,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      // 2. Thiết lập cấu trúc dữ liệu theo phân loại (Instruction / Question)
+      // 2. Thiết lập cấu trúc dữ liệu theo phân loại
       Map<String, dynamic> partData = {
         'type': _readType,
         'partOrder': partOrder,
@@ -408,16 +584,23 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         });
       }
 
-      // 3. Đẩy vào sub-collection 'parts' chuyên biệt quản lý tuần tự bài đọc
+      // 3. Đẩy vào sub-collection
+      final String activeLessonId = _editingReadLessonId ?? readDocId;
+      final String activePartId = _editingReadPartId ?? "part_$partOrder";
+
       await FirebaseFirestore.instance
           .collection('reading_lessons')
-          .doc(readDocId)
+          .doc(activeLessonId)
           .collection('parts')
-          .doc("part_$partOrder")
+          .doc(activePartId)
           .set(partData);
 
-      _showSnackBar("Đã lưu cấu trúc khung đọc hiểu thành công!");
+      _showSnackBar(_editingReadPartId != null ? "Đã cập nhật phân đoạn bài đọc!" : "Đã lưu cấu trúc khung đọc hiểu thành công!");
       _resetReadingFields();
+      setState(() {
+        _editingReadPartId = null;
+        _editingReadLessonId = null;
+      });
     } catch (e) {
       _showSnackBar("Lỗi ghi bài đọc: $e");
     } finally {
@@ -475,7 +658,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 ),
               ),
             )
-          : null, // Nếu dùng trên Web Dashboard, Sidebar sẽ lo nhiệm vụ chuyển Tab, không cần AppBar này
+          : null,
       body: _isSaving
           ? const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [CircularProgressIndicator(), SizedBox(height: 16), Text("Đang đồng bộ dữ liệu & upload đám mây...", style: TextStyle(fontWeight: FontWeight.w500))]))
           : SingleChildScrollView(
@@ -503,7 +686,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("THÊM NỘI DUNG BÀI HỌC TỪ VỰNG & NGỮ PHÁP JLPT", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF3366FF))),
+          Text(_editingJlptActivityId != null ? "CẬP NHẬT HOẠT ĐỘNG BÀI HỌC JLPT" : "THÊM NỘI DUNG BÀI HỌC TỪ VỰNG & NGỮ PHÁP JLPT", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF3366FF))),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -581,7 +764,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     ? (kIsWeb && _jlptWebImageBytes != null
                         ? Image.memory(_jlptWebImageBytes!, width: 100, height: 100, fit: BoxFit.cover)
                         : const Text("Đã chọn file trên thiết bị mobile"))
-                    : const Text("Chưa chọn hình ảnh", style: TextStyle(color: Colors.grey)),
+                    : (_editingJlptOldImageUrl != null && _editingJlptOldImageUrl!.isNotEmpty
+                        ? Image.network(_editingJlptOldImageUrl!, width: 100, height: 100, fit: BoxFit.cover)
+                        : const Text("Chưa chọn hình ảnh", style: TextStyle(color: Colors.grey))),
               ],
             )
           ] else if (_jlptActivityType == 'grammarStructure') ...[
@@ -597,17 +782,151 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           ],
 
           const SizedBox(height: 32),
-          Center(
-            child: SizedBox(
-              width: 250,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _submitJlpt,
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3366FF)),
-                child: const Text("LƯU KHUNG JLPT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 200,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _submitJlpt,
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3366FF)),
+                  child: Text(_editingJlptActivityId != null ? "CẬP NHẬT JLPT" : "LƯU KHUNG JLPT", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
               ),
-            ),
-          )
+              if (_editingJlptActivityId != null) ...[
+                const SizedBox(width: 16),
+                SizedBox(
+                  width: 120,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _resetJlptFields();
+                      setState(() {
+                        _editingJlptActivityId = null;
+                        _editingJlptLessonId = null;
+                        _editingJlptOldImageUrl = null;
+                      });
+                    },
+                    style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.grey)),
+                    child: const Text("HỦY", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          
+          // --- DANH SÁCH BÀI ĐÃ CÓ TRÊN FIRESTORE ---
+          const SizedBox(height: 40),
+          const Divider(thickness: 2),
+          const SizedBox(height: 20),
+          const Text("DANH SÁCH BÀI HỌC JLPT HIỆN CÓ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF3366FF))),
+          const SizedBox(height: 16),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('jlpt_lessons').orderBy('order').snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+              final lessons = snapshot.data!.docs;
+              if (lessons.isEmpty) return const Text("Chưa có bài học nào.", style: TextStyle(color: Colors.grey));
+
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: lessons.length,
+                itemBuilder: (context, index) {
+                  final lesson = lessons[index].data() as Map<String, dynamic>;
+                  final lessonId = lessons[index].id;
+                  final lessonTitle = lesson['title'] ?? 'Không tên';
+                  final level = lesson['level'] ?? 'N5';
+
+                  return ExpansionTile(
+                    title: Text("[$level] $lessonTitle (ID: $lessonId)", style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text("Thứ tự bài học: ${lesson['order'] ?? 0}"),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _confirmDeleteLesson('jlpt_lessons', lessonId),
+                    ),
+                    children: [
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('jlpt_lessons')
+                            .doc(lessonId)
+                            .collection('activities')
+                            .orderBy('order')
+                            .snapshots(),
+                        builder: (context, actSnapshot) {
+                          if (!actSnapshot.hasData) return const SizedBox();
+                          final activities = actSnapshot.data!.docs;
+                          if (activities.isEmpty) return const Padding(padding: EdgeInsets.all(16.0), child: Text("Không có hoạt động nào."));
+
+                          return Column(
+                            children: activities.map((actDoc) {
+                              final act = actDoc.data() as Map<String, dynamic>;
+                              final actId = actDoc.id;
+                              final actType = act['type'] ?? '';
+                              String details = "";
+                              if (actType == 'vocabListIntro' || actType == 'learn') {
+                                details = "${act['word'] ?? ''} - ${act['meaning'] ?? ''}";
+                              } else if (actType == 'grammarStructure') {
+                                details = "${act['structure'] ?? ''} - ${act['meaning'] ?? ''}";
+                              } else if (actType == 'grammarUsage') {
+                                details = "${act['usage'] ?? ''}";
+                              } else if (actType == 'grammarExample') {
+                                details = "${act['example'] ?? ''} - ${act['meaning'] ?? ''}";
+                              }
+
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.blue.shade50,
+                                  child: Text("${act['order'] ?? 0}", style: const TextStyle(fontSize: 12)),
+                                ),
+                                title: Text(actType, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                subtitle: Text(details, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.blue),
+                                      onPressed: () {
+                                        setState(() {
+                                          _editingJlptActivityId = actId;
+                                          _editingJlptLessonId = lessonId;
+                                          _jlptLevel = level;
+                                          _jlptLessonIdController.text = lessonId.replaceFirst("${level.toLowerCase()}_lesson_", "");
+                                          _jlptTitleController.text = lessonTitle;
+                                          _jlptOrderController.text = (act['order'] ?? 0).toString();
+                                          _jlptActivityType = actType;
+                                          
+                                          _jlptWordController.text = act['word'] ?? '';
+                                          _jlptHiraganaController.text = act['hiragana'] ?? '';
+                                          _jlptMeaningController.text = act['meaning'] ?? '';
+                                          _jlptKanjiController.text = act['kanji'] ?? '';
+                                          _jlptGrammarStructureController.text = act['structure'] ?? '';
+                                          _jlptGrammarUsageController.text = act['usage'] ?? '';
+                                          _jlptGrammarExampleController.text = act['example'] ?? '';
+                                          _jlptGrammarExampleMeaningController.text = act['meaning'] ?? '';
+                                          _editingJlptOldImageUrl = act['image'] ?? '';
+                                        });
+                                        _showSnackBar("Đã tải dữ liệu để chỉnh sửa!");
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                      onPressed: () => _confirmDeleteActivity(lessonId, actId),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
         ],
       ),
     );
@@ -619,7 +938,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("QUẢN LÝ BÀI TẬP LUYỆN NGHE", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
+          Text(_editingListenQuestionId != null ? "CẬP NHẬT CÂU HỎI LUYỆN NGHE" : "QUẢN LÝ BÀI TẬP LUYỆN NGHE", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -644,9 +963,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const SizedBox(height: 20),
           Row(
             children: [
-              ElevatedButton.icon(onPressed: _pickListenAudio, icon: const Icon(Icons.audiotrack, color: Colors.green), label: const Text("Tải file Audio lên Cloudinary")),
+              ElevatedButton.icon(onPressed: _pickListenAudio, icon: const Icon(Icons.audiotrack, color: Colors.green), label: const Text("Tải file Audio lên")),
               const SizedBox(width: 16),
-              Expanded(child: Text(_listenSelectedAudioXFile != null ? "Đã chọn: ${_listenSelectedAudioXFile!.name}" : "Chưa cập nhật file nghe chính", style: const TextStyle(color: Colors.grey, fontSize: 13), overflow: TextOverflow.ellipsis)),
+              Expanded(child: Text(_listenSelectedAudioXFile != null ? "Đã chọn: ${_listenSelectedAudioXFile!.name}" : (_editingListenOldAudioUrl != null ? "Đang lưu trữ liên kết: $_editingListenOldAudioUrl" : "Chưa chọn file nghe"), style: const TextStyle(color: Colors.grey, fontSize: 13), overflow: TextOverflow.ellipsis)),
             ],
           ),
           const SizedBox(height: 20),
@@ -678,7 +997,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _listenOptionsController,
-            decoration: const InputDecoration(labelText: "Mảng các phương án lựa chọn (Cắt nhau bởi dấu phẩy, Ví dụ: Đáp án 1, Đáp án 2, Đáp án 3, Đáp án 4)", border: OutlineInputBorder()),
+            decoration: const InputDecoration(labelText: "Mảng đáp án (Ngăn cách bởi dấu phẩy, Ví dụ: Đáp án A, Đáp án B, Đáp án C, Đáp án D)", border: OutlineInputBorder()),
             validator: (v) => v!.isEmpty ? "Vui lòng điền các phương án" : null,
           ),
           const SizedBox(height: 16),
@@ -691,22 +1010,141 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               _listenSelectedImageXFile != null
                   ? (kIsWeb && _listenWebImageBytes != null
                       ? Image.memory(_listenWebImageBytes!, width: 100, height: 100, fit: BoxFit.cover)
-                      : const Text("Đã chọn ảnh trên mobile"))
-                  : const Text("Chưa chọn ảnh minh họa câu hỏi", style: TextStyle(color: Colors.grey)),
+                      : const Text("Đã chọn ảnh"))
+                  : (_editingListenOldImageUrl != null && _editingListenOldImageUrl!.isNotEmpty
+                      ? Image.network(_editingListenOldImageUrl!, width: 100, height: 100, fit: BoxFit.cover)
+                      : const Text("Chưa có ảnh minh họa", style: TextStyle(color: Colors.grey))),
             ],
           ),
           const SizedBox(height: 32),
-          Center(
-            child: SizedBox(
-              width: 250,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _submitListening,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                child: const Text("LƯU CÂU HỎI NGHE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 200,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _submitListening,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child: Text(_editingListenQuestionId != null ? "CẬP NHẬT CÂU HỎI" : "LƯU CÂU HỎI NGHE", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
               ),
-            ),
-          )
+              if (_editingListenQuestionId != null) ...[
+                const SizedBox(width: 16),
+                SizedBox(
+                  width: 120,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _resetListeningFields();
+                      setState(() {
+                        _editingListenQuestionId = null;
+                        _editingListenLessonId = null;
+                        _editingListenOldImageUrl = null;
+                        _editingListenOldAudioUrl = null;
+                      });
+                    },
+                    style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.grey)),
+                    child: const Text("HỦY", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          
+          // --- DANH SÁCH BÀI NGHE HIỆN CÓ ---
+          const SizedBox(height: 40),
+          const Divider(thickness: 2),
+          const SizedBox(height: 20),
+          const Text("DANH SÁCH BÀI LUYỆN NGHE HIỆN CÓ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
+          const SizedBox(height: 16),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('listening_lessons').orderBy('order').snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+              final lessons = snapshot.data!.docs;
+              if (lessons.isEmpty) return const Text("Chưa có bài nghe nào.", style: TextStyle(color: Colors.grey));
+
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: lessons.length,
+                itemBuilder: (context, index) {
+                  final lesson = lessons[index].data() as Map<String, dynamic>;
+                  final lessonId = lessons[index].id;
+                  final lessonTitle = lesson['title'] ?? 'Không tên';
+
+                  return ExpansionTile(
+                    title: Text(lessonTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text("Thứ tự sắp xếp: ${lesson['order'] ?? 0}"),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _confirmDeleteLesson('listening_lessons', lessonId),
+                    ),
+                    children: [
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('listening_lessons')
+                            .doc(lessonId)
+                            .collection('questions')
+                            .snapshots(),
+                        builder: (context, qSnapshot) {
+                          if (!qSnapshot.hasData) return const SizedBox();
+                          final questions = qSnapshot.data!.docs;
+                          if (questions.isEmpty) return const Padding(padding: EdgeInsets.all(16.0), child: Text("Không có câu hỏi nào."));
+
+                          return Column(
+                            children: questions.map((qDoc) {
+                              final q = qDoc.data() as Map<String, dynamic>;
+                              final qDocId = qDoc.id;
+                              final qIdInt = q['id'] ?? 1;
+                              final explanation = q['explanation'] ?? '';
+
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.green.shade50,
+                                  child: Text("$qIdInt", style: const TextStyle(fontSize: 12)),
+                                ),
+                                title: Text("Câu $qIdInt - Đáp án: ${q['correct']}"),
+                                subtitle: Text(explanation, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.blue),
+                                      onPressed: () {
+                                        setState(() {
+                                          _editingListenQuestionId = qDocId;
+                                          _editingListenLessonId = lessonId;
+                                          _listenLessonTitleIdController.text = lessonTitle;
+                                          _listenOrderController.text = (lesson['order'] ?? 0).toString();
+                                          _listenQuestionIdController.text = qIdInt.toString();
+                                          _listenCorrectController.text = q['correct'] ?? '';
+                                          _listenOptionsController.text = (q['options'] as List?)?.join(', ') ?? '';
+                                          _listenExplainController.text = explanation;
+                                          _editingListenOldImageUrl = q['q_image'] ?? '';
+                                          _editingListenOldAudioUrl = lesson['audioAsset'] ?? '';
+                                        });
+                                        _showSnackBar("Đã tải dữ liệu câu hỏi để sửa!");
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                      onPressed: () => _confirmDeleteQuestion(lessonId, qDocId),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
         ],
       ),
     );
@@ -718,7 +1156,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("QUẢN LÝ BÀI TẬP LUYỆN ĐỌC HIỂU", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple)),
+          Text(_editingReadPartId != null ? "CẬP NHẬT CẤU TRÚC ĐỌC HIỂU" : "QUẢN LÝ BÀI TẬP LUYỆN ĐỌC HIỂU", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple)),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -743,7 +1181,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _readPartOrderController,
-            decoration: const InputDecoration(labelText: "Thứ tự hiển thị phân đoạn bên trong bài đọc (partOrder - Số nguyên)", border: OutlineInputBorder()),
+            decoration: const InputDecoration(labelText: "Thứ tự phân đoạn bên trong bài đọc (partOrder - Số nguyên)", border: OutlineInputBorder()),
             keyboardType: TextInputType.number,
             validator: (v) => v!.isEmpty ? "Cần điền thứ tự phân đoạn" : null,
           ),
@@ -809,16 +1247,140 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             ),
           ],
           const SizedBox(height: 32),
-          Center(
-            child: SizedBox(
-              width: 250,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _submitReading,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
-                child: const Text("LƯU KHUNG ĐỌC HIỂU", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 200,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _submitReading,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+                  child: Text(_editingReadPartId != null ? "CẬP NHẬT BÀI ĐỌC" : "LƯU KHUNG ĐỌC HIỂU", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
               ),
-            ),
+              if (_editingReadPartId != null) ...[
+                const SizedBox(width: 16),
+                SizedBox(
+                  width: 120,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _resetReadingFields();
+                      setState(() {
+                        _editingReadPartId = null;
+                        _editingReadLessonId = null;
+                      });
+                    },
+                    style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.grey)),
+                    child: const Text("HỦY", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          
+          // --- DANH SÁCH BÀI ĐỌC HIỆN CÓ ---
+          const SizedBox(height: 40),
+          const Divider(thickness: 2),
+          const SizedBox(height: 20),
+          const Text("DANH SÁCH BÀI LUYỆN ĐỌC HIỆN CÓ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple)),
+          const SizedBox(height: 16),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('reading_lessons').orderBy('order').snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+              final lessons = snapshot.data!.docs;
+              if (lessons.isEmpty) return const Text("Chưa có bài đọc nào.", style: TextStyle(color: Colors.grey));
+
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: lessons.length,
+                itemBuilder: (context, index) {
+                  final lesson = lessons[index].data() as Map<String, dynamic>;
+                  final lessonId = lessons[index].id;
+                  final lessonTitle = lesson['title'] ?? 'Không tên';
+
+                  return ExpansionTile(
+                    title: Text(lessonTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text("Thứ tự bài học: ${lesson['order'] ?? 0}"),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _confirmDeleteLesson('reading_lessons', lessonId),
+                    ),
+                    children: [
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('reading_lessons')
+                            .doc(lessonId)
+                            .collection('parts')
+                            .orderBy('partOrder')
+                            .snapshots(),
+                        builder: (context, pSnapshot) {
+                          if (!pSnapshot.hasData) return const SizedBox();
+                          final parts = pSnapshot.data!.docs;
+                          if (parts.isEmpty) return const Padding(padding: EdgeInsets.all(16.0), child: Text("Không có phân đoạn nào."));
+
+                          return Column(
+                            children: parts.map((pDoc) {
+                              final p = pDoc.data() as Map<String, dynamic>;
+                              final pDocId = pDoc.id;
+                              final partOrderInt = p['partOrder'] ?? 1;
+                              final type = p['type'] ?? 'instruction';
+                              String details = "";
+                              if (type == 'instruction') {
+                                details = p['text'] ?? '';
+                              } else {
+                                details = "${p['question'] ?? ''} - Đáp án: ${p['correct'] ?? ''}";
+                              }
+
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.purple.shade50,
+                                  child: Text("$partOrderInt", style: const TextStyle(fontSize: 12)),
+                                ),
+                                title: Text("$type (Phân đoạn: $partOrderInt)"),
+                                subtitle: Text(details, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.blue),
+                                      onPressed: () {
+                                        setState(() {
+                                          _editingReadPartId = pDocId;
+                                          _editingReadLessonId = lessonId;
+                                          _readLessonTitleIdController.text = lessonTitle;
+                                          _readOrderController.text = (lesson['order'] ?? 0).toString();
+                                          _readPartOrderController.text = partOrderInt.toString();
+                                          _readType = type;
+                                          _readInstructionController.text = p['text'] ?? '';
+                                          _readPassageController.text = p['passage'] ?? '';
+                                          _readQuestionController.text = p['question'] ?? '';
+                                          _readCorrectController.text = p['correct'] ?? '';
+                                          _readExplainController.text = p['explanation'] ?? '';
+                                          _readOptionsController.text = (p['options'] as List?)?.join(', ') ?? '';
+                                        });
+                                        _showSnackBar("Đã tải dữ liệu phân đoạn để chỉnh sửa!");
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                      onPressed: () => _confirmDeletePart(lessonId, pDocId),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
         ],
       ),
