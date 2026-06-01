@@ -161,28 +161,32 @@ users / {uid} (Document) {
 ### 🚀 Các bước cài đặt dự án:
 
 1. **Tải mã nguồn về máy:**
+   Mở terminal và clone dự án về máy:
    ```bash
    git clone https://github.com/thuanhuy2006/SE346_AppProject.git
    cd SE346_AppProject
    ```
 
-2. **Cài đặt các gói phụ thuộc (Dependencies):**
+2. **Thiết lập các tệp cấu hình ẩn (Bảo mật):**
+   Vì lý do bảo mật, các tệp cấu hình chứa khóa kết nối API không được đẩy lên GitHub. Các tệp này đã được **cung cấp sẵn trong Google Drive nhóm**. Người kiểm thử (testers) chỉ cần tải về và đặt vào đúng vị trí sau:
+   * **Tệp `.env`:** Tải về và đặt vào **thư mục gốc** của dự án (ngang hàng với file `pubspec.yaml`).
+   * **Tệp `google-services.json`:** Tải về và đặt vào thư mục: `android/app/` (ví dụ: `android/app/google-services.json`).
+
+3. **Cài đặt các gói phụ thuộc (Dependencies):**
+   Chạy lệnh sau để tải xuống các thư viện Flutter cần thiết:
    ```bash
    flutter pub get
    ```
 
-3. **Cấu hình Firebase:**
-   - Tạo một dự án mới trên [Firebase Console](https://console.firebase.google.com/).
-   - Kích hoạt tính năng **Authentication** (Đăng nhập bằng Email/Password) và **Cloud Firestore**.
-   - Đăng ký app Android / iOS với Firebase trong console để tải file cấu hình:
-     - Dành cho Android: Tải file `google-services.json` đặt vào thư mục `android/app/`.
-     - Dành cho iOS: Tải file `GoogleService-Info.plist` đưa vào thư mục `ios/Runner/` thông qua Xcode.
-
-4. **Chạy ứng dụng:**
-   - Kết nối thiết bị hoặc khởi động máy ảo.
-   - Chạy lệnh sau trên terminal của thư mục dự án:
+4. **Khởi động và chạy ứng dụng:**
+   * Kết nối thiết bị Android thật qua cổng USB (đã bật gỡ lỗi USB Debugging) hoặc khởi động máy ảo (Emulator).
+   * Kiểm tra danh sách thiết bị đang kết nối:
      ```bash
-     flutter run
+     flutter devices
+     ```
+   * Chạy lệnh sau để khởi chạy ứng dụng trên thiết bị (thay thế `R58N94825EP` hoặc `android` bằng mã ID thiết bị của bạn nếu có nhiều thiết bị):
+     ```bash
+     flutter run -d android
      ```
 
 ---
