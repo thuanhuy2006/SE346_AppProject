@@ -592,6 +592,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('forum_posts').doc(widget.postId).collection('comments').orderBy('timestamp', descending: false).snapshots(),
                   builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return SliverToBoxAdapter(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              "Lỗi tải bình luận: ${snapshot.error}",
+                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
                     if (!snapshot.hasData) return const SliverToBoxAdapter(child: SizedBox());
                     final comments = snapshot.data!.docs;
                     return SliverList(delegate: SliverChildBuilderDelegate((context, index) {

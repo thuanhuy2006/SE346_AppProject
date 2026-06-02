@@ -95,6 +95,27 @@ class UserProgress {
     return prefs.getStringList(_getCompletedLessonsKey()) ?? [];
   }
 
+  // 5b. Lưu danh sách các bài học đã hoàn thành (Dùng cho khảo sát cấp độ)
+  Future<void> setCompletedLessons(List<String> lessons) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String lessonsKey = _getCompletedLessonsKey();
+    await prefs.setStringList(lessonsKey, lessons);
+
+    // Đồng bộ lên Firestore
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'completedLessons': lessons,
+          'lastUpdated': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } catch (e) {
+        print("Lỗi đồng bộ completedLessons lên Firebase: $e");
+      }
+    }
+  }
+
+
   // 6. Đồng bộ tiến trình của user hiện tại từ Firestore về SharedPreferences local
   Future<void> syncFromFirebase() async {
     final user = FirebaseAuth.instance.currentUser;

@@ -1,10 +1,11 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'auth_screen.dart';
+import 'survey_screen.dart';
 import 'sound_manager.dart';
 import 'recognition_manager.dart';
 import 'database_helper.dart';
@@ -173,7 +174,32 @@ class AuthWrapper extends StatelessWidget {
         }
         final User? user = snapshot.data;
         if (user != null) {
-          return const MainScreen();
+          return StreamBuilder<DocumentSnapshot>(
+            stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
+            builder: (context, docSnapshot) {
+              if (docSnapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(
+                    child: CircularProgressIndicator(
+                      color: kPrimaryBlue,
+                    ),
+                  ),
+                );
+              }
+              if (docSnapshot.hasData && docSnapshot.data!.exists) {
+                final data = docSnapshot.data!.data() as Map<String, dynamic>?;
+                if (data != null) {
+                  final bool hasSurvey = data.containsKey('surveyLevel');
+                  final List<dynamic>? completed = data['completedLessons'];
+                  final bool hasProgress = completed != null && completed.isNotEmpty;
+                  if (hasSurvey || hasProgress) {
+                    return const MainScreen();
+                  }
+                }
+              }
+              return SurveyScreen(uid: user.uid);
+            },
+          );
         } else {
           return const AuthScreen();
         }
@@ -1686,7 +1712,6 @@ class SummonerHomePage extends StatefulWidget {
 }
 
 class _SummonerHomePageState extends State<SummonerHomePage> {
-  String _currentCourse = 'Sơ cấp 1 - N5';
   final ScrollController _scrollController = ScrollController();
 
   // 1. ĐỊNH NGHĨA CÁC CHẶNG HỌC (CHAPTERS)
@@ -2492,273 +2517,7 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
     ];
   }
 
-  void _initN4Lessons() {
-    _lessons = [];
-    int idCounter = 200;
-    for (int i = 1; i <= 10; i++) {
-      String sectionId = 'basic$i';
-      _lessons.addAll([
-        {
-          'id': idCounter++,
-          'key': 'n4_bai${i}_lythuyet',
-          'title': 'Lý thuyết',
-          'icon': Icons.menu_book,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n4_bai${i}_luyentap1',
-          'title': 'Luyện tập 1',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n4_bai${i}_luyentap2',
-          'title': 'Luyện tập 2',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n4_bai${i}_luyentap3',
-          'title': 'Luyện tập 3',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n4_bai${i}_luyennoi',
-          'title': 'Luyện nói',
-          'icon': Icons.mic,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n4_bai${i}_luyenviet',
-          'title': 'Luyện viết',
-          'icon': Icons.edit,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n4_bai${i}_ontap',
-          'title': 'Ôn tập',
-          'icon': Icons.star,
-          'status': 0,
-          'isBoss': true,
-          'section': sectionId,
-        },
-      ]);
-    }
-  }
 
-  void _initN3Lessons() {
-    _lessons = [];
-    int idCounter = 300; // Đặt ID bắt đầu cho N3
-    for (int i = 1; i <= 10; i++) {
-      String sectionId = 'basic$i';
-      _lessons.addAll([
-        {
-          'id': idCounter++,
-          'key': 'n3_bai${i}_lythuyet',
-          'title': 'Lý thuyết',
-          'icon': Icons.menu_book,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n3_bai${i}_luyentap1',
-          'title': 'Luyện tập 1',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n3_bai${i}_luyentap2',
-          'title': 'Luyện tập 2',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n3_bai${i}_luyentap3',
-          'title': 'Luyện tập 3',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n3_bai${i}_luyennoi',
-          'title': 'Luyện nói',
-          'icon': Icons.mic,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n3_bai${i}_luyenviet',
-          'title': 'Luyện viết',
-          'icon': Icons.edit,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n3_bai${i}_ontap',
-          'title': 'Ôn tập',
-          'icon': Icons.star,
-          'status': 0,
-          'isBoss': true,
-          'section': sectionId,
-        },
-      ]);
-    }
-  }
-
-  void _initN2Lessons() {
-    _lessons = [];
-    int idCounter = 400; // Đặt ID bắt đầu cho N2
-    for (int i = 1; i <= 10; i++) {
-      String sectionId = 'basic$i';
-      _lessons.addAll([
-        {
-          'id': idCounter++,
-          'key': 'n2_bai${i}_lythuyet',
-          'title': 'Lý thuyết',
-          'icon': Icons.menu_book,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n2_bai${i}_luyentap1',
-          'title': 'Luyện tập 1',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n2_bai${i}_luyentap2',
-          'title': 'Luyện tập 2',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n2_bai${i}_luyentap3',
-          'title': 'Luyện tập 3',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n2_bai${i}_luyennoi',
-          'title': 'Luyện nói',
-          'icon': Icons.mic,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n2_bai${i}_luyenviet',
-          'title': 'Luyện viết',
-          'icon': Icons.edit,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n2_bai${i}_ontap',
-          'title': 'Ôn tập',
-          'icon': Icons.star,
-          'status': 0,
-          'isBoss': true,
-          'section': sectionId,
-        },
-      ]);
-    }
-  }
-
-  void _initN1Lessons() {
-    _lessons = [];
-    int idCounter = 500; // Đặt ID bắt đầu cho N1
-    for (int i = 1; i <= 10; i++) {
-      String sectionId = 'basic$i';
-      _lessons.addAll([
-        {
-          'id': idCounter++,
-          'key': 'n1_bai${i}_lythuyet',
-          'title': 'Lý thuyết',
-          'icon': Icons.menu_book,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n1_bai${i}_luyentap1',
-          'title': 'Luyện tập 1',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n1_bai${i}_luyentap2',
-          'title': 'Luyện tập 2',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n1_bai${i}_luyentap3',
-          'title': 'Luyện tập 3',
-          'icon': Icons.import_contacts,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n1_bai${i}_luyennoi',
-          'title': 'Luyện nói',
-          'icon': Icons.mic,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n1_bai${i}_luyenviet',
-          'title': 'Luyện viết',
-          'icon': Icons.edit,
-          'status': 0,
-          'section': sectionId,
-        },
-        {
-          'id': idCounter++,
-          'key': 'n1_bai${i}_ontap',
-          'title': 'Ôn tập',
-          'icon': Icons.star,
-          'status': 0,
-          'isBoss': true,
-          'section': sectionId,
-        },
-      ]);
-    }
-  }
 
   Future<void> _refreshProgress() async {
     List<String> completed = await UserProgress().getCompletedLessons();
@@ -2789,8 +2548,32 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
         backgroundColor: kSoftBackground,
         elevation: 0,
         actions: [
+          // Luyện đọc
+          IconButton(
+            icon: const Icon(Icons.chrome_reader_mode, color: kPrimaryBlue),
+            tooltip: 'Luyện đọc',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ReadingPracticeScreen()),
+              );
+            },
+          ),
+          // Luyện nghe
+          IconButton(
+            icon: const Icon(Icons.headphones, color: kPrimaryBlue),
+            tooltip: 'Luyện nghe',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ListeningPracticeScreen()),
+              );
+            },
+          ),
+          // Sổ tay từ vựng
           IconButton(
             icon: const Icon(Icons.menu_book, color: kPrimaryBlue),
+            tooltip: 'Sổ tay từ vựng',
             onPressed: () {
               Navigator.push(
                 context,
@@ -2800,73 +2583,13 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
           ),
           const SizedBox(width: 8),
         ],
-        title: GestureDetector(
-          onTap: () {
-            SoundManager.instance.vibrate('light');
-            CourseSelectionHelper.showCoursePopup(context, _currentCourse, (
-              selectedCourse,
-            ) {
-              setState(() {
-                _currentCourse = selectedCourse;
-                if (selectedCourse == 'Sơ cấp 1 - N5') {
-                  _initLessons();
-                } else if (selectedCourse == 'Sơ cấp 2 - N4') {
-                  _initN4Lessons();
-                } else if (selectedCourse == 'Trung cấp 1 - N3') {
-                  _initN3Lessons();
-                } else if (selectedCourse == 'Trung cấp 2 - N2') {
-                  _initN2Lessons();
-                } else if (selectedCourse == 'Cao cấp - N1') {
-                  _initN1Lessons();
-                }
-                _refreshProgress();
-              });
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.grey.shade200),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 16,
-                  offset: Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: kPrimaryBlue.withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.school, color: kPrimaryBlue, size: 20),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  _currentCourse,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const Icon(
-                  Icons.arrow_drop_down,
-                  color: Colors.black54,
-                  size: 24,
-                ),
-              ],
-            ),
+        title: const Text(
+          "JapaGo",
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.5,
           ),
         ),
       ),
@@ -2936,7 +2659,12 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           List<String> completed = await UserProgress().getCompletedLessons();
-          List<String> reviewableKeys = completed.where((k) => k.contains('_luyentap') || k.contains('_ontap')).toList();
+          List<String> reviewableKeys = completed.where((k) {
+            return k.contains('_luyentap') || 
+                   k.contains('_ontap') || 
+                   k.contains('_luyennoi') || 
+                   k.contains('_luyenviet');
+          }).toList();
           
           if (!context.mounted) return;
           if (reviewableKeys.isEmpty) {
@@ -2947,6 +2675,13 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
           }
           
           String randomKey = reviewableKeys[Random().nextInt(reviewableKeys.length)];
+          String prefix = 'Ôn tập';
+          if (randomKey.contains('_luyennoi')) {
+            prefix = 'Luyện nói';
+          } else if (randomKey.contains('_luyenviet')) {
+            prefix = 'Luyện viết';
+          }
+
           String lessonTitle = _lessons.firstWhere(
             (l) => l['key'] == randomKey, 
             orElse: () => {'title': 'Ôn tập nhanh'}
@@ -2958,7 +2693,7 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
             MaterialPageRoute(
               builder: (context) => LessonScreen(
                 lessonId: randomKey,
-                lessonTitle: 'Ôn tập: $lessonTitle',
+                lessonTitle: '$prefix: $lessonTitle',
               ),
             ),
           );
@@ -3176,52 +2911,7 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
     );
   }
 
-  // --- HÀM TẠO KHUNG TIÊU ĐỀ GIỐNG HÌNH YÊU CẦU ---
-  Widget _buildSectionHeader(String title, String subtitle) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEDF4FE), // Màu nền xanh dương cực nhạt
-        borderRadius: BorderRadius.circular(30), // Bo góc tròn xoe
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF5A6275),
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFF808B9F),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.style, color: Color(0xFF4A89F3), size: 28),
-          ),
-        ],
-      ),
-    );
-  }
+
 }
 
 class DashedPathPainter extends CustomPainter {
@@ -3282,288 +2972,7 @@ class DashedPathPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
 
-class CourseSelectionHelper {
-  static void showCoursePopup(
-    BuildContext context,
-    String currentCourse,
-    Function(String) onSelect,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => CourseSelectionPopup(
-        currentCourse: currentCourse,
-        onSelect: onSelect,
-      ),
-    );
-  }
-}
 
-class CourseSelectionPopup extends StatelessWidget {
-  final String currentCourse;
-  final Function(String) onSelect;
-
-  // Đã sửa: Khai báo constructor bắt buộc phải truyền biến vào
-  const CourseSelectionPopup({
-    super.key,
-    required this.currentCourse,
-    required this.onSelect,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 20,
-              right: 12,
-              top: 16,
-              bottom: 8,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Chọn khóa học',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.grey, size: 28),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                children: [
-                  _buildMainJLPTCard(context),
-                  const SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ReadingPracticeScreen()),
-                      );
-                    },
-                    child: _buildExtraCourseCard(
-                      title: 'Luyện đọc',
-                      subtitle: '25 bài',
-                      bgColor: const Color(0xFFF3E5F5),
-                      iconData: Icons.menu_book_rounded,
-                      iconColor: Colors.purple,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ListeningPracticeScreen()),
-                      );
-                    },
-                    child: _buildExtraCourseCard(
-                      title: 'Luyện nghe',
-                      subtitle: '48 bài',
-                      bgColor: const Color(0xFFFFEBEE),
-                      iconData: Icons.headphones_rounded,
-                      iconColor: Colors.redAccent,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Đã sửa: Hàm này cần nhận context để truyền xuống dưới
-  Widget _buildMainJLPTCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(Icons.school, size: 36, color: Colors.orange),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Lộ trình JLPT',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF4CAF50),
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      '5 cấp độ',
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.keyboard_arrow_up, color: Colors.black54),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              // Đã sửa: Gọi hàm theo đúng format mới
-              _buildLevelButton(context, 'Sơ cấp 1 - N5'),
-              _buildLevelButton(context, 'Sơ cấp 2 - N4'),
-              _buildLevelButton(context, 'Trung cấp 1 - N3'),
-              _buildLevelButton(context, 'Trung cấp 2 - N2'),
-              _buildLevelButton(context, 'Cao cấp - N1'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLevelButton(BuildContext context, String text) {
-    // Tự động kiểm tra xem nút này có đang là course hiện tại không
-    bool isActive = (text == currentCourse);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double width = (MediaQuery.of(context).size.width - 32 - 32 - 12) / 2;
-        return GestureDetector(
-          onTap: () {
-            onSelect(text);
-            Navigator.pop(context);
-          },
-          child: Container(
-            width: width,
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-            decoration: BoxDecoration(
-              color: isActive ? const Color(0xFF58CC02) : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                if (!isActive)
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.bar_chart_rounded,
-                  color: isActive ? Colors.white : Colors.grey.shade400,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    text,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
-                      color: isActive ? Colors.white : Colors.black87,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-  // Đã sửa: Xóa cái dấu ngoặc nhọn "}" thừa gây lỗi ở đây!
-
-  Widget _buildExtraCourseCard({
-    required String title,
-    required String subtitle,
-    required Color bgColor,
-    required IconData iconData,
-    required Color iconColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(iconData, size: 36, color: iconColor),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class GreenPatternPainter extends CustomPainter {
   @override

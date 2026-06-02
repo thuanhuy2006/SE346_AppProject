@@ -227,6 +227,33 @@ class _LessonScreenState extends State<LessonScreen> {
       case 'cb1_ontap':
         _activities = _getCb1OnTapData();
         break;
+      case 'cb2_ontap':
+        _activities = _getCb2OnTapData();
+        break;
+      case 'cb3_ontap':
+        _activities = _getCb3OnTapData();
+        break;
+      case 'cb4_ontap':
+        _activities = _getCb4OnTapData();
+        break;
+      case 'cb5_ontap':
+        _activities = _getCb5OnTapData();
+        break;
+      case 'cb6_ontap':
+        _activities = _getCb6OnTapData();
+        break;
+      case 'cb7_ontap':
+        _activities = _getCb7OnTapData();
+        break;
+      case 'cb8_ontap':
+        _activities = _getCb8OnTapData();
+        break;
+      case 'cb9_ontap':
+        _activities = _getCb9OnTapData();
+        break;
+      case 'cb10_ontap':
+        _activities = _getCb10OnTapData();
+        break;
       case 'cb2_lythuyet':
         _activities = _getCb2LyThuyetData();
         break;
@@ -1862,6 +1889,224 @@ class _LessonScreenState extends State<LessonScreen> {
     data.addAll(_getLuyenTap1Data());
     data.addAll(_getCb1LuyenTap2Data());
     data.addAll(_getCb1LuyenTap3Data());
+    data.addAll(_getCb1LuyenNoiData());
+    data.addAll(_getCb1LuyenVietData());
+    List<Map<String, dynamic>> quizzes = data
+        .where(
+          (e) =>
+              e['type'] != LessonType.learn &&
+              e['type'] != LessonType.flashCard &&
+              e['type'] != LessonType.vocabListIntro &&
+              e['type'] != LessonType.grammarListIntro &&
+              e['type'] != LessonType.grammarStructure &&
+              e['type'] != LessonType.grammarUsage &&
+              e['type'] != LessonType.grammarExample &&
+              e['type'] != LessonType.vocabSummary,
+        )
+        .toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
+  List<Map<String, dynamic>> _getCb2OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getCb2LuyenTap1Data());
+    data.addAll(_getCb2LuyenTap2Data());
+    data.addAll(_getCb2LuyenTap3Data());
+    data.addAll(_getCb2LuyenNoiData());
+    data.addAll(_getCb2LuyenVietData());
+    List<Map<String, dynamic>> quizzes = data
+        .where(
+          (e) =>
+              e['type'] != LessonType.learn &&
+              e['type'] != LessonType.flashCard &&
+              e['type'] != LessonType.vocabListIntro &&
+              e['type'] != LessonType.grammarListIntro &&
+              e['type'] != LessonType.grammarStructure &&
+              e['type'] != LessonType.grammarUsage &&
+              e['type'] != LessonType.grammarExample &&
+              e['type'] != LessonType.vocabSummary,
+        )
+        .toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
+  List<Map<String, dynamic>> _getCb3OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getCb3LuyenTap1Data());
+    data.addAll(_getCb3LuyenTap2Data());
+    data.addAll(_getCb3LuyenTap3Data());
+    data.addAll(_getCb3LuyenNoiData());
+    data.addAll(_getCb3LuyenVietData());
+    List<Map<String, dynamic>> quizzes = data
+        .where(
+          (e) =>
+              e['type'] != LessonType.learn &&
+              e['type'] != LessonType.flashCard &&
+              e['type'] != LessonType.vocabListIntro &&
+              e['type'] != LessonType.grammarListIntro &&
+              e['type'] != LessonType.grammarStructure &&
+              e['type'] != LessonType.grammarUsage &&
+              e['type'] != LessonType.grammarExample &&
+              e['type'] != LessonType.vocabSummary,
+        )
+        .toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
+  List<Map<String, dynamic>> _getCb4OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getCb4LuyenTap1Data());
+    data.addAll(_getCb4LuyenTap2Data());
+    data.addAll(_getCb4LuyenTap3Data());
+    data.addAll(_getCb4LuyenNoiData());
+    data.addAll(_getCb4LuyenVietData());
+    List<Map<String, dynamic>> quizzes = data
+        .where(
+          (e) =>
+              e['type'] != LessonType.learn &&
+              e['type'] != LessonType.flashCard &&
+              e['type'] != LessonType.vocabListIntro &&
+              e['type'] != LessonType.grammarListIntro &&
+              e['type'] != LessonType.grammarStructure &&
+              e['type'] != LessonType.grammarUsage &&
+              e['type'] != LessonType.grammarExample &&
+              e['type'] != LessonType.vocabSummary,
+        )
+        .toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
+  List<Map<String, dynamic>> _getCb5OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getCb5LuyenTap1Data());
+    data.addAll(_getCb5LuyenTap2Data());
+    data.addAll(_getCb5LuyenTap3Data());
+    data.addAll(_getCb5LuyenNoiData());
+    data.addAll(_getCb5LuyenVietData());
+    List<Map<String, dynamic>> quizzes = data
+        .where(
+          (e) =>
+              e['type'] != LessonType.learn &&
+              e['type'] != LessonType.flashCard &&
+              e['type'] != LessonType.vocabListIntro &&
+              e['type'] != LessonType.grammarListIntro &&
+              e['type'] != LessonType.grammarStructure &&
+              e['type'] != LessonType.grammarUsage &&
+              e['type'] != LessonType.grammarExample &&
+              e['type'] != LessonType.vocabSummary,
+        )
+        .toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
+  List<Map<String, dynamic>> _getCb6OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getCb6LuyenTap1Data());
+    data.addAll(_getCb6LuyenTap2Data());
+    data.addAll(_getCb6LuyenTap3Data());
+    data.addAll(_getCb6LuyenNoiData());
+    data.addAll(_getCb6LuyenVietData());
+    List<Map<String, dynamic>> quizzes = data
+        .where(
+          (e) =>
+              e['type'] != LessonType.learn &&
+              e['type'] != LessonType.flashCard &&
+              e['type'] != LessonType.vocabListIntro &&
+              e['type'] != LessonType.grammarListIntro &&
+              e['type'] != LessonType.grammarStructure &&
+              e['type'] != LessonType.grammarUsage &&
+              e['type'] != LessonType.grammarExample &&
+              e['type'] != LessonType.vocabSummary,
+        )
+        .toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
+  List<Map<String, dynamic>> _getCb7OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getCb7LuyenTap1Data());
+    data.addAll(_getCb7LuyenTap2Data());
+    data.addAll(_getCb7LuyenTap3Data());
+    data.addAll(_getCb7LuyenNoiData());
+    data.addAll(_getCb7LuyenVietData());
+    List<Map<String, dynamic>> quizzes = data
+        .where(
+          (e) =>
+              e['type'] != LessonType.learn &&
+              e['type'] != LessonType.flashCard &&
+              e['type'] != LessonType.vocabListIntro &&
+              e['type'] != LessonType.grammarListIntro &&
+              e['type'] != LessonType.grammarStructure &&
+              e['type'] != LessonType.grammarUsage &&
+              e['type'] != LessonType.grammarExample &&
+              e['type'] != LessonType.vocabSummary,
+        )
+        .toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
+  List<Map<String, dynamic>> _getCb8OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getCb8LuyenTap1Data());
+    data.addAll(_getCb8LuyenTap2Data());
+    data.addAll(_getCb8LuyenTap3Data());
+    data.addAll(_getCb8LuyenNoiData());
+    data.addAll(_getCb8LuyenVietData());
+    List<Map<String, dynamic>> quizzes = data
+        .where(
+          (e) =>
+              e['type'] != LessonType.learn &&
+              e['type'] != LessonType.flashCard &&
+              e['type'] != LessonType.vocabListIntro &&
+              e['type'] != LessonType.grammarListIntro &&
+              e['type'] != LessonType.grammarStructure &&
+              e['type'] != LessonType.grammarUsage &&
+              e['type'] != LessonType.grammarExample &&
+              e['type'] != LessonType.vocabSummary,
+        )
+        .toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
+  List<Map<String, dynamic>> _getCb9OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getCb9LuyenTap1Data());
+    data.addAll(_getCb9LuyenTap2Data());
+    data.addAll(_getCb9LuyenTap3Data());
+    data.addAll(_getCb9LuyenNoiData());
+    data.addAll(_getCb9LuyenVietData());
+    List<Map<String, dynamic>> quizzes = data
+        .where(
+          (e) =>
+              e['type'] != LessonType.learn &&
+              e['type'] != LessonType.flashCard &&
+              e['type'] != LessonType.vocabListIntro &&
+              e['type'] != LessonType.grammarListIntro &&
+              e['type'] != LessonType.grammarStructure &&
+              e['type'] != LessonType.grammarUsage &&
+              e['type'] != LessonType.grammarExample &&
+              e['type'] != LessonType.vocabSummary,
+        )
+        .toList();
+    quizzes.shuffle();
+    return quizzes.take(15).toList();
+  }
+
+  List<Map<String, dynamic>> _getCb10OnTapData() {
+    List<Map<String, dynamic>> data = [];
+    data.addAll(_getCb10LuyenTap1Data());
+    data.addAll(_getCb10LuyenTap2Data());
+    data.addAll(_getCb10LuyenTap3Data());
+    data.addAll(_getCb10LuyenNoiData());
+    data.addAll(_getCb10LuyenVietData());
     List<Map<String, dynamic>> quizzes = data
         .where(
           (e) =>
