@@ -79,9 +79,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     }
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData({bool silent = false}) async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
+    if (!silent) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       // 1. Tải dữ liệu cục bộ song song để tăng tốc
@@ -206,119 +208,117 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.blueAccent),
-            onPressed: _loadData,
-          )
-        ],
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Thẻ thông tin cá nhân (Thành tựu)
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.blueAccent, Colors.lightBlue],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))],
-              ),
+      body: RefreshIndicator(
+        onRefresh: () => _loadData(silent: true),
+        child: _isLoading 
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.person, size: 40, color: Colors.blueAccent),
+                  // Thẻ thông tin cá nhân (Thành tựu)
+                  Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.blueAccent, Colors.lightBlue],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Text(_userName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                            const SizedBox(height: 5),
-                            Text("$_userName đã đạt bậc $userRank", style: const TextStyle(fontSize: 14, color: Colors.white70)),
+                            const CircleAvatar(
+                              radius: 30,
+                              backgroundColor: Colors.white,
+                              child: Icon(Icons.person, size: 40, color: Colors.blueAccent),
+                            ),
+                            const SizedBox(width: 15),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(_userName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  const SizedBox(height: 5),
+                                  Text("$_userName đã đạt bậc $userRank", style: const TextStyle(fontSize: 14, color: Colors.white70)),
+                                ],
+                              ),
+                            )
                           ],
                         ),
-                      )
-                    ],
+                        const SizedBox(height: 15),
+                        if (achievements.isNotEmpty)
+                          Text(
+                            "$_userName vừa đạt: ${achievements.last['title']}!", 
+                            style: const TextStyle(fontSize: 14, color: Colors.white, fontStyle: FontStyle.italic)
+                          )
+                        else
+                          const Text(
+                            "Hãy học tập để mở khóa nhiều thành tựu nhé!", 
+                            style: TextStyle(fontSize: 14, color: Colors.white, fontStyle: FontStyle.italic)
+                          ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 15),
-                  if (achievements.isNotEmpty)
-                    Text(
-                      "$_userName vừa đạt: ${achievements.last['title']}!", 
-                      style: const TextStyle(fontSize: 14, color: Colors.white, fontStyle: FontStyle.italic)
+                  
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Text("Bảng Xếp Hạng Top 50", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  ),
+                  
+                  if (_leaderboardUsers.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Text("Chưa có dữ liệu xếp hạng trên máy chủ.", style: TextStyle(color: Colors.grey)),
+                      ),
                     )
                   else
-                    const Text(
-                      "Hãy học tập để mở khóa nhiều thành tựu nhé!", 
-                      style: TextStyle(fontSize: 14, color: Colors.white, fontStyle: FontStyle.italic)
-                    ),
+                  // Danh sách xếp hạng
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _leaderboardUsers.length,
+                    itemBuilder: (context, index) {
+                      final user = _leaderboardUsers[index];
+                      final isMe = user['isMe'] == true;
+                      
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isMe ? Colors.blue.shade50 : Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          border: isMe ? Border.all(color: Colors.blueAccent, width: 2) : null,
+                          boxShadow: [
+                            if (!isMe) const BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 2))
+                          ],
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: index == 0 ? Colors.amber : (index == 1 ? Colors.grey.shade400 : (index == 2 ? Colors.brown.shade300 : Colors.blue.shade100)),
+                            child: Text(
+                              "#${index + 1}",
+                              style: TextStyle(color: index < 3 ? Colors.white : Colors.blue.shade800, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          title: Text(user['name'], style: TextStyle(fontWeight: isMe ? FontWeight.bold : FontWeight.normal)),
+                          trailing: Text("${user['exp']} EXP", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orangeAccent)),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-            
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text("Bảng Xếp Hạng Top 50", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
-            ),
-            
-            if (_leaderboardUsers.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Text("Chưa có dữ liệu xếp hạng trên máy chủ.", style: TextStyle(color: Colors.grey)),
-                ),
-              )
-            else
-            // Danh sách xếp hạng
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _leaderboardUsers.length,
-              itemBuilder: (context, index) {
-                final user = _leaderboardUsers[index];
-                final isMe = user['isMe'] == true;
-                
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isMe ? Colors.blue.shade50 : Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    border: isMe ? Border.all(color: Colors.blueAccent, width: 2) : null,
-                    boxShadow: [
-                      if (!isMe) const BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 2))
-                    ],
-                  ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: index == 0 ? Colors.amber : (index == 1 ? Colors.grey.shade400 : (index == 2 ? Colors.brown.shade300 : Colors.blue.shade100)),
-                      child: Text(
-                        "#${index + 1}",
-                        style: TextStyle(color: index < 3 ? Colors.white : Colors.blue.shade800, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    title: Text(user['name'], style: TextStyle(fontWeight: isMe ? FontWeight.bold : FontWeight.normal)),
-                    trailing: Text("${user['exp']} EXP", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orangeAccent)),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
       ),
     );
   }

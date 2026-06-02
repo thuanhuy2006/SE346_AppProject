@@ -282,20 +282,67 @@ class _ForumScreenState extends State<ForumScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F8),
       appBar: AppBar(title: const Text("Diễn đàn thảo luận", style: TextStyle(fontWeight: FontWeight.bold)), centerTitle: true, backgroundColor: Colors.white, elevation: 0),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('forum_posts').orderBy('timestamp', descending: true).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          final posts = snapshot.data?.docs ?? [];
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              final post = posts[index].data() as Map<String, dynamic>;
-              return _buildPostCard(posts[index].id, post);
-            },
-          );
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {});
+          await Future.delayed(const Duration(milliseconds: 800));
         },
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('forum_posts').orderBy('timestamp', descending: true).snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Lỗi tải bài viết: ${snapshot.error}",
+                        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                  const Center(child: CircularProgressIndicator()),
+                ],
+              );
+            }
+            final posts = snapshot.data?.docs ?? [];
+            if (posts.isEmpty) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                  const Center(
+                    child: Text(
+                      "Chưa có bài viết nào. Hãy là người đầu tiên đăng bài!",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ],
+              );
+            }
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(12),
+              itemCount: posts.length,
+              itemBuilder: (context, index) {
+                final post = posts[index].data() as Map<String, dynamic>;
+                return _buildPostCard(posts[index].id, post);
+              },
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(onPressed: _showCreatePostDialog, backgroundColor: kPrimaryBlue, child: const Icon(Icons.edit, color: Colors.white)),
     );

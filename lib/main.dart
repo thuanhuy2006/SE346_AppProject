@@ -309,6 +309,7 @@ class AlphabetScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: kSoftBackground,
           elevation: 0,
+          centerTitle: true,
           title: const Text("Bảng Chữ Cái"),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(70),
