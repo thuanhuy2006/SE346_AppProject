@@ -48,7 +48,9 @@ class _AuthScreenState extends State<AuthScreen> {
         SoundManager.instance.speakJapanese("Omedetou");
       }
       if (mounted) {
-        Navigator.pop(context);
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
       }
     } on FirebaseAuthException catch (e) {
       SoundManager.instance.vibrate('error');
@@ -364,10 +366,10 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: Column(
                     children: [
                       Image.asset(
-                        'assets/images/dog_happy.png',
+                        'assets/icon/AppHocTiengNhat.png',
                         height: 110,
                         errorBuilder: (_, __, ___) => const Icon(
-                          Icons.pets,
+                          Icons.school,
                           size: 100,
                           color: Colors.white,
                         ),
