@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'user_progress.dart';
 import 'database_helper.dart';
 
-// ==========================================================
-// 1. KHO DỮ LIỆU CHUNG (Class này bắt buộc phải có để main.dart gọi được)
-// ==========================================================
 class AchievementData {
   static final List<Map<String, dynamic>> list = [
     {'title': 'Tân binh nhập môn', 'desc': 'Hoàn thành bài học đầu tiên', 'icon': Icons.school, 'color': Colors.blue, 'progress': 0.0},

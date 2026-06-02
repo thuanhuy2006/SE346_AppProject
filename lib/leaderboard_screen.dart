@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_progress.dart';
 import 'database_helper.dart';
-import 'achievements_screen.dart'; // Để lấy dữ liệu AchievementData
+import 'achievements_screen.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   final ValueNotifier<int> activeTabNotifier;
@@ -80,45 +80,53 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
-    
-    // 1. Tải EXP và dữ liệu tiến trình cục bộ của người dùng hiện tại
-    final exp = await UserProgress().getExp();
-    final completed = await UserProgress().getCompletedLessons();
-    final masteredCount = await DatabaseHelper.instance.getMasteredCount();
-    final user = FirebaseAuth.instance.currentUser;
-    
-    // Nếu user vừa đăng nhập và có EXP, nhưng chưa sync bao giờ, ta trigger 1 lần sync nhẹ
-    if (user != null && exp > 0) {
-       await UserProgress().addExp(0); // Trigger save to firestore
-    }
 
-    // Tự động dọn dẹp tài khoản rác trước khi load
-    await _cleanupMockDatabaseData();
-
-    final calculatedAchievements = AchievementData.getCalculatedList(
-      exp: exp,
-      completedLessons: completed,
-      masteredCount: masteredCount,
-    );
-
-    setState(() {
-      _userExp = exp;
-      _achievements = calculatedAchievements;
-      if (user != null && user.displayName != null && user.displayName!.isNotEmpty) {
-        _userName = user.displayName!;
-      } else if (user != null && user.email != null) {
-        _userName = user.email!.split('@').first;
-      }
-    });
-
-    // 2. Tải danh sách xếp hạng từ Firestore (chỉ những người chơi tích cực có exp > 0)
     try {
+      // 1. Tải dữ liệu cục bộ song song để tăng tốc
+      final results = await Future.wait([
+        UserProgress().getExp(),
+        UserProgress().getCompletedLessons(),
+        DatabaseHelper.instance.getMasteredCount(),
+      ]);
+
+      final exp = results[0] as int;
+      final completed = results[1] as List<String>;
+      final masteredCount = results[2] as int;
+      final user = FirebaseAuth.instance.currentUser;
+
+      String currentUserName = 'Người chơi';
+      if (user != null) {
+        if (user.displayName != null && user.displayName!.isNotEmpty) {
+          currentUserName = user.displayName!;
+        } else if (user.email != null) {
+          currentUserName = user.email!.split('@').first;
+        }
+      }
+
+      final calculatedAchievements = AchievementData.getCalculatedList(
+        exp: exp,
+        completedLessons: completed,
+        masteredCount: masteredCount,
+      );
+
+      if (mounted) {
+        setState(() {
+          _userExp = exp;
+          _userName = currentUserName;
+          _achievements = calculatedAchievements;
+        });
+      }
+
+      // 2. Tải danh sách xếp hạng từ Firestore
+      // Bỏ qua _cleanupMockDatabaseData() ở đây vì nó làm chậm quá trình load UI
+
       final snapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('exp', isGreaterThan: 0)
           .orderBy('exp', descending: true)
-          .limit(50) // Giới hạn top 50 người
+          .limit(50)
           .get();
 
       final List<Map<String, dynamic>> fetchedUsers = [];
@@ -144,13 +152,23 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         fetchedUsers.sort((a, b) => (b['exp'] as int).compareTo(a['exp'] as int));
       }
 
-      setState(() {
-        _leaderboardUsers = fetchedUsers;
-      });
+      if (mounted) {
+        setState(() {
+          _leaderboardUsers = fetchedUsers;
+        });
+      }
+
+      // Đồng bộ EXP lên background, không bắt người dùng đợi
+      if (user != null && exp > 0) {
+         UserProgress().addExp(0);
+      }
+
     } catch (e) {
       print("Lỗi tải bảng xếp hạng: $e");
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

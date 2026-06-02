@@ -20,6 +20,31 @@ String _getAvatarInitial(String? name) {
 }
 
 // ==========================================================
+// HÀM LẤY TÊN NGƯỜI DÙNG TỪ FIRESTORE HOẶC AUTH (TỐI ƯU)
+// ==========================================================
+Future<String> _getAuthorName(User user) async {
+  try {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get()
+        .timeout(const Duration(seconds: 5));
+    if (doc.exists && doc.data() != null) {
+      final name = doc.data()!['name'] as String?;
+      if (name != null && name.trim().isNotEmpty) {
+        return name.trim();
+      }
+    }
+  } catch (e) {
+    print("Lỗi lấy tên người dùng: $e");
+  }
+
+  if (user.displayName != null && user.displayName!.isNotEmpty) return user.displayName!;
+  if (user.email != null) return user.email!.split('@').first;
+  return "Người chơi";
+}
+
+// ==========================================================
 // HÀM UPLOAD TOÀN CỤC (GLOBAL FUNCTION) ĐỂ CẢ 2 SCREEN ĐỀU DÙNG ĐƯỢC
 // ==========================================================
 Future<String?> _uploadImage(File file) async {
@@ -38,10 +63,12 @@ Future<String?> _uploadImage(File file) async {
     request.files.add(await http.MultipartFile.fromPath('file', file.path));
     request.fields['upload_preset'] = uploadPreset;
 
-    final response = await request.send();
+    // Thêm timeout 30s để tránh load vô tận
+    final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+    final response = await http.Response.fromStream(streamedResponse);
+
     if (response.statusCode == 200) {
-      final responseData = await response.stream.bytesToString();
-      final jsonResponse = jsonDecode(responseData);
+      final jsonResponse = jsonDecode(response.body);
       return jsonResponse['secure_url'] as String;
     } else {
       print("Cloudinary Upload thất bại với mã lỗi: ${response.statusCode}");
@@ -85,7 +112,11 @@ class _ForumScreenState extends State<ForumScreen> {
               title: const Text('Thư viện ảnh'),
               onTap: () async {
                 Navigator.pop(ctx);
-                final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+                final pickedFile = await picker.pickImage(
+                  source: ImageSource.gallery,
+                  imageQuality: 70,
+                  maxWidth: 1080,
+                );
                 if (pickedFile != null) {
                   setModalState(() => _imageFile = File(pickedFile.path));
                   setState(() {});
@@ -97,7 +128,11 @@ class _ForumScreenState extends State<ForumScreen> {
               title: const Text('Máy ảnh'),
               onTap: () async {
                 Navigator.pop(ctx);
-                final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                final pickedFile = await picker.pickImage(
+                  source: ImageSource.camera,
+                  imageQuality: 70,
+                  maxWidth: 1080,
+                );
                 if (pickedFile != null) {
                   setModalState(() => _imageFile = File(pickedFile.path));
                   setState(() {});
@@ -209,33 +244,14 @@ class _ForumScreenState extends State<ForumScreen> {
     setModalState(() => _isUploading = true);
     setState(() => _isUploading = true);
     try {
-      String? uploadedUrl;
-      if (_imageFile != null) uploadedUrl = await _uploadImage(_imageFile!);
+      // Tối ưu: Chạy upload ảnh và lấy tên user song song
+      final results = await Future.wait([
+        _imageFile != null ? _uploadImage(_imageFile!) : Future.value(null),
+        _getAuthorName(user),
+      ]);
 
-      String authorName = "Người dùng";
-      try {
-        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-        if (doc.exists && doc.data() != null) {
-          final name = doc.data()!['name'] as String?;
-          if (name != null && name.trim().isNotEmpty) {
-            authorName = name.trim();
-          }
-        }
-      } catch (e) {
-        print("Lỗi lấy tên người dùng từ Firestore: $e");
-      }
-
-      if (authorName == "Người dùng" || authorName.isEmpty) {
-        final authName = user.displayName;
-        if (authName != null && authName.trim().isNotEmpty) {
-          authorName = authName.trim();
-        } else {
-          final email = user.email;
-          if (email != null && email.trim().isNotEmpty) {
-            authorName = email.split('@')[0];
-          }
-        }
-      }
+      final String? uploadedUrl = results[0] as String?;
+      final String authorName = results[1] as String;
 
       await FirebaseFirestore.instance.collection('forum_posts').add({
         'authorId': user.uid,
@@ -402,8 +418,32 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       builder: (ctx) => SafeArea(
         child: Wrap(
           children: [
-            ListTile(leading: const Icon(Icons.photo_library), title: const Text('Thư viện ảnh'), onTap: () async { Navigator.pop(ctx); final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70); if (pickedFile != null) setState(() => _commentImageFile = File(pickedFile.path)); }),
-            ListTile(leading: const Icon(Icons.camera_alt), title: const Text('Máy ảnh'), onTap: () async { Navigator.pop(ctx); final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 70); if (pickedFile != null) setState(() => _commentImageFile = File(pickedFile.path)); }),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Thư viện ảnh'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final pickedFile = await picker.pickImage(
+                  source: ImageSource.gallery,
+                  imageQuality: 70,
+                  maxWidth: 1080,
+                );
+                if (pickedFile != null) setState(() => _commentImageFile = File(pickedFile.path));
+              }
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Máy ảnh'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final pickedFile = await picker.pickImage(
+                  source: ImageSource.camera,
+                  imageQuality: 70,
+                  maxWidth: 1080,
+                );
+                if (pickedFile != null) setState(() => _commentImageFile = File(pickedFile.path));
+              }
+            ),
           ],
         ),
       ),
@@ -413,43 +453,32 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Future<void> _submitComment() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
+
     final content = _commentController.text.trim();
     if (content.isEmpty && _commentImageFile == null) return;
 
+    if (!mounted) return;
     setState(() => _isUploading = true);
+
     try {
+      // Upload ảnh và lấy tên chạy song song — KHÔNG thêm .timeout() bên ngoài
+      // vì _uploadImage đã có timeout 30s bên trong rồi
       String? url;
-      // ĐÃ SỬA: Gọi trực tiếp hàm _uploadImage toàn cục lên Cloudinary
-      if (_commentImageFile != null) {
-        url = await _uploadImage(_commentImageFile!);
-      }
+      String authorName;
 
-      String authorName = "Người dùng";
-      try {
-        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-        if (doc.exists && doc.data() != null) {
-          final name = doc.data()!['name'] as String?;
-          if (name != null && name.trim().isNotEmpty) {
-            authorName = name.trim();
-          }
-        }
-      } catch (e) {
-        print("Lỗi lấy tên bình luận từ Firestore: $e");
-      }
+      final imageResult = _commentImageFile != null
+          ? await _uploadImage(_commentImageFile!)
+          : null;
+      url = imageResult;
+      authorName = await _getAuthorName(user);
 
-      if (authorName == "Người dùng" || authorName.isEmpty) {
-        final authName = user.displayName;
-        if (authName != null && authName.trim().isNotEmpty) {
-          authorName = authName.trim();
-        } else {
-          final email = user.email;
-          if (email != null && email.trim().isNotEmpty) {
-            authorName = email.split('@')[0];
-          }
-        }
-      }
+      final commentRef = FirebaseFirestore.instance
+          .collection('forum_posts')
+          .doc(widget.postId)
+          .collection('comments')
+          .doc();
 
-      await FirebaseFirestore.instance.collection('forum_posts').doc(widget.postId).collection('comments').add({
+      await commentRef.set({
         'authorId': user.uid,
         'authorName': authorName,
         'content': content,
@@ -458,10 +487,35 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'replyToName': _replyToAuthorName,
         'timestamp': FieldValue.serverTimestamp(),
       });
-      await FirebaseFirestore.instance.collection('forum_posts').doc(widget.postId).update({'commentCount': FieldValue.increment(1)});
-      setState(() { _commentController.clear(); _commentImageFile = null; _replyToCommentId = null; _replyToAuthorName = null; });
-      FocusScope.of(context).unfocus();
-    } catch (e) { print("Lỗi: $e"); } finally { if (mounted) setState(() => _isUploading = false); }
+
+      // Dùng update thay vì set+merge để tránh ghi đè toàn bộ document
+      await FirebaseFirestore.instance
+          .collection('forum_posts')
+          .doc(widget.postId)
+          .update({'commentCount': FieldValue.increment(1)});
+
+      if (mounted) {
+        setState(() {
+          _commentController.clear();
+          _commentImageFile = null;
+          _replyToCommentId = null;
+          _replyToAuthorName = null;
+          _isUploading = false; // ← reset ngay trong setState này
+        });
+        FocusScope.of(context).unfocus();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Đã gửi bình luận!"), duration: Duration(seconds: 2))
+        );
+      }
+    } catch (e) {
+      print("Lỗi gửi bình luận: $e");
+      if (mounted) {
+        setState(() => _isUploading = false); // ← reset trong catch
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Không thể gửi bình luận, thử lại.")),
+        );
+      }
+    }
   }
 
   @override
@@ -474,50 +528,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           Expanded(
             child: CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              child: Text(_getAvatarInitial(widget.post['authorName']))
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              (widget.post['authorName'] != null && widget.post['authorName'].toString().trim().isNotEmpty)
-                                  ? widget.post['authorName']
-                                  : "Người dùng",
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
-                            )
-                          ]
-                        ),
-                        const SizedBox(height: 12),
-                        Text(widget.post['content'], style: const TextStyle(fontSize: 16)),
-
-                        // ĐÃ SỬA: Kiểm tra an toàn cho ảnh bài viết gốc trong view chi tiết
-                        if (widget.post['imageUrl'] != null && widget.post['imageUrl'].toString().isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                widget.post['imageUrl'],
-                                width: double.infinity,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-                              )
-                            )
-                          ),
-
-                        const SizedBox(height: 16),
-                        const Divider(),
-                        const Text("Tất cả bình luận", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                      ],
-                    ),
-                  ),
+                // Sử dụng StreamBuilder để cập nhật số lượng like/comment real-time
+                StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('forum_posts')
+                      .doc(widget.postId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    // Ưu tiên data từ stream, chỉ fallback về widget.post khi chưa có gì
+                    final postData = (snapshot.hasData && snapshot.data!.exists)
+                        ? snapshot.data!.data() as Map<String, dynamic>
+                        : widget.post; // ← fallback tạm thời khi đang load
+                    return SliverToBoxAdapter(child: _buildPostHeader(postData));
+                  },
                 ),
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('forum_posts').doc(widget.postId).collection('comments').orderBy('timestamp', descending: false).snapshots(),
@@ -534,6 +557,59 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           ),
           _buildCommentInput(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostHeader(Map<String, dynamic> post) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: kPrimaryBlue.withOpacity(0.1),
+                child: Text(_getAvatarInitial(post['authorName']), style: const TextStyle(color: kPrimaryBlue, fontWeight: FontWeight.bold))
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    (post['authorName'] != null && post['authorName'].toString().trim().isNotEmpty)
+                        ? post['authorName']
+                        : "Người dùng",
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
+                  ),
+                  Text(
+                    "${post['commentCount'] ?? 0} bình luận",
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  )
+                ],
+              )
+            ]
+          ),
+          const SizedBox(height: 12),
+          Text(post['content'] ?? "", style: const TextStyle(fontSize: 16)),
+          if (post['imageUrl'] != null && post['imageUrl'].toString().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  post['imageUrl'],
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                )
+              )
+            ),
+          const SizedBox(height: 16),
+          const Divider(),
+          const Text("Tất cả bình luận", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
         ],
       ),
     );
