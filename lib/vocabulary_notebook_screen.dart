@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'database_helper.dart';
 import 'sound_manager.dart';
+import 'main.dart';
 
 class VocabularyNotebookScreen extends StatefulWidget {
   const VocabularyNotebookScreen({Key? key}) : super(key: key);
@@ -254,23 +254,46 @@ class _VocabularyNotebookScreenState extends State<VocabularyNotebookScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF9FAFC),
+        backgroundColor: kSoftBackground,
         appBar: AppBar(
           title: const Text(
             'Sổ tay của bạn',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
           ),
           centerTitle: true,
-          backgroundColor: Colors.indigo.shade700,
+          backgroundColor: kSoftBackground,
+          foregroundColor: Colors.black87,
           elevation: 0,
-          bottom: const TabBar(
-            indicatorColor: Colors.amber,
-            indicatorWeight: 4,
-            labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            tabs: [
-              Tab(text: 'Sổ tay của tôi'),
-              Tab(text: 'Khám phá'),
-            ],
+          iconTheme: const IconThemeData(color: kPrimaryBlue),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(70),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(0, 0, 0, 0.05),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const TabBar(
+                labelColor: kPrimaryBlue,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: kPrimaryBlue,
+                indicatorWeight: 3,
+                indicatorSize: TabBarIndicatorSize.label,
+                labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                tabs: [
+                  Tab(text: 'Sổ tay của tôi'),
+                  Tab(text: 'Khám phá'),
+                ],
+              ),
+            ),
           ),
         ),
         body: TabBarView(
@@ -341,9 +364,13 @@ class _VocabularyNotebookScreenState extends State<VocabularyNotebookScreen> {
                 ),
               ),
               selected: isSelected,
-              selectedColor: Colors.indigo.shade500,
+              selectedColor: kPrimaryBlue,
               backgroundColor: Colors.white,
               elevation: isSelected ? 2 : 0,
+              side: BorderSide(
+                color: isSelected ? Colors.transparent : Colors.grey.shade200,
+                width: 1,
+              ),
               onSelected: (selected) {
                 if (selected) {
                   setState(() {
