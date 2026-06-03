@@ -18,36 +18,45 @@ class SurveyScreen extends StatefulWidget {
 }
 
 class _SurveyScreenState extends State<SurveyScreen> {
-  String _selectedLevel = 'beginner'; // 'beginner', 'intermediate', 'advanced'
+  String _selectedLevel = 'beginner'; // 'beginner', 'elementary', 'intermediate', 'proficient'
   bool _isSubmitting = false;
 
   final List<Map<String, dynamic>> _levels = [
     {
       'key': 'beginner',
       'title': 'Mới bắt đầu',
-      'subtitle': 'Học từ bảng chữ cái Hiragana & Katakana',
+      'subtitle': 'Học từ bảng chữ cái Hiragana & Katakana (N5)',
       'icon': Icons.sort_by_alpha,
       'color': Color(0xFF4A89F3),
       'bgColor': Color(0xFFEDF4FE),
-      'unlockedText': 'Mở khóa chặng: Bảng chữ cái',
+      'unlockedText': 'Bắt đầu từ cấp độ: N5',
     },
     {
-      'key': 'intermediate',
-      'title': 'Biết sơ sơ',
-      'subtitle': 'Bỏ qua bảng chữ cái, bắt đầu từ bài Cơ bản 4',
+      'key': 'elementary',
+      'title': 'Sơ cấp',
+      'subtitle': 'Bỏ qua N5, bắt đầu học từ cấp độ N4',
       'icon': Icons.waving_hand,
       'color': Color(0xFFFFA000),
       'bgColor': Color(0xFFFFF8E1),
-      'unlockedText': 'Mở khóa chặng: Alphabet + Cơ bản 1-3\n(Mở khóa tính năng Ôn tập nhanh)',
+      'unlockedText': 'Mở khóa toàn bộ cấp độ N5\n(Bắt đầu từ N4)',
     },
     {
-      'key': 'advanced',
-      'title': 'Biết tương đối',
-      'subtitle': 'Thành thạo cơ bản, bắt đầu từ bài Cơ bản 8',
-      'icon': Icons.auto_awesome,
+      'key': 'intermediate',
+      'title': 'Trung cấp',
+      'subtitle': 'Bỏ qua N5 & N4, bắt đầu học từ cấp độ N3',
+      'icon': Icons.assignment,
       'color': Color(0xFFE91E63),
       'bgColor': Color(0xFFFCE4EC),
-      'unlockedText': 'Mở khóa chặng: Alphabet + Cơ bản 1-7\n(Mở khóa nhiều bài Ôn tập nhanh)',
+      'unlockedText': 'Mở khóa toàn bộ cấp độ N5 và N4\n(Bắt đầu từ N3)',
+    },
+    {
+      'key': 'proficient',
+      'title': 'Thành thạo',
+      'subtitle': 'Bỏ qua N5, N4, N3, bắt đầu học từ cấp độ N2',
+      'icon': Icons.auto_awesome,
+      'color': Color(0xFF4CAF50),
+      'bgColor': Color(0xFFE8F5E9),
+      'unlockedText': 'Mở khóa toàn bộ N5, N4 và N3\n(Bắt đầu từ N2)',
     },
   ];
 
@@ -77,17 +86,44 @@ class _SurveyScreenState extends State<SurveyScreen> {
         ];
       }
 
-      if (_selectedLevel == 'intermediate') {
-        // Mở khóa hết bảng chữ cái và cơ bản 1, 2, 3
+      List<String> getNXKeys(String levelPrefix, int chapter) {
+        return [
+          '${levelPrefix}_bai${chapter}_lythuyet',
+          '${levelPrefix}_bai${chapter}_luyentap1',
+          '${levelPrefix}_bai${chapter}_luyentap2',
+          '${levelPrefix}_bai${chapter}_luyentap3',
+          '${levelPrefix}_bai${chapter}_luyennoi',
+          '${levelPrefix}_bai${chapter}_luyenviet',
+          '${levelPrefix}_bai${chapter}_ontap',
+        ];
+      }
+
+      if (_selectedLevel == 'elementary') {
+        // Mở khóa toàn bộ N5
         completedLessons.addAll(alphabetKeys);
-        for (int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 10; i++) {
           completedLessons.addAll(getBasicKeys(i));
         }
-      } else if (_selectedLevel == 'advanced') {
-        // Mở khóa hết bảng chữ cái và cơ bản 1 đến 7
+      } else if (_selectedLevel == 'intermediate') {
+        // Mở khóa toàn bộ N5 và N4
         completedLessons.addAll(alphabetKeys);
-        for (int i = 1; i <= 7; i++) {
+        for (int i = 1; i <= 10; i++) {
           completedLessons.addAll(getBasicKeys(i));
+        }
+        for (int i = 1; i <= 10; i++) {
+          completedLessons.addAll(getNXKeys('n4', i));
+        }
+      } else if (_selectedLevel == 'proficient') {
+        // Mở khóa toàn bộ N5, N4 và N3
+        completedLessons.addAll(alphabetKeys);
+        for (int i = 1; i <= 10; i++) {
+          completedLessons.addAll(getBasicKeys(i));
+        }
+        for (int i = 1; i <= 10; i++) {
+          completedLessons.addAll(getNXKeys('n4', i));
+        }
+        for (int i = 1; i <= 10; i++) {
+          completedLessons.addAll(getNXKeys('n3', i));
         }
       }
 

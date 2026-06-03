@@ -2141,11 +2141,12 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
   // 2. DANH SÁCH TOÀN BỘ BÀI HỌC
   late List<Map<String, dynamic>> _lessons;
   String _currentCourse = 'Sơ cấp 1 - N5';
+  bool _isFirstLoad = true;
 
   @override
   void initState() {
     super.initState();
-    _initLessons(); // Mặc định là N5
+    _initLessons(); // Mặc định là N5 để tránh lỗi Late Initialization
     _refreshProgress();
     widget.activeTabNotifier.addListener(_handleTabChange);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2221,6 +2222,24 @@ class _SummonerHomePageState extends State<SummonerHomePage> {
     List<String> completed = await UserProgress().getCompletedLessons();
 
     setState(() {
+      if (_isFirstLoad) {
+        _isFirstLoad = false;
+        // Tự động chuyển đổi sang khóa học phù hợp nhất dựa trên tiến trình bài học đã hoàn thành
+        if (completed.contains('n3_bai10_ontap')) {
+          _currentCourse = 'Trung cấp 2 - N2';
+          _initNXLessons('n2', 400);
+        } else if (completed.contains('n4_bai10_ontap')) {
+          _currentCourse = 'Trung cấp 1 - N3';
+          _initNXLessons('n3', 300);
+        } else if (completed.contains('cb10_ontap')) {
+          _currentCourse = 'Sơ cấp 2 - N4';
+          _initNXLessons('n4', 200);
+        } else {
+          _currentCourse = 'Sơ cấp 1 - N5';
+          _initLessons();
+        }
+      }
+
       for (var lesson in _lessons) {
         lesson['status'] = 0;
       }
