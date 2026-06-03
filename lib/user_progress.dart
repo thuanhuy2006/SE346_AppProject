@@ -126,6 +126,8 @@ class UserProgress {
       final prefs = await SharedPreferences.getInstance();
       final String expKey = '${_keyExp}_${user.uid}';
       final String lessonsKey = '${_keyCompletedLessons}_${user.uid}';
+      final String frameKey = 'equipped_frame_${user.uid}';
+      final String titleKey = 'equipped_title_${user.uid}';
 
       if (doc.exists) {
         final data = doc.data();
@@ -142,12 +144,29 @@ class UserProgress {
           } else {
             await prefs.remove(lessonsKey);
           }
+
+          // Sync Frame & Title
+          final String? remoteFrame = data['equippedFrame'];
+          final String? remoteTitle = data['equippedTitle'];
+          if (remoteFrame != null) {
+            await prefs.setString(frameKey, remoteFrame);
+          } else {
+            await prefs.remove(frameKey);
+          }
+          if (remoteTitle != null) {
+            await prefs.setString(titleKey, remoteTitle);
+          } else {
+            await prefs.remove(titleKey);
+          }
+
           print("Đồng bộ thành công tiến độ từ Firebase: EXP=$remoteExp");
         }
       } else {
         // Nếu document không tồn tại trên Firestore (User mới), khởi tạo giá trị 0
         await prefs.setInt(expKey, 0);
         await prefs.remove(lessonsKey);
+        await prefs.remove(frameKey);
+        await prefs.remove(titleKey);
 
         String displayName = user.displayName ?? '';
         if (displayName.isEmpty && user.email != null) {
@@ -159,6 +178,8 @@ class UserProgress {
           'name': displayName,
           'email': user.email,
           'completedLessons': <String>[],
+          'equippedFrame': null,
+          'equippedTitle': null,
           'lastUpdated': FieldValue.serverTimestamp(),
         });
         print("Đã khởi tạo tiến trình mặc định cho user mới trên Firestore.");
@@ -182,12 +203,16 @@ class UserProgress {
       final String lessonsKey = '${_keyCompletedLessons}_${user.uid}';
       await prefs.remove(expKey);
       await prefs.remove(lessonsKey);
+      await prefs.remove('equipped_frame_${user.uid}');
+      await prefs.remove('equipped_title_${user.uid}');
 
       // Reset trên Firestore
       try {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'exp': 0,
           'completedLessons': <String>[],
+          'equippedFrame': null,
+          'equippedTitle': null,
           'lastUpdated': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       } catch (e) {
@@ -215,5 +240,54 @@ class UserProgress {
         print("Lỗi đồng bộ tên lên Firestore: $e");
       }
     }
+  }
+
+  // 8. Cập nhật Khung viền và Danh hiệu được trang bị
+  Future<void> updateEquippedFrameAndTitle(String? frame, String? title) async {
+    final prefs = await SharedPreferences.getInstance();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final String frameKey = 'equipped_frame_${user.uid}';
+      final String titleKey = 'equipped_title_${user.uid}';
+
+      if (frame != null) {
+        await prefs.setString(frameKey, frame);
+      } else {
+        await prefs.remove(frameKey);
+      }
+
+      if (title != null) {
+        await prefs.setString(titleKey, title);
+      } else {
+        await prefs.remove(titleKey);
+      }
+
+      // Đồng bộ lên Firestore
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'equippedFrame': frame,
+          'equippedTitle': title,
+          'lastUpdated': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        print("Đã cập nhật equippedFrame & equippedTitle lên Firestore: Frame=$frame, Title=$title");
+      } catch (e) {
+        print("Lỗi đồng bộ equippedFrame & equippedTitle lên Firestore: $e");
+      }
+    }
+  }
+
+  // 9. Lấy Khung viền và Danh hiệu đang trang bị từ local
+  Future<Map<String, String?>> getEquippedFrameAndTitle() async {
+    final prefs = await SharedPreferences.getInstance();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return {'frame': null, 'title': null};
+
+    final String frameKey = 'equipped_frame_${user.uid}';
+    final String titleKey = 'equipped_title_${user.uid}';
+
+    return {
+      'frame': prefs.getString(frameKey),
+      'title': prefs.getString(titleKey),
+    };
   }
 }

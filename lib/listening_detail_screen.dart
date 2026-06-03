@@ -23,6 +23,7 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
   final Map<int, String> _userAnswers = {};
   bool _isSubmitted = false;
   bool _showAllAnswers = false;
+  double _playbackSpeed = 1.0;
 
   final List<Map<String, dynamic>> _questions = [
     {
@@ -258,6 +259,7 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
         : VideoPlayerController.asset(_activeAudioAsset);
 
     _controller.initialize().then((_) {
+      _controller.setPlaybackSpeed(_playbackSpeed);
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -434,6 +436,36 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _playbackSpeed,
+                      icon: const Icon(Icons.speed, color: Color(0xFFFF5252), size: 16),
+                      style: const TextStyle(color: Color(0xFFFF5252), fontSize: 13, fontWeight: FontWeight.bold),
+                      onChanged: (double? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            _playbackSpeed = newValue;
+                            _controller.setPlaybackSpeed(newValue);
+                          });
+                        }
+                      },
+                      items: const [
+                        DropdownMenuItem(value: 0.5, child: Text("0.5x")),
+                        DropdownMenuItem(value: 0.75, child: Text("0.75x")),
+                        DropdownMenuItem(value: 1.0, child: Text("1.0x")),
+                        DropdownMenuItem(value: 1.25, child: Text("1.25x")),
+                        DropdownMenuItem(value: 1.5, child: Text("1.5x")),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
                 IconButton(
                   icon: const Icon(Icons.replay_10, size: 30),
                   onPressed: () {
@@ -441,7 +473,7 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
                     _controller.seekTo(newPos < Duration.zero ? Duration.zero : newPos);
                   },
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 12),
                 GestureDetector(
                   onTap: () {
                     setState(() {
@@ -458,7 +490,7 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 12),
                 IconButton(
                   icon: const Icon(Icons.forward_10, size: 30),
                   onPressed: () {

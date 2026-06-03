@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_progress.dart';
 import 'database_helper.dart';
 import 'achievements_screen.dart';
+import 'main.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   final ValueNotifier<int> activeTabNotifier;
@@ -140,15 +141,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           'name': data['name'] ?? 'Người chơi',
           'exp': data['exp'] ?? 0,
           'isMe': isMe,
+          'equippedFrame': data['equippedFrame'],
+          'equippedTitle': data['equippedTitle'],
         });
       }
 
       // Đảm bảo người dùng hiện tại luôn có trong danh sách kể cả khi rớt top (dùng dữ liệu local)
       if (user != null && !fetchedUsers.any((u) => u['isMe'] == true)) {
+        final localEquipped = await UserProgress().getEquippedFrameAndTitle();
         fetchedUsers.add({
           'name': _userName,
           'exp': _userExp,
           'isMe': true,
+          'equippedFrame': localEquipped['frame'],
+          'equippedTitle': localEquipped['title'],
         });
         // Sắp xếp lại
         fetchedUsers.sort((a, b) => (b['exp'] as int).compareTo(a['exp'] as int));
@@ -298,19 +304,64 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           borderRadius: BorderRadius.circular(15),
                           border: isMe ? Border.all(color: Colors.blueAccent, width: 2) : null,
                           boxShadow: [
-                            if (!isMe) const BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 2))
+                            if (!isMe) const BoxShadow(color: Color(0x1F000000), blurRadius: 5, offset: Offset(0, 2))
                           ],
                         ),
                         child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: index == 0 ? Colors.amber : (index == 1 ? Colors.grey.shade400 : (index == 2 ? Colors.brown.shade300 : Colors.blue.shade100)),
-                            child: Text(
-                              "#${index + 1}",
-                              style: TextStyle(color: index < 3 ? Colors.white : Colors.blue.shade800, fontWeight: FontWeight.bold),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          leading: SizedBox(
+                            width: 85,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 32,
+                                  child: Text(
+                                    "#${index + 1}",
+                                    style: TextStyle(
+                                      color: index == 0
+                                          ? Colors.amber.shade700
+                                          : (index == 1
+                                              ? Colors.grey.shade600
+                                              : (index == 2
+                                                  ? Colors.brown.shade600
+                                                  : Colors.blueGrey)),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                AvatarWithFrame(
+                                  radius: 20,
+                                  frame: user['equippedFrame'],
+                                  child: const Icon(Icons.person, size: 20, color: Colors.blueAccent),
+                                ),
+                              ],
                             ),
                           ),
-                          title: Text(user['name'], style: TextStyle(fontWeight: isMe ? FontWeight.bold : FontWeight.normal)),
-                          trailing: Text("${user['exp']} EXP", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orangeAccent)),
+                          title: Text(
+                            user['name'],
+                            style: TextStyle(
+                              fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
+                              fontSize: 15,
+                            ),
+                          ),
+                          subtitle: user['equippedTitle'] != null
+                              ? Text(
+                                  user['equippedTitle'],
+                                  style: TextStyle(
+                                    color: Colors.blueGrey.shade600,
+                                    fontSize: 12,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                )
+                              : null,
+                          trailing: Text(
+                            "${user['exp']} EXP",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orangeAccent,
+                            ),
+                          ),
                         ),
                       );
                     },

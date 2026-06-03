@@ -15,6 +15,7 @@ class _ReadingDetailScreenState extends State<ReadingDetailScreen> {
   final Map<int, String> _userAnswers = {};
   bool _isSubmitted = false;
   bool _showAllAnswers = false;
+  bool _showFurigana = true;
 
   late List<Map<String, dynamic>> _lessonData;
 
@@ -263,6 +264,22 @@ class _ReadingDetailScreenState extends State<ReadingDetailScreen> {
         ),
         title: Text(widget.title, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          Row(
+            children: [
+              const Text("Furigana", style: TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.bold)),
+              Switch(
+                value: _showFurigana,
+                onChanged: (val) {
+                  setState(() {
+                    _showFurigana = val;
+                  });
+                },
+              ),
+              const SizedBox(width: 8),
+            ],
+          )
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -316,6 +333,95 @@ class _ReadingDetailScreenState extends State<ReadingDetailScreen> {
     );
   }
 
+  Widget _buildPassageText(String passage, bool showFurigana) {
+    final lines = passage.split('\n');
+    final List<Widget> lineWidgets = [];
+    final regex = RegExp(r'([^\s\{\}\n]+)\{([^\}]+)\}');
+
+    for (var line in lines) {
+      if (line.trim().isEmpty) {
+        lineWidgets.add(const SizedBox(height: 10));
+        continue;
+      }
+
+      final List<Widget> rowChildren = [];
+      int start = 0;
+
+      for (final match in regex.allMatches(line)) {
+        if (match.start > start) {
+          final normalText = line.substring(start, match.start);
+          rowChildren.add(
+            Text(
+              normalText,
+              style: const TextStyle(fontSize: 16, height: 1.8, color: Colors.black87),
+            ),
+          );
+        }
+
+        final kanji = match.group(1)!;
+        final ruby = match.group(2)!;
+
+        rowChildren.add(
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: showFurigana ? 16 : 0,
+                child: AnimatedOpacity(
+                  opacity: showFurigana ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    ruby,
+                    style: const TextStyle(fontSize: 10, color: Colors.grey, height: 1.0),
+                  ),
+                ),
+              ),
+              Text(
+                kanji,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  height: 1.2,
+                ),
+              ),
+            ],
+          ),
+        );
+        start = match.end;
+      }
+
+      if (start < line.length) {
+        rowChildren.add(
+          Text(
+            line.substring(start),
+            style: const TextStyle(fontSize: 16, height: 1.8, color: Colors.black87),
+          ),
+        );
+      }
+
+      lineWidgets.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Wrap(
+            alignment: WrapAlignment.start,
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: 2,
+            runSpacing: 6,
+            children: rowChildren,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: lineWidgets,
+    );
+  }
+
   Widget _buildQuestionBlock(Map<String, dynamic> item) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,7 +436,7 @@ class _ReadingDetailScreenState extends State<ReadingDetailScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade200),
             ),
-            child: Text(item['passage'], style: const TextStyle(fontSize: 15, height: 1.6)),
+            child: _buildPassageText(item['passage'], _showFurigana),
           ),
         Text(item['question'], style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),

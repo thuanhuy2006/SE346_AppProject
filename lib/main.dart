@@ -775,6 +775,72 @@ class _JapaneseGridState extends State<JapaneseGrid> {
   }
 }
 
+class AvatarWithFrame extends StatelessWidget {
+  final double radius;
+  final String? frame;
+  final Widget child;
+
+  const AvatarWithFrame({
+    super.key,
+    required this.radius,
+    required this.frame,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (frame == null || frame == 'none') {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.white,
+        child: child,
+      );
+    }
+
+    List<Color> gradientColors;
+    switch (frame) {
+      case 'bronze':
+        gradientColors = [const Color(0xFFCD7F32), const Color(0xFFB87333), const Color(0xFF8C5220)];
+        break;
+      case 'silver':
+        gradientColors = [const Color(0xFFC0C0C0), const Color(0xFFE6E6E6), const Color(0xFF8A8A8A)];
+        break;
+      case 'gold':
+        gradientColors = [const Color(0xFFFFD700), const Color(0xFFFFF099), const Color(0xFFB8860B)];
+        break;
+      case 'diamond':
+        gradientColors = [const Color(0xFF00E5FF), const Color(0xFFD500F9), const Color(0xFF3366FF)];
+        break;
+      default:
+        gradientColors = [Colors.grey, Colors.grey];
+    }
+
+    return Container(
+      padding: EdgeInsets.all(radius * 0.08),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.first.withOpacity(0.4),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: CircleAvatar(
+        radius: radius - (radius * 0.08),
+        backgroundColor: Colors.white,
+        child: child,
+      ),
+    );
+  }
+}
+
 // ==========================================================
 // 3. MÀN HÌNH "TÔI" (PROFILE DASHBOARD)
 // ==========================================================
@@ -790,14 +856,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final GlobalKey _progressChartKey = GlobalKey();
   List<Map<String, dynamic>> previewTips = [];
 
+  String? _equippedFrame;
+  String? _equippedTitle;
+  int _userExp = 0;
+  List<Map<String, dynamic>> _unlockedAchievements = [];
+  bool _isLoadingProfileData = true;
+
   @override
   void initState() {
     super.initState();
     TipsData.sortTips(); // Xếp chuẩn dữ liệu trước
-    previewTips = TipsData.list
-        .take(2)
-        .toList(); // Lấy 2 cái đầu tiên giữ cố định
+    previewTips = TipsData.list.take(2).toList(); // Lấy 2 cái đầu tiên giữ cố định
     widget.activeTabNotifier.addListener(_handleTabChange);
+    _loadProfileData();
   }
 
   @override
@@ -807,9 +878,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _handleTabChange() {
-    if (widget.activeTabNotifier.value == 3) {
+    if (widget.activeTabNotifier.value == 4) {
+      _loadProfileData();
+    }
+  }
+
+  Future<void> _loadProfileData() async {
+    try {
+      final results = await Future.wait([
+        UserProgress().getExp(),
+        UserProgress().getCompletedLessons(),
+        DatabaseHelper.instance.getMasteredCount(),
+        UserProgress().getEquippedFrameAndTitle(),
+      ]);
+
+      final exp = results[0] as int;
+      final completed = results[1] as List<String>;
+      final masteredCount = results[2] as int;
+      final equipped = results[3] as Map<String, String?>;
+
+      final achievements = AchievementData.getCalculatedList(
+        exp: exp,
+        completedLessons: completed,
+        masteredCount: masteredCount,
+      );
+
+      final unlocked = achievements.where((a) => (a['progress'] as double) >= 1.0).toList();
+
       if (mounted) {
-        setState(() {});
+        setState(() {
+          _userExp = exp;
+          _unlockedAchievements = unlocked;
+          _equippedFrame = equipped['frame'];
+          _equippedTitle = equipped['title'];
+          _isLoadingProfileData = false;
+        });
+      }
+    } catch (e) {
+      print("Lỗi tải thông tin trang cá nhân: $e");
+      if (mounted) {
+        setState(() => _isLoadingProfileData = false);
       }
     }
   }
@@ -819,6 +927,222 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       previewTips = TipsData.list.take(2).toList();
     });
+  }
+
+  void _showEquipBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.65,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+              ),
+              child: DefaultTabController(
+                length: 2,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      "Trang bị của bạn",
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    const TabBar(
+                      labelColor: kPrimaryBlue,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorColor: kPrimaryBlue,
+                      tabs: [
+                        Tab(text: "Khung Avatar"),
+                        Tab(text: "Danh hiệu"),
+                      ],
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          _buildFrameSelectionList(setSheetState),
+                          _buildTitleSelectionList(setSheetState),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFrameSelectionList(StatefulSetter setSheetState) {
+    final frames = [
+      {'id': 'none', 'name': 'Mặc định (Không khung)', 'req': 0, 'desc': 'Khung viền nguyên bản'},
+      {'id': 'bronze', 'name': 'Khung Đồng', 'req': 100, 'desc': 'Yêu cầu đạt từ 100 EXP'},
+      {'id': 'silver', 'name': 'Khung Bạc', 'req': 300, 'desc': 'Yêu cầu đạt từ 300 EXP'},
+      {'id': 'gold', 'name': 'Khung Vàng', 'req': 600, 'desc': 'Yêu cầu đạt từ 600 EXP'},
+      {'id': 'diamond', 'name': 'Khung Kim Cương', 'req': 1000, 'desc': 'Yêu cầu đạt từ 1000 EXP'},
+    ];
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: frames.length,
+      itemBuilder: (context, index) {
+        final frame = frames[index];
+        final String fId = frame['id'] as String;
+        final int reqExp = frame['req'] as int;
+        
+        final bool isUnlocked = _userExp >= reqExp;
+        final bool isEquipped = _equippedFrame == fId;
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: isEquipped ? kPrimaryBlue : Colors.grey.shade200,
+              width: isEquipped ? 2 : 1,
+            ),
+          ),
+          child: ListTile(
+            leading: AvatarWithFrame(
+              radius: 22,
+              frame: fId,
+              child: const Icon(Icons.person, color: kPrimaryBlue),
+            ),
+            title: Text(
+              frame['name'] as String,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isUnlocked ? Colors.black87 : Colors.grey,
+              ),
+            ),
+            subtitle: Text(
+              isUnlocked ? 'Đã mở khóa' : (frame['desc'] as String),
+              style: TextStyle(
+                fontSize: 12,
+                color: isUnlocked ? Colors.green : Colors.red,
+              ),
+            ),
+            trailing: isEquipped
+                ? const Icon(Icons.check_circle, color: kPrimaryBlue)
+                : (isUnlocked
+                    ? ElevatedButton(
+                        onPressed: () async {
+                          await UserProgress().updateEquippedFrameAndTitle(fId, _equippedTitle);
+                          setSheetState(() {
+                            _equippedFrame = fId;
+                          });
+                          setState(() {
+                            _equippedFrame = fId;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kPrimaryBlue.withOpacity(0.1),
+                          foregroundColor: kPrimaryBlue,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text("Trang bị", style: TextStyle(fontWeight: FontWeight.bold)),
+                      )
+                    : const Icon(Icons.lock, color: Colors.grey)),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTitleSelectionList(StatefulSetter setSheetState) {
+    if (_unlockedAchievements.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Text(
+            "Bạn chưa mở khóa danh hiệu nào để trang bị.\nHãy làm nhiều bài tập và đăng nhập đều đặn nhé!",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey, height: 1.5),
+          ),
+        ),
+      );
+    }
+
+    final titles = [
+      {'id': 'none', 'title': 'Mặc định (Không danh hiệu)'},
+      ..._unlockedAchievements.map((a) => {'id': a['title'] as String, 'title': a['title'] as String}),
+    ];
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: titles.length,
+      itemBuilder: (context, index) {
+        final t = titles[index];
+        final String tId = t['id'] as String;
+        final bool isEquipped = (_equippedTitle ?? 'none') == tId;
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: isEquipped ? kPrimaryBlue : Colors.grey.shade200,
+              width: isEquipped ? 2 : 1,
+            ),
+          ),
+          child: ListTile(
+            title: Text(
+              t['title'] as String,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              tId == 'none' ? 'Không hiển thị danh hiệu phụ' : 'Danh hiệu đã mở khóa',
+              style: TextStyle(fontSize: 12, color: tId == 'none' ? Colors.grey : Colors.green),
+            ),
+            trailing: isEquipped
+                ? const Icon(Icons.check_circle, color: kPrimaryBlue)
+                : ElevatedButton(
+                    onPressed: () async {
+                      final String? titleToSave = tId == 'none' ? null : tId;
+                      await UserProgress().updateEquippedFrameAndTitle(_equippedFrame, titleToSave);
+                      setSheetState(() {
+                        _equippedTitle = titleToSave;
+                      });
+                      setState(() {
+                        _equippedTitle = titleToSave;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kPrimaryBlue.withOpacity(0.1),
+                      foregroundColor: kPrimaryBlue,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text("Trang bị", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+          ),
+        );
+      },
+    );
   }
 
   void _showChangeNameDialog(BuildContext context) {
@@ -859,6 +1183,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (newName.isNotEmpty) {
                   try {
                     await UserProgress().updateDisplayName(newName);
+                    await _loadProfileData();
                     if (ctx.mounted) {
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -866,9 +1191,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           content: Text("Đã cập nhật tên hiển thị!"),
                         ),
                       );
-                    }
-                    if (mounted) {
-                      setState(() {});
                     }
                   } catch (e) {
                     if (ctx.mounted) {
@@ -901,6 +1223,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingProfileData) {
+      return const Scaffold(
+        backgroundColor: kSoftBackground,
+        body: Center(child: CircularProgressIndicator(color: kPrimaryBlue)),
+      );
+    }
+
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
@@ -985,6 +1314,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             context,
             MaterialPageRoute(builder: (_) => const AuthScreen()),
           );
+        } else {
+          _showEquipBottomSheet(context);
         }
       },
       child: Container(
@@ -997,7 +1328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(25),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 18,
@@ -1007,30 +1338,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.8),
-                  width: 3,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: CircleAvatar(
-                radius: 35,
-                backgroundColor: Colors.white,
-                child: Image.asset(
-                  'assets/images/dog_happy.png',
-                  width: 50,
-                  errorBuilder: (_, _, _) =>
-                      const Icon(Icons.face, size: 40, color: Colors.orange),
-                ),
+            AvatarWithFrame(
+              radius: 35,
+              frame: _equippedFrame,
+              child: Image.asset(
+                'assets/images/dog_happy.png',
+                width: 50,
+                errorBuilder: (_, _, _) =>
+                    const Icon(Icons.face, size: 40, color: Colors.orange),
               ),
             ),
             const SizedBox(width: 15),
@@ -1052,7 +1367,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (isLoggedIn)
+                      if (isLoggedIn) ...[
                         GestureDetector(
                           onTap: () => _showChangeNameDialog(context),
                           child: const Icon(
@@ -1061,21 +1376,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             size: 20,
                           ),
                         ),
+                        const SizedBox(width: 10),
+                        GestureDetector(
+                          onTap: () => _showEquipBottomSheet(context),
+                          child: const Icon(
+                            Icons.shield,
+                            color: Colors.white70,
+                            size: 20,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 5),
-                  FutureBuilder<int>(
-                    future: UserProgress().getExp(),
-                    builder: (context, snapshot) {
-                      int exp = snapshot.data ?? 0;
-                      return Text(
-                        "Điểm luyện tập: $exp exp",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
-                      );
-                    },
+                  if (_equippedTitle != null) ...[
+                    Text(
+                      _equippedTitle!,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.yellowAccent,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                  ],
+                  Text(
+                    "Điểm luyện tập: $_userExp exp",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Container(
