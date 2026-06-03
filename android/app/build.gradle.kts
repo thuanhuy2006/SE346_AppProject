@@ -32,7 +32,10 @@ android {
 
     signingConfigs {
         getByName("debug") {
-            storeFile = file("debug.keystore")
+            val keystoreFile = file("debug.keystore")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+            }
         }
     }
 

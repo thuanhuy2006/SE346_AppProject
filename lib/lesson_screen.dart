@@ -19012,8 +19012,12 @@ class _LessonScreenState extends State<LessonScreen> {
         return VocabSummaryView(
           words: data['words'],
           wrongAnswers: _wrongAnswers,
-          onNext: _nextActivity,
-          onExit: _finishLesson,
+          onNext: () {
+            _finishLesson();
+          },
+          onExit: (){
+            _finishLesson();
+          }
         );
       default:
         return const SizedBox();
@@ -21507,7 +21511,7 @@ class _VocabSummaryViewState extends State<VocabSummaryView> {
             Expanded(
               flex: 2,
               child: ElevatedButton(
-                onPressed: widget.onNext,
+                onPressed: widget.onExit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF58CC02),
                   padding: const EdgeInsets.symmetric(vertical: 16),
