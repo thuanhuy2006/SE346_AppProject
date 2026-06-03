@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -188,6 +190,33 @@ class DatabaseHelper {
         'meaning': meaning,
         'type': type,
       });
+
+      // Đồng bộ Firestore
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final docRef = FirebaseFirestore.instance.collection('global_bookmarks').doc(jpWord);
+          final docSnap = await docRef.get();
+          if (!docSnap.exists) {
+            await docRef.set({
+              'jp_word': jpWord,
+              'romaji': romaji,
+              'meaning': meaning,
+              'type': type,
+              'saved_users': [user.uid],
+              'saved_count': 1,
+            });
+          } else {
+            // Cập nhật người dùng lưu và tăng số đếm
+            await docRef.update({
+              'saved_users': FieldValue.arrayUnion([user.uid]),
+              'saved_count': FieldValue.increment(1),
+            });
+          }
+        }
+      } catch (e) {
+        print("Lỗi đồng bộ Firestore addBookmark: $e");
+      }
     }
   }
 
@@ -198,6 +227,33 @@ class DatabaseHelper {
       where: 'jp_word = ?',
       whereArgs: [jpWord],
     );
+
+    // Đồng bộ Firestore
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final docRef = FirebaseFirestore.instance.collection('global_bookmarks').doc(jpWord);
+        final docSnap = await docRef.get();
+        if (docSnap.exists) {
+          final data = docSnap.data();
+          final List<dynamic> savedUsers = data?['saved_users'] ?? [];
+          if (savedUsers.contains(user.uid)) {
+            // Giảm số đếm
+            int newCount = (data?['saved_count'] ?? 0) - 1;
+            if (newCount <= 0) {
+              await docRef.delete();
+            } else {
+              await docRef.update({
+                'saved_users': FieldValue.arrayRemove([user.uid]),
+                'saved_count': FieldValue.increment(-1),
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print("Lỗi đồng bộ Firestore removeBookmark: $e");
+    }
   }
 
   Future<bool> isBookmarked(String jpWord) async {

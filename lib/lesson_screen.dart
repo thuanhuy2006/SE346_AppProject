@@ -19212,7 +19212,7 @@ class _LessonScreenState extends State<LessonScreen> {
 // ==========================================================
 // CÁC MÀN HÌNH MỚI: LÝ THUYẾT & NGỮ PHÁP (HÌNH 1 ĐẾN 5)
 // ==========================================================
-class VocabListIntroView extends StatelessWidget {
+class VocabListIntroView extends StatefulWidget {
   final List<dynamic> words;
   final VoidCallback onNext;
 
@@ -19221,6 +19221,54 @@ class VocabListIntroView extends StatelessWidget {
     required this.words,
     required this.onNext,
   });
+
+  @override
+  State<VocabListIntroView> createState() => _VocabListIntroViewState();
+}
+
+class _VocabListIntroViewState extends State<VocabListIntroView> {
+  Set<String> _bookmarkedWords = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBookmarks();
+  }
+
+  Future<void> _loadBookmarks() async {
+    final bookmarks = await DatabaseHelper.instance.getAllBookmarks();
+    if (mounted) {
+      setState(() {
+        _bookmarkedWords = bookmarks.map((b) => b['jp_word'] as String).toSet();
+      });
+    }
+  }
+
+  Future<void> _toggleBookmark(dynamic w) async {
+    String wordToSave = (w['kanji'] != null && w['kanji'].toString().isNotEmpty) ? w['kanji'] : w['hiragana'];
+    if (wordToSave.isEmpty) wordToSave = w['romaji'] ?? '';
+
+    if (_bookmarkedWords.contains(wordToSave)) {
+      await DatabaseHelper.instance.removeBookmark(wordToSave);
+      if (mounted) {
+        setState(() {
+          _bookmarkedWords.remove(wordToSave);
+        });
+      }
+    } else {
+      await DatabaseHelper.instance.addBookmark(
+        wordToSave,
+        w['romaji'] ?? '',
+        w['meaning'] ?? '',
+        type: 'vocabulary',
+      );
+      if (mounted) {
+        setState(() {
+          _bookmarkedWords.add(wordToSave);
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19238,9 +19286,13 @@ class VocabListIntroView extends StatelessWidget {
         const SizedBox(height: 20),
         Expanded(
           child: ListView.builder(
-            itemCount: words.length,
+            itemCount: widget.words.length,
             itemBuilder: (context, index) {
-              final w = words[index];
+              final w = widget.words[index];
+              String wordToSave = (w['kanji'] != null && w['kanji'].toString().isNotEmpty) ? w['kanji'] : w['hiragana'];
+              if (wordToSave.isEmpty) wordToSave = w['romaji'] ?? '';
+              final isBookmarked = _bookmarkedWords.contains(wordToSave);
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(16),
@@ -19289,6 +19341,13 @@ class VocabListIntroView extends StatelessWidget {
                         ],
                       ),
                     ),
+                    IconButton(
+                      icon: Icon(
+                        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                        color: isBookmarked ? Colors.amber : Colors.grey,
+                      ),
+                      onPressed: () => _toggleBookmark(w),
+                    ),
                     GestureDetector(
                       onTap: () => SoundManager.instance.speakJapanese(
                         w['kanji'] != '' ? w['kanji'] : w['hiragana'],
@@ -19306,7 +19365,7 @@ class VocabListIntroView extends StatelessWidget {
           width: double.infinity,
           height: 55,
           child: ElevatedButton(
-            onPressed: onNext,
+            onPressed: widget.onNext,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF78C850),
               shape: RoundedRectangleBorder(
@@ -19418,7 +19477,7 @@ class GrammarListIntroView extends StatelessWidget {
   }
 }
 
-class GrammarStructureView extends StatelessWidget {
+class GrammarStructureView extends StatefulWidget {
   final Map<String, dynamic> data;
   final VoidCallback onNext;
 
@@ -19429,24 +19488,90 @@ class GrammarStructureView extends StatelessWidget {
   });
 
   @override
+  State<GrammarStructureView> createState() => _GrammarStructureViewState();
+}
+
+class _GrammarStructureViewState extends State<GrammarStructureView> {
+  bool _isBookmarked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBookmarkStatus();
+  }
+
+  Future<void> _checkBookmarkStatus() async {
+    final title = widget.data['title'] ?? '';
+    final isSaved = await DatabaseHelper.instance.isBookmarked(title);
+    if (mounted) {
+      setState(() {
+        _isBookmarked = isSaved;
+      });
+    }
+  }
+
+  Future<void> _toggleBookmark() async {
+    final title = widget.data['title'] ?? '';
+    if (_isBookmarked) {
+      await DatabaseHelper.instance.removeBookmark(title);
+      if (mounted) {
+        setState(() {
+          _isBookmarked = false;
+        });
+      }
+    } else {
+      await DatabaseHelper.instance.addBookmark(
+        title,
+        widget.data['formula'] ?? '',
+        widget.data['meaning'] ?? '',
+        type: 'grammar',
+      );
+      if (mounted) {
+        setState(() {
+          _isBookmarked = true;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Center(
-          child: Text(
-            "《 NGỮ PHÁP MỚI 》",
-            style: TextStyle(
-              color: Colors.grey,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
+        Stack(
+          children: [
+            const Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: EdgeInsets.only(top: 12),
+                child: Text(
+                  "《 NGỮ PHÁP MỚI 》",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ),
-          ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: Icon(
+                  _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  color: _isBookmarked ? Colors.amber : Colors.grey,
+                  size: 28,
+                ),
+                onPressed: _toggleBookmark,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 15),
         Center(
           child: Text(
-            data['title'],
+            widget.data['title'],
             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
           ),
         ),
@@ -19465,7 +19590,7 @@ class GrammarStructureView extends StatelessWidget {
         ),
         const SizedBox(height: 15),
         Text(
-          "●  " + data['formula'],
+          "●  " + widget.data['formula'],
           style: const TextStyle(
             fontSize: 20,
             color: Color(0xFF78C850),
@@ -19487,7 +19612,7 @@ class GrammarStructureView extends StatelessWidget {
         ),
         const SizedBox(height: 15),
         Text(
-          data['meaning'],
+          widget.data['meaning'],
           style: const TextStyle(fontSize: 18, color: Colors.black87),
         ),
 
@@ -19495,7 +19620,7 @@ class GrammarStructureView extends StatelessWidget {
         Align(
           alignment: Alignment.centerRight,
           child: GestureDetector(
-            onTap: onNext,
+            onTap: widget.onNext,
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -20812,6 +20937,13 @@ class FlashCardView extends StatefulWidget {
 
 class _FlashCardViewState extends State<FlashCardView> {
   bool _isFlipped = false;
+  bool _isBookmarked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBookmarkStatus();
+  }
 
   @override
   void didUpdateWidget(covariant FlashCardView oldWidget) {
@@ -20820,6 +20952,49 @@ class _FlashCardViewState extends State<FlashCardView> {
       setState(() {
         _isFlipped = false;
       });
+      _checkBookmarkStatus();
+    }
+  }
+
+  Future<void> _checkBookmarkStatus() async {
+    String kanji = widget.data['kanji']?.toString() ?? '';
+    String hiragana = widget.data['hiragana']?.toString() ?? '';
+    String wordToSave = kanji.isNotEmpty ? kanji : hiragana;
+    if (wordToSave.isEmpty) wordToSave = widget.data['romaji'] ?? '';
+
+    final isSaved = await DatabaseHelper.instance.isBookmarked(wordToSave);
+    if (mounted) {
+      setState(() {
+        _isBookmarked = isSaved;
+      });
+    }
+  }
+
+  Future<void> _toggleBookmark() async {
+    String kanji = widget.data['kanji']?.toString() ?? '';
+    String hiragana = widget.data['hiragana']?.toString() ?? '';
+    String wordToSave = kanji.isNotEmpty ? kanji : hiragana;
+    if (wordToSave.isEmpty) wordToSave = widget.data['romaji'] ?? '';
+
+    if (_isBookmarked) {
+      await DatabaseHelper.instance.removeBookmark(wordToSave);
+      if (mounted) {
+        setState(() {
+          _isBookmarked = false;
+        });
+      }
+    } else {
+      await DatabaseHelper.instance.addBookmark(
+        wordToSave,
+        widget.data['romaji'] ?? '',
+        widget.data['meaning'] ?? '',
+        type: 'vocabulary',
+      );
+      if (mounted) {
+        setState(() {
+          _isBookmarked = true;
+        });
+      }
     }
   }
 
@@ -20895,16 +21070,27 @@ class _FlashCardViewState extends State<FlashCardView> {
       ),
       child: Column(
         children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const SizedBox(width: 32),
+              const Text(
                 "《 TỪ MỚI 》",
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
                   color: Color(0xFF5A6275),
                   fontSize: 16,
                 ),
+              ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: Icon(
+                  _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  color: _isBookmarked ? Colors.amber : Colors.grey,
+                  size: 26,
+                ),
+                onPressed: _toggleBookmark,
               ),
             ],
           ),
@@ -20975,20 +21161,36 @@ class _FlashCardViewState extends State<FlashCardView> {
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF9E8A2F),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              "Ví dụ",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SizedBox(width: 32),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF9E8A2F),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  "Ví dụ",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
               ),
-            ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: Icon(
+                  _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  color: _isBookmarked ? Colors.amber : Colors.grey,
+                  size: 26,
+                ),
+                onPressed: _toggleBookmark,
+              ),
+            ],
           ),
           const SizedBox(height: 25),
 
