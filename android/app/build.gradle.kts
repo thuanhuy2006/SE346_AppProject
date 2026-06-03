@@ -30,11 +30,14 @@ android {
         versionName = flutter.versionName
     }
 
-//    signingConfigs {
-//        getByName("debug") {
-//            storeFile = file("debug.keystore")
-//        }
-//    }
+    signingConfigs {
+        getByName("debug") {
+            val keystoreFile = file("debug.keystore")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+            }
+        }
+    }
 
     buildTypes {
         release {

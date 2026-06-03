@@ -9,7 +9,7 @@ class ListeningPracticeScreen extends StatelessWidget {
     return DefaultTabController(
       length: 5,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFFF8F8), // Màu nền hơi hồng nhạt phân biệt với đọc
+        backgroundColor: const Color(0xFFFFF8F8),
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
