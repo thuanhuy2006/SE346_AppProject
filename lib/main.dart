@@ -992,7 +992,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildFrameSelectionList(StatefulSetter setSheetState) {
+  Widget _buildFrameSelectionList(StateSetter setSheetState) {
     final frames = [
       {'id': 'none', 'name': 'Mặc định (Không khung)', 'req': 0, 'desc': 'Khung viền nguyên bản'},
       {'id': 'bronze', 'name': 'Khung Đồng', 'req': 100, 'desc': 'Yêu cầu đạt từ 100 EXP'},
@@ -1071,7 +1071,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTitleSelectionList(StatefulSetter setSheetState) {
+  Widget _buildTitleSelectionList(StateSetter setSheetState) {
     if (_unlockedAchievements.isEmpty) {
       return const Center(
         child: Padding(
