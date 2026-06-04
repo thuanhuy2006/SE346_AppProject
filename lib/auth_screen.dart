@@ -37,7 +37,7 @@ class _AuthScreenState extends State<AuthScreen> {
           password: _passwordController.text.trim(),
         );
         await UserProgress().syncFromFirebase(); // Đồng bộ tiến trình từ Firebase
-        SoundManager.instance.speakJapanese("Omedetou"); // Âm thanh vui
+        SoundManager.instance.speakJapanese("おめでとう"); // Âm thanh vui
       } else if (_screenMode == AuthScreenMode.signup) {
         // Đăng ký
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -45,7 +45,7 @@ class _AuthScreenState extends State<AuthScreen> {
           password: _passwordController.text.trim(),
         );
         await UserProgress().syncFromFirebase(); // Đồng bộ tiến trình từ Firebase
-        SoundManager.instance.speakJapanese("Omedetou");
+        SoundManager.instance.speakJapanese("おめでとう");
       }
       if (mounted) {
         if (Navigator.canPop(context)) {

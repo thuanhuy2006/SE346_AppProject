@@ -20,6 +20,12 @@ class SoundManager {
   }
   Future<void> speakJapanese(String text, {bool isSlow = false}) async {
     if (text.isEmpty) return;
+
+    // Kiểm tra xem chuỗi có chứa ký tự Nhật Bản không (Hiragana, Katakana, Kanji)
+    // Nếu chỉ có tiếng Việt/Latin thì không đọc để tránh phát âm sai
+    final hasJapanese = RegExp(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]').hasMatch(text);
+    if (!hasJapanese) return;
+
     try {
       await _flutterTts.stop();
 

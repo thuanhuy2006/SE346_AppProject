@@ -136,7 +136,7 @@ class _SurveyScreenState extends State<SurveyScreen> {
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      SoundManager.instance.speakJapanese("Omedetou");
+      SoundManager.instance.speakJapanese("おめでとう");
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

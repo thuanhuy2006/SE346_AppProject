@@ -74,10 +74,11 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] == LessonType.imageQuiz ||
               e['type'] == LessonType.sentenceBuilder ||
               e['type'] == LessonType.listening ||
-              e['type'] == LessonType.vocabQuiz,
+              e['type'] == LessonType.vocabQuiz ||
+              e['type'] == LessonType.speaking ||
+              e['type'] == LessonType.kanjiDraw,
         )
         .length;
-
     _playCurrentAudio();
   }
 
@@ -123,7 +124,9 @@ class _LessonScreenState extends State<LessonScreen> {
                       e['type'] == LessonType.imageQuiz ||
                       e['type'] == LessonType.sentenceBuilder ||
                       e['type'] == LessonType.listening ||
-                      e['type'] == LessonType.vocabQuiz,
+                      e['type'] == LessonType.vocabQuiz ||
+                      e['type'] == LessonType.speaking ||
+                      e['type'] == LessonType.kanjiDraw,
                 )
                 .length;
             _currentIndex = 0;
@@ -151,7 +154,14 @@ class _LessonScreenState extends State<LessonScreen> {
       if (type == LessonType.learn) {
         textToRead = activity['char'] ?? "";
       } else if (type == LessonType.sentenceBuilder) {
-        textToRead = activity['jp'] ?? "";
+        // Nếu là bài dịch từ tiếng Việt sang Nhật, không tự động phát âm để tránh lộ đáp án
+        if (activity.containsKey('vn') &&
+            activity['vn'] != null &&
+            activity['vn'].toString().isNotEmpty) {
+          textToRead = "";
+        } else {
+          textToRead = activity['jp'] ?? activity['answer'] ?? "";
+        }
       } else if (type == LessonType.listening) {
         textToRead = activity['answer'] ?? "";
       } else if (type == LessonType.flashCard) {
@@ -159,7 +169,11 @@ class _LessonScreenState extends State<LessonScreen> {
       } else if (type == LessonType.vocabQuiz) {
         textToRead = activity['hiragana'] ?? activity['kanji'] ?? "";
       } else if (type == LessonType.quiz) {
-        textToRead = activity['question'] ?? activity['answer'] ?? "";
+        // Chỉ tự động đọc nếu question là tiếng Nhật, không đọc câu hỏi tiếng Việt
+        String q = activity['question'] ?? "";
+        bool hasJapanese = RegExp(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]')
+            .hasMatch(q);
+        textToRead = hasJapanese ? q : "";
       } else if (type == LessonType.speaking) {
         textToRead = activity['jp'] ?? "";
       }
@@ -1904,8 +1918,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes.shuffle();
+    return uniqueQuizzes.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb2OnTapData() {
@@ -1928,8 +1943,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes2 = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes2.shuffle();
+    return uniqueQuizzes2.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb3OnTapData() {
@@ -1952,8 +1968,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes3 = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes3.shuffle();
+    return uniqueQuizzes3.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb4OnTapData() {
@@ -1976,8 +1993,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes4 = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes4.shuffle();
+    return uniqueQuizzes4.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb5OnTapData() {
@@ -2000,8 +2018,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes5 = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes5.shuffle();
+    return uniqueQuizzes5.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb6OnTapData() {
@@ -2024,8 +2043,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes6 = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes6.shuffle();
+    return uniqueQuizzes6.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb7OnTapData() {
@@ -2048,8 +2068,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes7 = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes7.shuffle();
+    return uniqueQuizzes7.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb8OnTapData() {
@@ -2072,8 +2093,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes8 = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes8.shuffle();
+    return uniqueQuizzes8.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb9OnTapData() {
@@ -2096,8 +2118,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes9 = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes9.shuffle();
+    return uniqueQuizzes9.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb10OnTapData() {
@@ -2120,8 +2143,9 @@ class _LessonScreenState extends State<LessonScreen> {
               e['type'] != LessonType.vocabSummary,
         )
         .toList();
-    quizzes.shuffle();
-    return quizzes.take(15).toList();
+    List<Map<String, dynamic>> uniqueQuizzes10 = _deduplicateQuizzes(quizzes);
+    uniqueQuizzes10.shuffle();
+    return uniqueQuizzes10.take(15).toList();
   }
 
   List<Map<String, dynamic>> _getCb2LyThuyetData() {
@@ -3295,6 +3319,7 @@ class _LessonScreenState extends State<LessonScreen> {
           {'kanji': '傘', 'romaji': 'kasa', 'meaning': 'cái ô'},
           {'kanji': '車', 'romaji': 'kuruma', 'meaning': 'ô tô'},
           {'kanji': 'いくら', 'romaji': 'ikura', 'meaning': 'bao nhiêu tiền'},
+          {'kanji': '円', 'romaji': 'en', 'meaning': 'yên (tiền)'},
         ],
       },
     ];
@@ -5363,7 +5388,7 @@ class _LessonScreenState extends State<LessonScreen> {
           {'kanji': '母に花をあげます。', 'hiragana': 'ははにはなをあげます。'},
           {'kanji': '母に花をもらいます。', 'hiragana': 'ははにはなをもらいます。'},
         ],
-        'answer': '母に花 को あげます。',
+        'answer': '母に花をあげます。',
       },
       {
         'type': LessonType.sentenceBuilder,
@@ -18529,6 +18554,21 @@ class _LessonScreenState extends State<LessonScreen> {
     return data;
   }
 
+  List<Map<String, dynamic>> _deduplicateQuizzes(List<Map<String, dynamic>> list) {
+    final seen = <String>{};
+    return list.where((item) {
+      // Tạo key duy nhất dựa trên nội dung câu hỏi hoặc các cặp ghép thẻ
+      final contentKey = item['question'] ??
+                         item['jp'] ??
+                         item['kanji_word'] ??
+                         item['answer'] ??
+                         item['vn'] ??
+                         item['pairs']?.toString() ?? "";
+      final key = "${item['type']}_$contentKey";
+      return seen.add(key);
+    }).toList();
+  }
+
   void _nextActivity() {
     if (_currentIndex < _activities.length - 1) {
       setState(() {
@@ -18579,7 +18619,7 @@ class _LessonScreenState extends State<LessonScreen> {
     if (isCorrect) {
       _correctAnswers++;
       SoundManager.instance.vibrate('light');
-      SoundManager.instance.speakJapanese("Seikai");
+      SoundManager.instance.speakJapanese("正解");
     } else {
       _wrongAnswers.add(correctAnswer.toLowerCase());
 
@@ -18998,7 +19038,13 @@ class _LessonScreenState extends State<LessonScreen> {
           onSkip: _nextActivity,
         );
       case LessonType.kanjiDraw:
-        return KanjiDrawView(data: data, onNext: _nextActivity);
+        return KanjiDrawView(
+          data: data,
+          onNext: () {
+            _correctAnswers++;
+            _nextActivity();
+          },
+        );
       case LessonType.flashCard:
         return FlashCardView(data: data, onNext: _nextActivity);
       case LessonType.vocabQuiz:
@@ -19310,8 +19356,8 @@ class _VocabListIntroViewState extends State<VocabListIntroView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          RichText(
-                            text: TextSpan(
+                          Text.rich(
+                            TextSpan(
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -19944,6 +19990,7 @@ class _SentenceBuilderViewState extends State<SentenceBuilderView> {
           ),
           const SizedBox(height: 20),
 
+          if (RegExp(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]').hasMatch(widget.data['audio_text'] ?? widget.data['jp'] ?? ""))
           GestureDetector(
             onTap: () => SoundManager.instance.speakJapanese(
               widget.data['audio_text'] ?? widget.data['jp'],
@@ -20110,7 +20157,7 @@ class _SentenceBuilderViewState extends State<SentenceBuilderView> {
         child: Text(
           word,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -20241,7 +20288,7 @@ class _KanjiDrawViewState extends State<KanjiDrawView> {
 
     if (isCorrect) {
       SoundManager.instance.vibrate('heavy');
-      SoundManager.instance.speakJapanese("Seikai");
+      SoundManager.instance.speakJapanese("正解");
       _showFeedbackBottomSheet(true, () {
         widget.onNext();
       });
@@ -21382,7 +21429,7 @@ class _VocabQuizViewState extends State<VocabQuizView> {
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 1.3,
+              childAspectRatio: 1.2, // Tăng chiều cao ô
             ),
             itemCount: options.length,
             itemBuilder: (context, index) {
@@ -21396,22 +21443,25 @@ class _VocabQuizViewState extends State<VocabQuizView> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: isThisSelected
                         ? const Color(0xFFE5F6D5)
                         : const Color(0xFFF7F7F7),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    options[index],
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: isThisSelected
-                          ? const Color(0xFF58CC02)
-                          : Colors.black87,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      options[index],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: isThisSelected
+                            ? const Color(0xFF58CC02)
+                            : Colors.black87,
+                      ),
                     ),
                   ),
                 ),
@@ -21641,8 +21691,8 @@ class _VocabSummaryViewState extends State<VocabSummaryView> {
                             : const Color(0xFF58CC02),
                         size: 28,
                       ),
-                      title: RichText(
-                        text: TextSpan(
+                      title: Text.rich(
+                        TextSpan(
                           style: const TextStyle(
                             fontSize: 18,
                             color: Colors.black87,
@@ -21883,7 +21933,7 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
             crossAxisCount: 2,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 1.1,
+            childAspectRatio: 1.0, // Ô vuông hơn để có nhiều chỗ cho text
             physics: const NeverScrollableScrollPhysics(),
             children: widget.data['options'].map<Widget>((dynamic opt) {
               String kanji = '';
@@ -21916,6 +21966,7 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? const Color(0xFFE5F6D5)
@@ -21928,27 +21979,30 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
                       width: 2,
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (hiragana.isNotEmpty)
-                        Text(
-                          hiragana,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isSelected
-                                ? const Color(0xFF58CC02)
-                                : Colors.grey.shade600,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (hiragana.isNotEmpty)
+                          Text(
+                            hiragana,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isSelected
+                                  ? const Color(0xFF58CC02)
+                                  : Colors.grey.shade600,
+                            ),
                           ),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
                           child: Text(
                             kanji,
+                            textAlign: TextAlign.center,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 32,
+                              fontSize: kanji.length > 10 ? 18 : 28,
                               fontWeight: FontWeight.bold,
                               color: isSelected
                                   ? const Color(0xFF58CC02)
@@ -21956,8 +22010,8 @@ class _ListeningQuizViewState extends State<ListeningQuizView> {
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -22104,6 +22158,7 @@ class _StandardQuizViewState extends State<StandardQuizView> {
                   ),
                 ),
               ),
+              if (RegExp(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]').hasMatch(widget.data['audio_text'] ?? widget.data['question'] ?? ""))
               GestureDetector(
                 onTap: () => SoundManager.instance.speakJapanese(
                   widget.data['audio_text'] ?? widget.data['question'],
@@ -22183,7 +22238,7 @@ class _StandardQuizViewState extends State<StandardQuizView> {
             crossAxisCount: 2,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 1.1,
+            childAspectRatio: 1.0, // Ô vuông hơn để có nhiều chỗ cho text
             physics: const NeverScrollableScrollPhysics(),
             children: widget.data['options'].map<Widget>((dynamic opt) {
               String kanji = '';
@@ -22216,6 +22271,7 @@ class _StandardQuizViewState extends State<StandardQuizView> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? const Color(0xFFE5F6D5)
@@ -22228,27 +22284,30 @@ class _StandardQuizViewState extends State<StandardQuizView> {
                       width: 2,
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (hiragana.isNotEmpty)
-                        Text(
-                          hiragana,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isSelected
-                                ? const Color(0xFF58CC02)
-                                : Colors.grey.shade600,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (hiragana.isNotEmpty)
+                          Text(
+                            hiragana,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isSelected
+                                  ? const Color(0xFF58CC02)
+                                  : Colors.grey.shade600,
+                            ),
                           ),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
                           child: Text(
                             kanji,
+                            textAlign: TextAlign.center,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 32,
+                              fontSize: kanji.length > 10 ? 18 : 28,
                               fontWeight: FontWeight.bold,
                               color: isSelected
                                   ? const Color(0xFF58CC02)
@@ -22256,8 +22315,8 @@ class _StandardQuizViewState extends State<StandardQuizView> {
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -22389,14 +22448,25 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
 
   void _checkAnswer() {
     String targetAnswer = widget.data['answer'].toString();
+    String targetJp = widget.data['jp']?.toString() ?? "";
+
+    // 1. Thử so sánh với Hiragana (trong trường answer)
     bool isCorrect = _compareJapaneseText(targetAnswer, _recognizedText);
+
+    // 2. Nếu sai, thử so sánh với Kanji (trong trường jp) - Giải quyết lỗi nói Kanji nhưng đáp án là Hiragana
+    if (!isCorrect && targetJp.isNotEmpty) {
+      isCorrect = _compareJapaneseText(targetJp, _recognizedText);
+    }
+
     widget.onCheckResult(isCorrect, targetAnswer, _recognizedText);
   }
 
   bool _compareJapaneseText(String target, String input) {
-    String cleanTarget = target.replaceAll(RegExp(r'[。、！？\s]'), '');
-    String cleanInput = input.replaceAll(RegExp(r'[。、！？\s]'), '');
+    // Loại bỏ dấu câu và khoảng trắng để so sánh thuần túy
+    String cleanTarget = target.replaceAll(RegExp(r'[。、！？\s\.\?]'), '');
+    String cleanInput = input.replaceAll(RegExp(r'[。、！？\s\.\?]'), '');
 
+    // Chuẩn hóa một số trường hợp phát âm/viết đặc biệt (Vd: は đọc là wa)
     cleanTarget = cleanTarget
         .replaceAll('こんにちは', 'こんにちわ')
         .replaceAll('こんばんは', 'こんばんわ');
@@ -22406,8 +22476,9 @@ class _SpeakingPracticeViewState extends State<SpeakingPracticeView> {
 
     if (cleanTarget == cleanInput) return true;
 
+    // Sử dụng thuật toán Levenshtein để cho phép sai lệch nhỏ (do môi trường ồn hoặc AI bắt từ gần đúng)
     double similarity = _calculateSimilarity(cleanTarget, cleanInput);
-    return similarity >= 0.8;
+    return similarity >= 0.7;
   }
 
   double _calculateSimilarity(String s1, String s2) {

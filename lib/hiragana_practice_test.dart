@@ -135,7 +135,7 @@ class _HiraganaPracticeScreenState extends State<HiraganaPracticeScreen> {
 
     if (isCorrect) {
       SoundManager.instance.vibrate('heavy');
-      SoundManager.instance.speakJapanese("Seikai");
+      SoundManager.instance.speakJapanese("正解");
       _showFeedbackBottomSheet(true, () {
         setState(() => _currentStage = PracticeStage.video);
       });
@@ -155,7 +155,7 @@ class _HiraganaPracticeScreenState extends State<HiraganaPracticeScreen> {
     bool isCorrect = selectedChar == widget.charData['kana'];
     if (isCorrect) {
       SoundManager.instance.vibrate('heavy');
-      SoundManager.instance.speakJapanese("Seikai"); // Đúng rồi
+      SoundManager.instance.speakJapanese("正解"); // Đúng rồi
       _showFeedbackBottomSheet(true, () {
         Navigator.pop(context, true); // Thoát về tháp
       });
