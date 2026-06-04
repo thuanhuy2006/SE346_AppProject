@@ -5,11 +5,12 @@ import 'user_progress.dart';
 
 class ListeningDetailScreen extends StatefulWidget {
   final String title;
+  final String lessonId;
   final String audioAsset;
-
   const ListeningDetailScreen({
     super.key,
     required this.title,
+    required this.lessonId,
     required this.audioAsset,
   });
 
@@ -25,182 +26,9 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
   bool _showAllAnswers = false;
   double _playbackSpeed = 1.0;
 
-  final List<Map<String, dynamic>> _questions = [
-    {
-      'id': 1,
-      'q_image': 'assets/images/n5_l1_q1.png',
-      'options': ["A. 1", "B. 2", "C. 3", "D. 4"],
-      'correct': "B",
-      'explanation': "Dựa vào nội dung nghe, nhân vật đang nói về môn thể thao Bowling (Hình 1)."
-    },
-    {
-      'id': 2,
-      'q_image': 'assets/images/n5_l1_q2.png',
-      'options': ["A. 1", "B. 2", "C. 3", "D. 4"],
-      'correct': "D",
-      'explanation': "Người đàn ông tặng một bó hoa lớn cho người phụ nữ (Hình 3)."
-    },
-    {
-      'id': 3,
-      'q_image': 'assets/images/n5_l1_q3.png',
-      'options': ["A. 1", "B. 2", "C. 3", "D. 4"],
-      'correct': "D",
-      'explanation': "Người phụ nữ đi mua sắm tại siêu thị (Hình 2)."
-    },
-    {
-      'id': 4,
-      'q_image': 'assets/images/n5_l1_q4.png',
-      'options': ["A. 1", "B. 2", "C. 3", "D. 4"],
-      'correct': "A",
-      'explanation': "Bố trí phòng họp theo sơ đồ hình tam giác (Hình 4)."
-    },
-    {
-      'id': 5,
-      'options': ["A. 1. 43215018", "B. 2. 43215078", "C. 3. 42315018", "D. 4. 42315078"],
-      'correct': "D",
-      'explanation': "Số điện thoại chính xác được đọc trong đoạn băng là 4321-5078."
-    },
-    {
-      'id': 6,
-      'options': ["A. 1. 3じ", "B. 2. 4じ", "C. 3. 5じ", "D. 4. 6じ"],
-      'correct': "C",
-      'explanation': "Nhân vật chốt thời gian gặp mặt là 5 giờ (5じ)."
-    },
-    {
-      'id': 7,
-      'options': [
-        "A. 1. 7じから",
-        "B. 2. シャワーをあびてから",
-        "C. 3. しんぶんをよんでから",
-        "D. 4. しょっきをあらってから"
-      ],
-      'correct': "D",
-      'explanation': "Theo lịch trình, hành động tiếp theo sẽ bắt đầu từ lúc 7 giờ (7じから)."
-    },
-    {
-      'id': 8,
-      'q_image': 'assets/images/n5_l1_q8.png',
-      'options': ["A. 1", "B. 2", "C. 3", "D. 4"],
-      'correct': "A",
-      'explanation': "Nhân vật nữ đang đi mua sắm tại cửa hàng (Hình 2)."
-    },
-    {
-      'id': 9,
-      'q_image': 'assets/images/n5_l1_q9.png',
-      'options': ["A. 1", "B. 2", "C. 3", "D. 4"],
-      'correct': "A",
-      'explanation': "Họ gọi 1 cafe và 1 nước trái cây (Hình 4)."
-    },
-    {
-      'id': 10,
-      'q_image': 'assets/images/n5_l1_q10.png',
-      'options': ["A. 1", "B. 2", "C. 3", "D. 4"],
-      'correct': "A",
-      'explanation': "Chìa khóa được để ở trên đầu tivi (Hình 1)."
-    },
-    {
-      'id': 11,
-      'options': [
-        "A. 1. でんしゃのつかいかた",
-        "B. 2. きっぷのかいかた",
-        "C. 3. ぎんこうのじかん",
-        "D. 4. いえへのいきかた"
-      ],
-      'correct': "A",
-      'explanation': "Đoạn hội thoại hướng dẫn về cách mua vé (きっぷのかいかた)."
-    },
-    {
-      'id': 12,
-      'options': [
-        "A. 1. すし、てんぷら、ジュース",
-        "B. 2. すし、てんぷら、おちゃ",
-        "C. 3. すし、ていしょく",
-        "D. 4. すし、わたし"
-      ],
-      'correct': "A",
-      'explanation': "Các món được chọn là Sushi, Tempura và Trà."
-    },
-    {
-      'id': 13,
-      'options': ["A. 1. 100えん", "B. 2. 120えん", "C. 3. 500えん", "D. 4. 600えん"],
-      'correct': "A",
-      'explanation': "Số tiền tổng cộng được nhắc đến là 600 yên."
-    },
-    // MONDAI 3
-    {
-      'id': 14,
-      'q_image': 'assets/images/n5_l1_q14.png',
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "A",
-      'explanation': "Câu chào hỏi phù hợp khi đưa chìa khóa/vật gì đó cho người khác."
-    },
-    {
-      'id': 15,
-      'q_image': 'assets/images/n5_l1_q15.png',
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "A",
-      'explanation': "Lời chào xã giao khi gặp đồng nghiệp ở thang máy."
-    },
-    {
-      'id': 16,
-      'q_image': 'assets/images/n5_l1_q16.png',
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "A",
-      'explanation': "Câu nói khi chia tay bạn bè sau buổi đi chơi."
-    },
-    {
-      'id': 17,
-      'q_image': 'assets/images/n5_l1_q17.png',
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "A",
-      'explanation': "Câu chào khi đi ra ngoài (Ittekimasu)."
-    },
-    {
-      'id': 18,
-      'q_image': 'assets/images/n5_l1_q18.png',
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "A",
-      'explanation': "Câu chào lễ phép khi gặp thầy giáo vào buổi sáng."
-    },
-    // MONDAI 4
-    {
-      'id': 19,
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "B",
-      'explanation': "Phản hồi phù hợp cho câu hỏi về sức khỏe hoặc tình trạng."
-    },
-    {
-      'id': 20,
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "A",
-      'explanation': "Đáp lại một lời mời hoặc đề nghị làm gì đó."
-    },
-    {
-      'id': 21,
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "B",
-      'explanation': "Phản hồi khi được khen ngợi (Iie, madamada desu)."
-    },
-    {
-      'id': 22,
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "C",
-      'explanation': "Trả lời câu hỏi về thời gian hoặc thời điểm."
-    },
-    {
-      'id': 23,
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "C",
-      'explanation': "Phản hồi khi nhận được quà hoặc sự giúp đỡ."
-    },
-    {
-      'id': 24,
-      'options': ["A. 1", "B. 2", "C. 3"],
-      'correct': "C",
-      'explanation': "Câu trả lời cho một câu hỏi lựa chọn (A hay B)."
-    }
-  ];
-
+  // Khởi tạo danh sách câu hỏi rỗng để nạp động từ Admin/Firestore hoặc dùng mặc định
+  final List<Map<String, dynamic>> _questions = [];
+  String _audioTextScript = ""; // Lưu văn bản hội thoại đọc từ Admin
   bool _isLoadingFirestore = false;
   String _activeAudioAsset = "";
 
@@ -214,12 +42,17 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
   Future<void> _initializeListeningLesson() async {
     setState(() => _isLoadingFirestore = true);
     try {
-      final String listenDocId = "listening_lesson_${widget.title.replaceAll(' ', '_')}";
+      final String listenDocId = widget.lessonId;
       final lessonDoc = await FirebaseFirestore.instance.collection('listening_lessons').doc(listenDocId).get();
       if (lessonDoc.exists) {
         final lessonData = lessonDoc.data();
-        if (lessonData != null && lessonData['audioAsset'] != null && lessonData['audioAsset'].toString().isNotEmpty) {
-          _activeAudioAsset = lessonData['audioAsset'];
+        if (lessonData != null) {
+          if (lessonData['audioAsset'] != null && lessonData['audioAsset'].toString().isNotEmpty) {
+            _activeAudioAsset = lessonData['audioAsset'];
+          }
+          if (lessonData['audio_text'] != null) {
+            _audioTextScript = lessonData['audio_text'];
+          }
         }
       }
 
@@ -227,6 +60,7 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
           .collection('listening_lessons')
           .doc(listenDocId)
           .collection('questions')
+          .orderBy('id')
           .get();
 
       if (snapshot.docs.isNotEmpty) {
@@ -235,23 +69,28 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
           final data = doc.data();
           tempQuestions.add({
             'id': data['id'] ?? 1,
+            'question': data['question'], // Hỗ trợ text câu hỏi nếu có
             'q_image': data['q_image'] != null && data['q_image'].toString().isNotEmpty ? data['q_image'] : null,
             'options': List<String>.from(data['options'] ?? []),
             'correct': data['correct'] ?? 'A',
             'explanation': data['explanation'] ?? '',
           });
         }
-        
         tempQuestions.sort((a, b) => (a['id'] as int).compareTo(b['id'] as int));
-        
+
         setState(() {
           _questions.clear();
           _questions.addAll(tempQuestions);
         });
-      }
-    } catch (e) {
-      print("Lỗi tải câu hỏi nghe từ Firestore: $e");
+      } else {
+        setState(() {
+        _questions.clear();
+      });
     }
+  } catch (e) {
+        print("Lỗi tải câu hỏi nghe từ Firestore: $e");
+        _loadDefaultQuestions();
+  }
 
     final isNetwork = _activeAudioAsset.startsWith('http') || _activeAudioAsset.startsWith('https');
     _controller = isNetwork
@@ -274,6 +113,18 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
     });
   }
 
+  void _loadDefaultQuestions() {
+    _questions.addAll([
+      {'id': 1, 'q_image': 'assets/images/n5_l1_q1.png', 'options': ["A. 1", "B. 2", "C. 3", "D. 4"], 'correct': "B", 'explanation': "Dựa vào nội dung nghe, nhân vật đang nói về môn thể thao Bowling (Hình 1)."},
+      {'id': 2, 'q_image': 'assets/images/n5_l1_q2.png', 'options': ["A. 1", "B. 2", "C. 3", "D. 4"], 'correct': "D", 'explanation': "Người đàn ông tặng một bó hoa lớn cho người phụ nữ (Hình 3)."},
+      {'id': 3, 'q_image': 'assets/images/n5_l1_q3.png', 'options': ["A. 1", "B. 2", "C. 3", "D. 4"], 'correct': "D", 'explanation': "Người phụ nữ đi mua sắm tại siêu thị (Hình 2)."},
+      {'id': 4, 'q_image': 'assets/images/n5_l1_q4.png', 'options': ["A. 1", "B. 2", "C. 3", "D. 4"], 'correct': "A", 'explanation': "Bố trí phòng họp theo sơ đồ hình tam giác (Hình 4)."},
+      {'id': 5, 'options': ["A. 1. 43215018", "B. 2. 43215078", "C. 3. 42315018", "D. 4. 42315078"], 'correct': "D", 'explanation': "Số điện thoại chính xác được đọc trong đoạn băng là 4321-5078."},
+      {'id': 6, 'options': ["A. 1. 3じ", "B. 2. 4じ", "C. 3. 5じ", "D. 4. 6じ"], 'correct': "C", 'explanation': "Nhân vật chốt thời gian gặp mặt là 5 giờ (5じ)."},
+      {'id': 7, 'options': ["A. 1. 7じから", "B. 2. シャワーをあびてから", "C. 3. しんぶんをよんでから", "D. 4. しょっきuをあらってから"], 'correct': "D", 'explanation': "Theo lịch trình, hành động tiếp theo sẽ bắt đầu từ lúc 7 giờ (7じから)."},
+    ]);
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -288,11 +139,30 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
       return;
     }
 
-    setState(() {
-      _isSubmitted = true;
-      _showAllAnswers = true;
-      _controller.pause();
-    });
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Xác nhận nộp bài"),
+        content: const Text("Bạn có chắc chắn muốn nộp bài nghe này không?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Hủy")),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _isSubmitted = true;
+                _showAllAnswers = true;
+                _controller.pause();
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Đã nộp bài! Kéo xuống để xem giải thích và hội thoại thoại (Script).")),
+              );
+            },
+            child: const Text("Đồng ý"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -319,55 +189,47 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // TRÌNH PHÁT NHẠC
             _buildAudioPlayer(),
-
             const SizedBox(height: 30),
 
-            // HƯỚNG DẪN MÀU XANH
+            // TIÊU ĐỀ HƯỚNG DẪN CHUNG
             const Text(
-              "もんだい1でははじめに、しつもんを聞いてください。それからはなしを聞いて、もんだいようしの1から4の中から、ただしいこたえをひとつえらんでください。\nでは、いちどれんしゅうをしましょう。\nれい",
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-
-            const SizedBox(height: 20),
-            const Divider(),
-
-            // DANH SÁCH CÂU HỎI
-            ..._questions.sublist(0, 7).map((q) => _buildQuestionBlock(q)),
-
-            const SizedBox(height: 30),
-            // HƯỚNG DẪN MONDAI 2
-            const Text(
-              "もんだい2でははじめに、しつもんを聞いてください。それからはなしを聞いて、もんだいようしの1から4の中から、ただしいこたえをひとつえらんでください。",
+              "もんだい：しつもんを聞いてください。それからはなしを聞いて、1から4の中から、ただしいこたえをひとつえらんでください。",
               style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 10),
             const Divider(),
 
-            ..._questions.sublist(7, 13).map((q) => _buildQuestionBlock(q)),
+            // HIỂN THỊ SCRIPT ĐOẠN VĂN NGHE (CHỈ HIỆN KHI ĐÃ NỘP BÀI)
+            if (_showAllAnswers && _audioTextScript.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(top: 10, bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.description, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text("Văn bản nghe (Script Hội thoại):", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 15)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(_audioTextScript, style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.5)),
+                  ],
+                ),
+              ),
+            ],
 
-            const SizedBox(height: 30),
-            // HƯỚNG DẪN MONDAI 3
-            const Text(
-              "もんだい3ではえをみながらしつもんをきいてください。それから、ただしいこたえを1から3のなかからひとつえらんでください。",
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-            const SizedBox(height: 10),
-            const Divider(),
-
-            ..._questions.sublist(13, 18).map((q) => _buildQuestionBlock(q)),
-
-            const SizedBox(height: 30),
-            // HƯỚNG DẪN MONDAI 4
-            const Text(
-              "もんだい4には、えなどがありません。まずぶんをきいてください。それから、1から3のなかから、ただしいこたえをひとつえらんでください。",
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-            const SizedBox(height: 10),
-            const Divider(),
-
-            ..._questions.sublist(18).map((q) => _buildQuestionBlock(q)),
+            // DANH SÁCH CÂU HỎI AN TOÀN (DÙNG MAP THAY VÌ SUBLIST CỐ ĐỊNH ĐỂ TRÁNH CRASH)
+            ..._questions.map((q) => _buildQuestionBlock(q)),
 
             const SizedBox(height: 40),
 
@@ -380,7 +242,13 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
                   if (_userAnswers[q['id']] == q['correct']) score++;
                 }
                 await UserProgress().addExp(score * 5);
-                if (mounted) Navigator.pop(context);
+                if (mounted) {
+                  // Hiển thị thông báo tổng số câu đúng trực quan
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Chúc mừng! Bạn làm đúng $score/${_questions.length} câu. Nhận được ${score * 5} EXP!")),
+                  );
+                  Navigator.pop(context);
+                }
               }),
 
             const SizedBox(height: 50),
@@ -514,45 +382,52 @@ class _ListeningDetailScreenState extends State<ListeningDetailScreen> {
   }
 
   Widget _buildQuestionBlock(Map<String, dynamic> q) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 24),
-        Text("Câu ${q['id']}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        if (q['question'] != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(q['question'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
+      bool isInstruction = q['options'] == null || (q['options'] as List).isEmpty;
+
+      if (isInstruction) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          margin: const EdgeInsets.only(top: 20),
+          child: Text(
+            q['question'] ?? '',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14),
           ),
-        if (q['q_image'] != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: q['q_image'].toString().startsWith('http')
-                ? Image.network(
-                    q['q_image'],
-                    errorBuilder: (c, e, s) => Container(
-                      height: 150,
-                      width: double.infinity,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-                    ),
-                  )
-                : Image.asset(
-                    q['q_image'],
-                    errorBuilder: (c, e, s) => Container(
-                      height: 150,
-                      width: double.infinity,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-                    ),
-                  ),
-          ),
-        const SizedBox(height: 12),
-        ...(q['options'] as List).map((opt) => _buildOption(q['id'], opt, q['correct'])),
-        if (_showAllAnswers) _buildExplanationBox(q['correct'], q['explanation']),
-      ],
-    );
-  }
+        );
+      }
+
+      // Giao diện vẽ câu hỏi trắc nghiệm bình thường (Hỗ trợ cả câu có ảnh và câu thuần chữ)
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 24),
+          Text("Câu ${q['id']}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+          if (q['question'] != null && q['question'].toString().trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 8),
+              child: Text(q['question'], style: const TextStyle(fontSize: 15, color: Colors.black87)),
+            ),
+
+          // Chỉ hiển thị khối ảnh nếu câu đó được Admin chọn ảnh minh họa
+          if (q['q_image'] != null && q['q_image'].toString().trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: q['q_image'].toString().startsWith('http')
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(q['q_image'], fit: BoxFit.contain, errorBuilder: (c, e, s) => const SizedBox()),
+                    )
+                  : Image.asset(q['q_image'], errorBuilder: (c, e, s) => const SizedBox()),
+            ),
+          const SizedBox(height: 8),
+          // Vẽ danh sách đáp án bo góc (Đảm bảo các câu thuần chữ ở Ảnh 2 & 4 hiển thị cực kỳ đẹp mắt)
+          ...(q['options'] as List).map((opt) => _buildOption(q['id'], opt, q['correct'])),
+          if (_showAllAnswers) _buildExplanationBox(q['correct'], q['explanation']),
+          const Divider(height: 30),
+        ],
+      );
+    }
 
   Widget _buildOption(int questionId, String text, String correctLetter) {
     String letter = text.substring(0, 1);

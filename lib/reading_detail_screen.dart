@@ -215,6 +215,12 @@ class _ReadingDetailScreenState extends State<ReadingDetailScreen> {
                 _isSubmitted = true;
                 _showAllAnswers = true;
               });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text("Đã nộp bài thành công! Bạn có thể kéo lên để xem giải thích chi tiết từng câu."),
+                    duration: Duration(seconds: 4),
+                ),
+              );
             },
             child: const Text("Đồng ý"),
           ),
@@ -423,29 +429,54 @@ class _ReadingDetailScreenState extends State<ReadingDetailScreen> {
   }
 
   Widget _buildQuestionBlock(Map<String, dynamic> item) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (item['passage'] != null)
-          Container(
-            padding: const EdgeInsets.all(16),
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
+      bool hasPassage = item['passage'] != null && item['passage'].toString().trim().isNotEmpty;
+      bool hasReadImage = item['read_image'] != null && item['read_image'].toString().trim().isNotEmpty;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Nếu có đoạn văn bản chữ -> Vẽ Container văn bản chữ
+          if (hasPassage)
+            Container(
+              padding: const EdgeInsets.all(16),
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 16, top: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: _buildPassageText(item['passage'], _showFurigana),
             ),
-            child: _buildPassageText(item['passage'], _showFurigana),
+
+          // 2. THÊM: Nếu bài đọc có ảnh sơ đồ (Bảng biểu thông tin Ảnh 4) -> Vẽ ảnh ra màn hình
+          if (hasReadImage)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: item['read_image'].toString().startsWith('http')
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        item['read_image'],
+                        fit: BoxFit.contain,
+                        errorBuilder: (c, e, s) => const SizedBox(),
+                      ),
+                    )
+                  : Image.asset(item['read_image'], errorBuilder: (c, e, s) => const SizedBox()),
+            ),
+
+          // 3. Hiển thị nội dung câu hỏi
+          Text(
+            "Câu ${item['id']}: ${item['question']}",
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, height: 1.3)
           ),
-        Text(item['question'], style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 12),
-        ...(item['options'] as List).map((opt) => _buildOption(item['id'], opt, item['correct'])),
-        if (_showAllAnswers) _buildExplanationBox(item['correct'], item['explanation']),
-        const SizedBox(height: 32),
-      ],
-    );
-  }
+          const SizedBox(height: 12),
+          ...(item['options'] as List).map((opt) => _buildOption(item['id'], opt, item['correct'])),
+          if (_showAllAnswers) _buildExplanationBox(item['correct'], item['explanation']),
+          const SizedBox(height: 24),
+        ],
+      );
+    }
 
   Widget _buildInfoReadingBlock(Map<String, dynamic> item) {
     return Column(

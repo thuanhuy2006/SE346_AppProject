@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'reading_detail_screen.dart';
 
 class ReadingPracticeScreen extends StatelessWidget {
@@ -57,102 +58,120 @@ class LevelReadingList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Giả lập 5 bài học cho mỗi cấp độ
-    final List<Map<String, String>> lessons = List.generate(5, (index) {
-      return {
-        'title': 'Bài đọc $level - Số ${index + 1}',
-        'topic': _getTopic(index),
-        'difficulty': _getDifficulty(level),
-      };
-    });
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('reading_lessons')
+          .orderBy('order')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFF3366FF)));
+        }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: lessons.length,
-      itemBuilder: (context, index) {
-        final lesson = lessons[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-            onTap: () {
-              if (level == "N5" && (index == 0 || index == 1)) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ReadingDetailScreen(
-                      title: lesson['title']!,
-                      lessonIndex: index + 1,
-                    ),
+        final allDocs = snapshot.data?.docs ?? [];
+        // Lọc bài đọc hiển thị theo Tab cấp độ tương ứng
+        final filteredLessons = allDocs.where((doc) {
+          final title = (doc.data() as Map<String, dynamic>)['title']?.toString() ?? '';
+          return title.toLowerCase().contains(level.toLowerCase());
+        }).toList();
+
+        if (filteredLessons.isEmpty) {
+          return Center(
+            child: Text(
+              "Chưa có dữ liệu bài đọc cấp độ $level",
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: filteredLessons.length,
+          itemBuilder: (context, index) {
+            final docData = filteredLessons[index].data() as Map<String, dynamic>;
+            final String title = docData['title'] ?? 'Bài đọc không tên';
+
+            final topics = ["Gia đình", "Trường học", "Công việc", "Du lịch", "Văn hóa"];
+            final String currentTopic = topics[index % topics.length];
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Bắt đầu ${lesson['title']}")),
-                );
-              }
-            },
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE3F2FD),
-                        borderRadius: BorderRadius.circular(15),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReadingDetailScreen(
+                          title: title,
+                          lessonIndex: 1, // Mặc định chuyển sang nạp cấu trúc từ Firestore
+                        ),
                       ),
-                      child: const Icon(Icons.menu_book, color: Color(0xFF3366FF), size: 30),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            lesson['title']!,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE3F2FD),
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "Chủ đề: ${lesson['topic']}",
-                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
+                          child: const Icon(Icons.menu_book, color: Color(0xFF3366FF), size: 30),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildTag(lesson['difficulty']!, Colors.orange),
-                              const SizedBox(width: 8),
-                              _buildTag("${(index + 1) * 2} phút", Colors.blueGrey),
+                              Text(
+                                title,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "Chủ đề: $currentTopic",
+                                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  _buildTag(_getDifficulty(level), Colors.orange),
+                                  const SizedBox(width: 8),
+                                  _buildTag("Luyện đọc hiểu", Colors.blueGrey),
+                                ],
+                              ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                      ],
                     ),
-                    const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
@@ -170,11 +189,6 @@ class LevelReadingList extends StatelessWidget {
         style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
       ),
     );
-  }
-
-  String _getTopic(int index) {
-    final topics = ["Gia đình", "Trường học", "Công việc", "Du lịch", "Văn hóa"];
-    return topics[index % topics.length];
   }
 
   String _getDifficulty(String level) {
