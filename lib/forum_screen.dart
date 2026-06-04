@@ -92,8 +92,34 @@ class ForumScreen extends StatefulWidget {
 
 class _ForumScreenState extends State<ForumScreen> {
   final TextEditingController _postController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   File? _imageFile;
   bool _isUploading = false;
+  bool _isSearching = false;
+  String _searchText = "";
+
+  final List<String> _topics = ["Tất cả", "Từ vựng", "Ngữ pháp", "Luyện đọc", "Luyện nghe"];
+  String _selectedTopicFilter = "Tất cả";
+  String _newPostTopic = "Từ vựng";
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      if (mounted) {
+        setState(() {
+          _searchText = _searchController.text.trim().toLowerCase();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _postController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage(StateSetter setModalState) async {
     final picker = ImagePicker();
@@ -148,6 +174,7 @@ class _ForumScreenState extends State<ForumScreen> {
   void _showCreatePostDialog() {
     _postController.clear();
     _imageFile = null;
+    _newPostTopic = "Từ vựng"; // Reset topic mặc định cho bài mới
 
     showModalBottomSheet(
       context: context,
@@ -174,6 +201,30 @@ class _ForumScreenState extends State<ForumScreen> {
                       const Text("Tạo bài viết mới", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
                     ],
+                  ),
+                  const SizedBox(height: 8),
+                  // CHỌN CHỦ ĐỀ CHO BÀI VIẾT
+                  const Text("Chọn chủ đề:", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: _topics.where((t) => t != "Tất cả").map((topic) {
+                        final isSelected = _newPostTopic == topic;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(topic),
+                            selected: isSelected,
+                            onSelected: (val) {
+                              if (val) setModalState(() => _newPostTopic = topic);
+                            },
+                            selectedColor: kPrimaryBlue.withOpacity(0.2),
+                            labelStyle: TextStyle(color: isSelected ? kPrimaryBlue : Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -258,6 +309,7 @@ class _ForumScreenState extends State<ForumScreen> {
         'authorName': authorName,
         'content': content,
         'imageUrl': uploadedUrl,
+        'topic': _newPostTopic,
         'timestamp': FieldValue.serverTimestamp(),
         'likes': [],
         'commentCount': 0,
@@ -279,16 +331,79 @@ class _ForumScreenState extends State<ForumScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F8),
-      appBar: AppBar(title: const Text("Diễn đàn thảo luận", style: TextStyle(fontWeight: FontWeight.bold)), centerTitle: true, backgroundColor: Colors.white, elevation: 0),
+      appBar: AppBar(
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: "Tìm kiếm bài viết hoặc tác giả...",
+                  border: InputBorder.none,
+                ),
+                style: const TextStyle(fontSize: 16),
+              )
+            : const Text("Diễn đàn thảo luận", style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchController.clear();
+                } else {
+                  _isSearching = true;
+                }
+              });
+            },
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: Container(
+            height: 50,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _topics.length,
+              itemBuilder: (context, index) {
+                final topic = _topics[index];
+                final isSelected = _selectedTopicFilter == topic;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(topic),
+                    selected: isSelected,
+                    onSelected: (val) {
+                      setState(() => _selectedTopicFilter = topic);
+                    },
+                    backgroundColor: Colors.grey[200],
+                    selectedColor: kPrimaryBlue.withOpacity(0.2),
+                    checkmarkColor: kPrimaryBlue,
+                    labelStyle: TextStyle(
+                      color: isSelected ? kPrimaryBlue : Colors.black87,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           setState(() {});
           await Future.delayed(const Duration(milliseconds: 800));
         },
         child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('forum_posts').orderBy('timestamp', descending: true).snapshots(),
+          stream: _selectedTopicFilter == "Tất cả"
+              ? FirebaseFirestore.instance.collection('forum_posts').orderBy('timestamp', descending: true).snapshots()
+              : FirebaseFirestore.instance.collection('forum_posts').where('topic', isEqualTo: _selectedTopicFilter).orderBy('timestamp', descending: true).snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return ListView(
@@ -317,16 +432,25 @@ class _ForumScreenState extends State<ForumScreen> {
                 ],
               );
             }
-            final posts = snapshot.data?.docs ?? [];
+            final allPosts = snapshot.data?.docs ?? [];
+            final posts = allPosts.where((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              final content = (data['content'] ?? "").toString().toLowerCase();
+              final author = (data['authorName'] ?? "").toString().toLowerCase();
+              return content.contains(_searchText) || author.contains(_searchText);
+            }).toList();
+
             if (posts.isEmpty) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                  const Center(
+                  Center(
                     child: Text(
-                      "Chưa có bài viết nào. Hãy là người đầu tiên đăng bài!",
-                      style: TextStyle(color: Colors.grey),
+                      _searchText.isEmpty
+                          ? "Chưa có bài viết nào. Hãy là người đầu tiên đăng bài!"
+                          : "Không tìm thấy bài viết nào phù hợp.",
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ),
                 ],
@@ -382,7 +506,19 @@ class _ForumScreenState extends State<ForumScreen> {
                           : "Người dùng", 
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
                     ), 
-                    Text(formattedDate, style: const TextStyle(color: Colors.grey, fontSize: 12))
+                    Row(
+                      children: [
+                        Text(formattedDate, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        if (post['topic'] != null) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: kPrimaryBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                            child: Text(post['topic'], style: const TextStyle(color: kPrimaryBlue, fontSize: 10, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ],
+                    ),
                   ]
                 )
               ),

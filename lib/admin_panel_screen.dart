@@ -133,7 +133,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 } else if (collectionPath == 'reading_lessons') {
                   subColl = 'parts';
                 }
-                
+
                 final subSnapshot = await mainRef.collection(subColl).get();
                 for (var doc in subSnapshot.docs) {
                   await doc.reference.delete();
@@ -650,7 +650,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildBottomNavButton(0, Icons.menu_book, "JLPT N5"),
+                      _buildBottomNavButton(0, Icons.menu_book, "JLPT"),
                       _buildBottomNavButton(1, Icons.headphones, "Luyện Nghe"),
                       _buildBottomNavButton(2, Icons.chrome_reader_mode, "Luyện Đọc"),
                     ],
@@ -815,7 +815,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               ],
             ],
           ),
-          
+
           // --- DANH SÁCH BÀI ĐÃ CÓ TRÊN FIRESTORE ---
           const SizedBox(height: 40),
           const Divider(thickness: 2),
@@ -896,7 +896,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                           _jlptTitleController.text = lessonTitle;
                                           _jlptOrderController.text = (act['order'] ?? 0).toString();
                                           _jlptActivityType = actType;
-                                          
+
                                           _jlptWordController.text = act['word'] ?? '';
                                           _jlptHiraganaController.text = act['hiragana'] ?? '';
                                           _jlptMeaningController.text = act['meaning'] ?? '';
@@ -1051,7 +1051,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               ],
             ],
           ),
-          
+
           // --- DANH SÁCH BÀI NGHE HIỆN CÓ ---
           const SizedBox(height: 40),
           const Divider(thickness: 2),
@@ -1279,7 +1279,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               ],
             ],
           ),
-          
+
           // --- DANH SÁCH BÀI ĐỌC HIỆN CÓ ---
           const SizedBox(height: 40),
           const Divider(thickness: 2),
