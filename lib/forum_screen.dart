@@ -332,7 +332,10 @@ class _ForumScreenState extends State<ForumScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: const Color(0xFFF0F4F8),
+=======
+>>>>>>> daf3b99b6d4246e0c501ed4aeea35780365161f1
       appBar: AppBar(
         title: _isSearching
             ? TextField(
