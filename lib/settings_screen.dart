@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_progress.dart';
 import 'admin_panel_screen.dart';
-import 'notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -56,11 +55,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildActionRow(
                   "Đổi tên hiển thị",
                   onTap: () => _showChangeNameDialog(context),
-                ),
-                const Divider(height: 1, color: Colors.grey),
-                _buildActionRow(
-                  "Nhắc nhở học tập",
-                  onTap: () => _showReminderDialog(context),
                 ),
                 const Divider(height: 1, color: Colors.grey),
                 _buildActionRow(
@@ -118,130 +112,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  // --- POPUP NHẮC NHỞ HỌC TẬP ---
-  void _showReminderDialog(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    bool isReminderOn = prefs.getBool('reminder_enabled') ?? false;
-    int savedHour = prefs.getInt('reminder_hour') ?? 7;
-    int savedMinute = prefs.getInt('reminder_minute') ?? 22;
-
-    DateTime initialTime = DateTime(2024, 1, 1, savedHour, savedMinute);
-    DateTime selectedTime = initialTime;
-
-    if (!context.mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3366FF),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "Nhắc nhở học tập",
-                      style: TextStyle(color: Colors.amber, fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}",
-                          style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-                        ),
-                        Switch(
-                          value: isReminderOn,
-                          onChanged: (val) async {
-                            setState(() => isReminderOn = val);
-                            if (val) {
-                              await NotificationService().requestPermissions();
-                            }
-                          },
-                          activeThumbColor: Colors.white,
-                          activeTrackColor: Colors.amber,
-                        )
-                      ],
-                    ),
-                    const Divider(color: Colors.white54),
-                    SizedBox(
-                      height: 120,
-                      child: CupertinoTheme(
-                        data: const CupertinoThemeData(
-                          textTheme: CupertinoTextThemeData(dateTimePickerTextStyle: TextStyle(color: Colors.white, fontSize: 18)),
-                        ),
-                        child: CupertinoDatePicker(
-                          mode: CupertinoDatePickerMode.time,
-                          initialDateTime: selectedTime,
-                          use24hFormat: true,
-                          onDateTimeChanged: (val) {
-                            setState(() => selectedTime = val);
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 45,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          // 1. Lưu vào SharedPreferences
-                          await prefs.setBool('reminder_enabled', isReminderOn);
-                          await prefs.setInt('reminder_hour', selectedTime.hour);
-                          await prefs.setInt('reminder_minute', selectedTime.minute);
-
-                          // 2. Xử lý Notification
-                          if (isReminderOn) {
-                            await NotificationService().scheduleDailyReminder(
-                              id: 101, // ID cố định cho nhắc nhở học tập
-                              hour: selectedTime.hour,
-                              minute: selectedTime.minute,
-                              title: "JapaGo: Đến giờ học rồi! 🎌",
-                              body: "Cùng dành 5-10 phút để ôn tập tiếng Nhật nhé. Ganbatte!",
-                            );
-                          } else {
-                            await NotificationService().cancelAll();
-                          }
-
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(isReminderOn ? "Đã bật nhắc nhở lúc ${selectedTime.hour}:${selectedTime.minute.toString().padLeft(2, '0')}" : "Đã tắt nhắc nhở"))
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                        ),
-                        child: const Text("Lưu", style: TextStyle(color: Color(0xFF3366FF), fontWeight: FontWeight.bold, fontSize: 16)),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    const Text(
-                      "Vui lòng bật thông báo Nhắc nhở học tập trong mục Quản lý thông báo",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.redAccent, fontSize: 12),
-                    )
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
     );
   }
 

@@ -19,7 +19,6 @@ import 'vocabulary_notebook_screen.dart';
 import 'reading_practice_screen.dart';
 import 'listening_practice_screen.dart';
 import 'forum_screen.dart';
-import 'notification_service.dart';
 import 'package:cloudinary_url_gen/cloudinary.dart';
 import 'package:cloudinary_flutter/cloudinary_context.dart';
 import 'package:cloudinary_flutter/image/cld_image.dart';
@@ -34,7 +33,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp();
-  await NotificationService().init();
   await RecognitionManager.instance.checkAndDownloadModel();
 
   CloudinaryContext.cloudinary = Cloudinary.fromCloudName(cloudName: dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? "",);
